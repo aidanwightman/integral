@@ -92,3 +92,50 @@ vm.runInContext(`
 `, context);
 
 console.log('Northstar passes meeting evidence, invitation chase, territory sign-off and resubmission checks.');
+
+vm.runInContext(`{
+  S = build('events');
+  Object.assign(UI, freshUI());
+  _att = null; _ix = null;
+  UI.route = 'inbox';
+  const linked = S.threads.find(thread => thread.needsReply && thread.orderId);
+  const unlinked = S.threads.find(thread => !thread.personId);
+  UI.sel.inbox = linked.id;
+  ACT.ibf({v:'unlinked'});
+  vInbox([]);
+  assert.equal(UI.sel.inbox, unlinked.id);
+  ACT.ibsel({id:unlinked.id});
+  ACT.reply({id:unlinked.id});
+  assert.equal(UI.from, null);
+  assert.equal(replyHasMessage(unlinked), false);
+  UI.ib.draft[unlinked.id] = 'Thanks for the booking enquiry.';
+  ACT.cancelreply();
+  ACT.reply({id:unlinked.id});
+  assert.equal(replyHasMessage(unlinked), true);
+  ACT.send({id:unlinked.id});
+  assert.equal(unlinked.msgs.at(-1).dir, 'out');
+  assert.equal(unlinked.needsReply, false);
+
+  ACT.mailtask({id:linked.id});
+  ACT.mailtask({id:linked.id});
+  assert.equal(S.tasks.filter(task => task.threadId === linked.id && !task.done).length, 1);
+  openInboxFollowup(linked.id).done = true;
+  assert.equal(openInboxFollowup(linked.id), undefined);
+  ACT.mailtask({id:linked.id});
+  assert.equal(S.tasks.filter(task => task.threadId === linked.id && !task.done).length, 1);
+
+  // Earlier saved messages can be handled while retaining the original needsReply flag.
+  linked.handled = true; linked.needsReply = true;
+  UI.ib.f = 'reply';
+  assert.equal(matchesInboxFilter(linked, 'reply'), false);
+  readInboxAddress(linked.id);
+  assert.equal(UI.ib.f, 'all');
+  assert.equal(UI.ib.reading, true);
+  UI.sel.inbox = linked.id;
+  ACT.goto({r:'orders',id:linked.orderId});
+  assert.equal(UI.from.origin, 'inbox');
+  ACT.ibreturn();
+  assert.equal(UI.sel.inbox, linked.id);
+  assert.equal(UI.ib.f, 'all');
+}`, context);
+console.log('PASS: Inbox filters, explicit thread links, drafts, simulated replies, follow-up deduplication and return from a linked order.');

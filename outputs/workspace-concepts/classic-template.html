@@ -151,7 +151,7 @@ h3{font-size:calc(12px * var(--workspace-text-scale, 1));font-weight:600;margin:
 .facet input{accent-color:var(--accent);margin:0}
 .tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:10px;overflow-x:auto;overflow-y:hidden}
 .tabs button{border:0;border-radius:0;background:none;padding:7px 10px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
-.tabs button[aria-selected=true]{color:var(--text);border-bottom-color:var(--accent);font-weight:560}
+.tabs button:is([aria-selected=true],[aria-pressed=true]){color:var(--text);border-bottom-color:var(--accent);font-weight:560}
 .tabs .n{color:var(--faint);font-size:calc(11px * var(--workspace-text-scale, 1));font-variant-numeric:tabular-nums}
 .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
 .search{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0 8px;width:min(340px,100%)}
@@ -220,7 +220,7 @@ h3{font-size:calc(12px * var(--workspace-text-scale, 1));font-weight:600;margin:
 .inbox>div:last-child{border-right:0}
 .thread{display:grid;gap:2px;padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;width:100%;border-radius:0;border-left:3px solid transparent;border-right:0;border-top:0;background:var(--panel);text-align:left;white-space:normal}
 .thread:hover{background:var(--hover)}
-.thread[aria-selected=true]{background:var(--hover);border-left-color:var(--accent)}
+.thread[aria-current=true]{background:var(--hover);border-left-color:var(--accent)}
 .thread.unread .fr{font-weight:650}
 .thread .sn{color:var(--muted);font-size:calc(12px * var(--workspace-text-scale, 1));overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
 .msg{border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;background:var(--panel)}
@@ -251,9 +251,6 @@ h3{font-size:calc(12px * var(--workspace-text-scale, 1));font-weight:600;margin:
 .stepper li{flex:1;display:flex;gap:4px;align-items:center;justify-content:center;font-size:calc(12px * var(--workspace-text-scale, 1));padding:5px 4px;border-radius:5px;background:var(--sunken);color:var(--muted)}
 .stepper li.done{color:var(--accent)}
 .stepper li.cur{background:var(--accent-soft);color:var(--text);font-weight:600;box-shadow:inset 0 0 0 1px var(--accent)}
-.ctx-inline{display:none;border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;background:var(--sunken)}
-.ctx-inline summary{cursor:pointer;font-weight:550}
-.ctx-inline[open] summary{margin-bottom:8px}
 .own{width:24px;height:24px;border-radius:50%;background:var(--sunken);border:1px solid var(--line);font-size:calc(10px * var(--workspace-text-scale, 1));font-weight:600;display:grid;place-items:center;color:var(--muted)}
 .own.blank{visibility:hidden;width:0;border:0;margin-right:-10px}
 .qi .due.late{color:var(--crit);font-weight:600}
@@ -406,11 +403,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
   .pk.open.showf{grid-template-columns:200px minmax(0,1fr) 340px}
   .pk.open.showf .facets{display:grid}
 }
-@media (max-width:1280px){
-  .inbox{grid-template-columns:300px minmax(0,1fr)}
-  .inbox>div:last-child{display:none}
-  .ctx-inline{display:block}
-}
 @media (max-width:980px){
   .triage,.dayplan{grid-template-columns:1fr}
   .preview{position:static;max-height:none}
@@ -428,10 +420,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
   .page{padding:12px 16px 24px}
   .cmd{width:auto;flex:1}
   .cmd kbd{display:none}
-  .inbox{grid-template-columns:1fr;height:auto}
-  .inbox>div{border-right:0}
-  .inbox.reading>div:first-child{display:none}
-  .inbox:not(.reading)>div:nth-child(2){display:none}
   .week{grid-template-columns:40px repeat(5,minmax(110px,1fr))}
   .weekwrap{overflow:auto}
   .cmp{grid-template-columns:1fr}
@@ -738,7 +726,7 @@ h3{font-size:calc(13px * var(--workspace-text-scale, 1));font-weight:600;text-tr
 :root[data-look=liquid] .qi[aria-selected=true]{background:transparent;box-shadow:inset 3px 0 0 var(--accent)}
 :root[data-look=liquid] .thread{background:transparent}
 :root[data-look=liquid] .thread:hover{background:var(--hover)}
-:root[data-look=liquid] .thread[aria-selected=true]{background:var(--accent-soft)}
+:root[data-look=liquid] .thread[aria-current=true]{background:var(--accent-soft)}
 :root[data-look=liquid] .tbl th{background:var(--lg-solid)}
 :root[data-look=liquid] .tbl tbody tr.grp td{background:var(--lg-solid)}
 :root[data-look=liquid] .tbl tbody tr.sel td{background:var(--accent-soft)}
@@ -769,7 +757,7 @@ h3{font-size:calc(13px * var(--workspace-text-scale, 1));font-weight:600;text-tr
 :root[data-look=liquid] .tabs{border-bottom:0;gap:4px;padding:3px}
 :root[data-look=liquid] .tabs button{border-radius:999px;border-bottom:0;margin-bottom:0;padding:6px 12px}
 :root[data-look=liquid] .tabs button:hover{background:var(--hover)}
-:root[data-look=liquid] .tabs button[aria-selected=true]{background:var(--lg-ctl);box-shadow:var(--lg-rim),0 4px 10px -6px rgba(20,40,90,.4)}
+:root[data-look=liquid] .tabs button:is([aria-selected=true],[aria-pressed=true]){background:var(--lg-ctl);box-shadow:var(--lg-rim),0 4px 10px -6px rgba(20,40,90,.4)}
 :root[data-look=liquid] .pill{box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
 :root[data-look=liquid] .reclink{border-radius:999px;background:var(--lg-ctl)}
 :root[data-look=liquid] .stepper li{border-radius:999px}
@@ -929,7 +917,7 @@ h3{font-size:calc(13px * var(--workspace-text-scale, 1));font-weight:600;text-tr
 :root[data-look="panels"] .tabs{border-bottom:0;background:color-mix(in srgb,var(--sunken) 70%,var(--bg));border:1px solid var(--line);padding:3px;border-radius:14px;gap:2px;width:fit-content;max-width:100%;margin-bottom:12px}
 :root[data-look="panels"] .tabs button{border-radius:10px;border-bottom:0;margin-bottom:0;padding:6px 12px}
 :root[data-look="panels"] .tabs button:hover{background:var(--hover)}
-:root[data-look="panels"] .tabs button[aria-selected=true]{background:var(--panel);box-shadow:var(--btn-sh),0 0 0 1px var(--line);font-weight:620}
+:root[data-look="panels"] .tabs button:is([aria-selected=true],[aria-pressed=true]){background:var(--panel);box-shadow:var(--btn-sh),0 0 0 1px var(--line);font-weight:620}
 :root[data-look="panels"] .fbtn{padding:5px 12px;border-color:var(--line2);box-shadow:var(--btn-sh)}
 :root[data-look="panels"] .fbtn[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
 :root[data-look="panels"] .pill{padding:2px 8px;font-weight:600}
@@ -955,7 +943,7 @@ h3{font-size:calc(13px * var(--workspace-text-scale, 1));font-weight:600;text-tr
 :root[data-look="panels"] .inbox>div{background:var(--panel);border:1px solid var(--line);border-radius:var(--R);box-shadow:var(--pshadow)}
 @media (min-width:761px){:root[data-look="panels"] .inbox{height:calc(100vh - 82px)}}
 :root[data-look="panels"] .thread{padding:10px 14px}
-:root[data-look="panels"] .thread[aria-selected=true]{background:var(--accent-soft)}
+:root[data-look="panels"] .thread[aria-current=true]{background:var(--accent-soft)}
 :root[data-look="panels"] .msg{border-radius:16px;padding:14px 16px}
 :root[data-look="panels"] .ev{border-radius:8px}
 :root[data-look="panels"] .adi{border-radius:7px}
@@ -1095,7 +1083,6 @@ h3{font-size:calc(13px * var(--workspace-text-scale, 1));font-weight:600;text-tr
 :root[data-look="brut"] .pcard{border:2px solid var(--ink);box-shadow:3px 3px 0 var(--hard);transition:transform .08s}
 :root[data-look="brut"] .pcard:hover{transform:translate(-1px,-1px)}
 :root[data-look="brut"] .pcard.sel{background:var(--sel);box-shadow:3px 3px 0 var(--accent)}
-:root[data-look="brut"] .ctx-inline{border:2px solid var(--ink)}
 
 /* home queue + day strip */
 :root[data-look="brut"] .qgroup{font:700 calc(10.5px * var(--workspace-text-scale, 1))/1.3 var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--text);padding:7px 12px;border-bottom:2px solid var(--ink)}
@@ -1130,8 +1117,8 @@ h3{font-size:calc(13px * var(--workspace-text-scale, 1));font-weight:600;text-tr
 :root[data-look="brut"] .tabs{border-bottom:2px solid var(--ink);gap:4px}
 :root[data-look="brut"] .tabs button{border:2px solid transparent;border-bottom:0;border-radius:6px 6px 0 0;margin-bottom:0;padding:6px 10px;font-family:var(--display);font-weight:600}
 :root[data-look="brut"] .tabs button:hover{background:var(--hover)}
-:root[data-look="brut"] .tabs button[aria-selected=true]{background:var(--pop);color:#16130f;border-color:var(--ink)}
-:root[data-look="brut"] .tabs button[aria-selected=true] .n{color:#16130f;opacity:.65}
+:root[data-look="brut"] .tabs button:is([aria-selected=true],[aria-pressed=true]){background:var(--pop);color:#16130f;border-color:var(--ink)}
+:root[data-look="brut"] .tabs button:is([aria-selected=true],[aria-pressed=true]) .n{color:#16130f;opacity:.65}
 :root[data-look="brut"] .seg{border:2px solid var(--ink);background:var(--panel);padding:0;gap:0}
 :root[data-look="brut"] .seg button{border-radius:0;font-family:var(--display);font-weight:600;padding:5px 10px}
 :root[data-look="brut"] .seg button:first-child{border-radius:3px 0 0 3px}
@@ -1174,7 +1161,7 @@ h3{font-size:calc(13px * var(--workspace-text-scale, 1));font-weight:600;text-tr
 /* inbox + calendar */
 :root[data-look="brut"] .inbox>div:not(:last-child){border-right:2px solid var(--ink)}
 :root[data-look="brut"] .inbox>div:nth-child(-n+2){background:var(--panel)}
-:root[data-look="brut"] .thread[aria-selected=true]{background:var(--sel);border-left-color:var(--ink)}
+:root[data-look="brut"] .thread[aria-current=true]{background:var(--sel);border-left-color:var(--ink)}
 :root[data-look="brut"] .msg{border:2px solid var(--ink);box-shadow:3px 3px 0 var(--hard)}
 :root[data-look="brut"] .msg.out{background:var(--accent-soft)}
 :root[data-look="brut"] .week .dh2{font-family:var(--display);border-bottom:2px solid var(--ink)}
@@ -1415,6 +1402,116 @@ body:has(.shell.ai) #toast{left:auto!important;right:20px!important;transform:no
 .ns-alert-notice .link{margin-top:5px}
 @media(max-width:1100px){.ns-alert-trigger .ns-alert-label{display:none}}
 @media(max-width:600px){.top .ns-alert-trigger{width:38px;min-width:38px;min-height:40px;padding:6px;justify-content:flex-start}.ns-alert-trigger .ns-alert-count{position:absolute;top:1px;right:0;min-width:1.4em;font-size:calc(9px * var(--workspace-text-scale, 1));padding:0 3px}.ns-alert-section li{display:grid;grid-template-columns:auto minmax(0,1fr)}.ns-alert-section li>button{grid-column:2;justify-self:start}}
+
+/* Adapt search to the actual room between the home link and workspace actions. */
+.top .cmd { container:command-search / inline-size; }
+@container command-search (max-width:10em) { .cmd kbd { display:none; } }
+@container command-search (max-width:5.5em) { .cmd span { display:none; } }
+.top>.classic-clarity { min-height:32px; flex:none; font-weight:600; }
+.top>.classic-clarity[aria-pressed=true] {
+  color:var(--text);
+  background:var(--accent-soft);
+  border-color:var(--accent);
+  box-shadow:inset 0 -2px var(--accent);
+}
+:root[data-classic-clarity=true] {
+  --faint:var(--muted);
+}
+:root[data-classic-clarity=true] :is(.qi .prev,.qi .due:not(.warn):not(.late),.thread .msghead,.hm-me) {
+  color:color-mix(in srgb,var(--muted) 70%,var(--text));
+}
+:root[data-look=liquid][data-classic-clarity=true] :is(.rail,.top,.queue,.preview,.detail,.tablewrap,.week,.inbox,.facets,.mtg,.menu,.pal,.drawer) {
+  background:var(--lg-opaque);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+@media(min-width:1101px) {
+  .shell .top .cmd { flex:1 1 140px; width:auto; max-width:380px; }
+  .shell .top>.grow { display:none; }
+}
+@media(min-width:1101px) and (max-width:1280px) {
+  .shell .top { gap:5px; }
+  :root[data-classic-large-type] .top [data-v=look] .hide-sm { display:none; }
+}
+@media(max-width:600px) {
+  .top>.viewas { grid-area:2/1/3/3; }
+  .top>.classic-clarity { grid-area:2/3; padding:4px 6px; }
+}
+
+/* Size the inbox against its available pane, including when the AI sidebar is open. */
+.content:has(> .inbox){container:inbox-space / inline-size}
+:root[data-look] .content > .inbox{
+  grid-template-columns:clamp(252px,36%,325px) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr);
+  height:100%;min-height:0;
+}
+.inbox :is(.inbox-list,.inbox-conversation,.inbox-reader,.ibctx){min-width:0;min-height:0}
+.inbox-list,.inbox-conversation{overscroll-behavior:contain;overflow-y:auto}
+.inbox-header{display:grid;gap:5px;padding:12px}
+.inbox-sync{font-size:12px;line-height:1.4}
+:root[data-look] .inbox-header .tabs{
+  display:flex;flex-wrap:wrap;gap:3px;
+  width:fit-content;max-width:100%;margin:4px 0 0;overflow:visible
+}
+:root[data-look] .inbox-header .tabs button{min-width:0;padding:5px 7px;white-space:normal;margin:0}
+.inbox .inbox-conversation{display:grid;align-content:start;grid-template-columns:minmax(0,1fr)}
+.inbox-reader,.ibctx{display:grid;align-content:start;gap:12px;padding:14px;overflow-wrap:anywhere}
+.inbox .ibctx{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));
+  border-top:1px solid var(--line);background:var(--sunken)
+}
+.inbox .ibctx>:is(h3,.sect,.muted){grid-column:1/-1}
+.inbox .ibctx[hidden]{display:none}
+.inbox .ibctx>.card{min-width:0}
+.inbox .ibctx .kv{grid-template-columns:fit-content(38%) minmax(0,1fr)}
+.inbox .ibctx :is(.kv,.card .hd){overflow-wrap:anywhere}
+.inbox .ibctx .hd{flex-wrap:wrap}
+.inbox .ibctx .hd .grow{flex-basis:5em;white-space:normal}
+.inbox .inbox-reader :is(.msg,.row,.card,.acts){min-width:0}
+.inbox :is(.inbox-reader,.ibctx) :is(.pill,.reclink,button){max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.inbox-message-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 8px}
+.inbox-message-meta time{margin-inline-start:auto}
+.inbox-reader [data-act=ibback]{display:none}
+@container inbox-space (min-width:1100px){
+  .inbox .inbox-conversation:has(.ibctx:not([hidden])){grid-template-columns:minmax(0,1fr) minmax(15rem,30%);align-content:stretch}
+  .inbox .ibctx{border-top:0;border-inline-start:1px solid var(--line)}
+}
+@container inbox-space (max-width:650px){
+  :root[data-look] .content > .inbox{grid-template-columns:minmax(0,1fr)}
+  .inbox.reading > .inbox-list,.inbox:not(.reading) > .inbox-conversation{display:none}
+  .inbox-reader [data-act=ibback]{display:inline-flex}
+}
+
+/* Keep the work pane anchored while each wide dataset scrolls within its table. */
+.ns-record-view,.ns-record-view .split>*,.ns-record-view .detail .db>* {min-width:0}
+.ns-record-view .conflict-table {width:100%;overflow:auto}
+.ns-record-view .detail :is(.acts button,.taskbar button) {max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.ns-record-view .detail .ell,.ns-record-view tr:is([data-act=ppsel],[data-act=dlsel],[data-act=evsel]) .ell {
+  white-space:normal;overflow-wrap:anywhere
+}
+.ns-record-view .detail .list .li {flex-wrap:wrap}
+.ns-record-view .detail .list .li>.grow {flex:1 1 8em;overflow-wrap:anywhere}
+.ns-record-view .comparison-fields {margin-top:8px;grid-template-columns:max-content minmax(0,1fr)}
+.ns-record-view .weekwrap {min-width:0;container:calendar / inline-size}
+.ns-record-view .weekwrap>.week {min-width:0;grid-template-columns:3.6em repeat(5,minmax(0,1fr))}
+.calendar-day,.calendar-axis {display:grid;grid-template-rows:subgrid;grid-row:span 3;min-width:0}
+.ns-record-view .week .ev {white-space:normal;line-height:1.2;padding-block:1px}
+.ns-record-view .week .adi {white-space:normal;text-align:left;overflow-wrap:anywhere;height:auto}
+@container calendar (max-width:68em) {
+  .ns-record-view .weekwrap>.week {display:block}
+  .calendar-axis,.calendar-day .nowmark {display:none}
+  .calendar-day {display:block}
+  .calendar-day :is(.dh2,.allday,.col){border-left:0}
+  .calendar-day .dh2{border-block:1px solid var(--line)}
+  .calendar-day:first-of-type .dh2{border-top:0}
+  .calendar-day .allday,.calendar-day .col {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14em),1fr));align-items:start;gap:5px;padding:5px}
+  .calendar-day .allday:empty,.calendar-day .col:not(:has(.ev)){display:none}
+  .calendar-day .allday:not(:empty)::before {content:"All day";grid-column:1/-1;font-weight:550;color:var(--muted)}
+  .ns-record-view .calendar-day .col {position:static;height:auto!important;background:none}
+  .ns-record-view .calendar-day .ev {position:static;height:auto!important;min-height:34px;white-space:normal;overflow-wrap:anywhere;border-radius:var(--r);width:100%}
+  .calendar-day .ev b{margin-inline-end:.25em}
+}
+
 </style>
 </head>
 <body>
@@ -1957,6 +2054,12 @@ let undoStack=[];
 
 /* --------------------------------- rendering -------------------------------- */
 const app=document.getElementById('app'),layer=document.getElementById('layer');
+let classicClarity = true;
+function applyClassicClarity(value) {
+  classicClarity = value;
+  document.documentElement.dataset.classicClarity = String(value);
+  app.querySelector('[data-classic-clarity-toggle]')?.setAttribute('aria-pressed', String(value));
+}
 let classicTextSize = defaultWorkspaceTextSize;
 function applyClassicTextSize(value = defaultWorkspaceTextSize) {
   classicTextSize = setWorkspaceTextSize(value);
@@ -2005,7 +2108,7 @@ function render(){
     <header class="top">
       <a class="ds-site-home" href="../production-site/index.html" target="_top">Integral home</a>
       <button class="ghost menu-btn" data-act="navtoggle" aria-controls="classic-navigation" aria-expanded="${UI.navopen}" aria-label="Menu">${ic('menu')}</button>
-      <button class="cmd" data-act="palette" aria-label="Search workspace">${ic('search')}<span>Search ${L('people').toLowerCase()}, ${L('orders').toLowerCase()}, ${L('packages').toLowerCase()}…</span><kbd>Ctrl K</kbd></button>
+      <button class="cmd" data-act="palette" aria-label="Search workspace">${ic('search')}<span>Search</span><kbd>Ctrl K</kbd></button>
       ${multi?`<div class="scopebox">${sc?`<span class="chip scoped">${ic('map','s')} <span class="ell">${esc(sc.name)}</span><button data-act="scope" data-v="" aria-label="Show all territories">${ic('x','s')}</button></span>`:`<button class="ghost" data-act="menu" data-v="scope" aria-expanded="${UI.menu==='scope'}">${ic('map','s')} All territories ▾</button>`}
         ${UI.menu==='scope'?`<div class="menu right" role="menu">${S.territories.map(t=>{const n=att.filter(a=>(a.territory||terrOf(a))===t.id&&a.bucket==='now').length;return `<button role="menuitem" data-act="scope" data-v="${t.id}"><span class="grow">${esc(t.name)}</span>${n?`<span class="ct hot">${n}</span>`:''}</button>`}).join('')}</div>`:''}</div>`:''}
       <span class="grow"></span>
@@ -2013,6 +2116,7 @@ function render(){
       ${S.biz!=='coach'?`<label class="viewas">View as <select data-change="viewas" aria-label="View the workspace as">${S.team.map(t=>`<option value="${esc(t[0])}" ${t[0]===UI.me?'selected':''}>${esc(t[0])} · ${esc(t[2])}</option>`).join('')}</select></label>`:''}
       <span class="muted hide-sm num">${fDay(NOW)} · ${fTime(NOW)}</span>
       <div class="scopebox"><button class="ghost" data-act="menu" data-v="look" aria-label="Workspace appearance" aria-controls="classic-appearance" aria-expanded="${UI.menu==='look'}" title="Change the look">${ic('palette')} <span class="hide-sm">Look</span></button>${UI.menu==='look'?`<div id="classic-appearance" class="menu right lookmenu" role="group" aria-label="Workspace appearance" data-sc="look-menu" style="left:auto;right:0">${workspaceTextSizeControl(classicTextSize)}<div class="mlabel">Look</div><div role="menu" aria-label="Workspace looks">${LOOKS.map(l=>`<button role="menuitemradio" aria-checked="${LOOK===l.id}" data-act="look" data-v="${l.id}"><span class="sw">${l.sw.map(c=>`<i style="background:${c}"></i>`).join('')}</span><span class="grow"><span style="display:block">${esc(l.name)}</span><span class="faint" style="font-size:calc(11px * var(--workspace-text-scale, 1))">${esc(l.desc)}</span></span>${LOOK===l.id?ic('check','s'):''}</button>`).join('')}</div><div class="mlabel">Colour</div><div class="tints" role="radiogroup" aria-label="Colour">${TINTS.map(t=>`<button class="tint ${TINT===t[0]?'on':''}" role="radio" aria-checked="${TINT===t[0]}" data-act="tint" data-v="${t[0]}" title="${t[1]}" aria-label="${t[1]}">${t[0]==='auto'?'<span class="tauto">A</span>':`<i style="background:linear-gradient(135deg,${t[2]} 50%,${t[3]} 50%)"></i>`}</button>`).join('')}</div><div class="faint" style="font-size:calc(11px * var(--workspace-text-scale, 1));padding:2px 8px 6px">${esc(TINTS.find(t=>t[0]===TINT)[1])}${TINT==='auto'?': the look\'s own colours':''}</div></div>`:''}</div>
+      <button type="button" class="classic-clarity" data-classic-clarity-toggle aria-pressed="${classicClarity}" title="Use clearer surfaces and stronger text contrast">Clarity</button>
       <button class="ghost" data-act="theme" aria-label="Toggle light or dark">${ic('sun')}</button>
       <button class="ghost hide-sm" data-act="resetdemo" title="Reset demo data">Reset</button>
     </header>
@@ -2156,8 +2260,9 @@ function drawerHtml(att){const a=findItem(UI.drawer,att);if(!a){UI.drawer=null;r
 /* task banner shown on area pages when arriving from Home */
 function taskBanner(att,area,id,global=false){
   if(!UI.from||((UI.from.origin==='alerts')!==global))return '';
-  const a=att.find(x=>x.id===UI.from.item);
   if(UI.from.route!==area||UI.from.id!==id)return '';
+  if(UI.from.origin==='inbox')return `<div class="taskbar"><button class="sm ghost" data-act="ibreturn">${ic('back','s')} Back to conversation</button></div>`;
+  const a=att.find(x=>x.id===UI.from.item);
   const origin=UI.from.origin==='alerts'?'alerts':'overview';
   if(!a)return `<div class="taskbar done"><span class="lbl">${ic('check','s')} Done</span><span>${esc(UI.from.title)}</span><div class="acts"><button class="sm" data-act="backhome">${ic('back','s')} Back to ${origin}</button></div></div>`;
   return `<div class="taskbar"><span class="lbl" tabindex="-1">From ${origin} · ${BUCKET[a.bucket]}</span><b>${esc(a.title)}</b><div class="acts">${a.act.filter(x=>x[1]!=='go').map(x=>actBtn(a,x,'sm')).join('')}<button class="sm ghost" data-act="backhome">${ic('back','s')} Back</button></div></div>`;
@@ -2251,7 +2356,7 @@ function odDetail(o,att){const p=P(o.personId),e=E(o.eventId),st=seats(o),i=STAG
 
 /* ---------------------------------- EVENTS --------------------------------- */
 function vEvents(att){const sel=E(UI.sel.events);const evs=S.events.filter(inScope).sort((a,b)=>a.date.localeCompare(b.date));
-  return `<div class="page"><div class="phead"><div class="row"><h1>${L('events')}</h1>${spark('list','events',L('events'))}</div><span class="sub">${evs.length} upcoming</span></div><div class="split ${sel?'open':''}"><div class="tablewrap" data-sc="evtable"><table class="tbl"><thead><tr><th>${L('event')}</th><th>Date</th><th>Sold / capacity</th><th class="r c-opt">Named</th><th class="r c-opt">${L('orders')}</th><th>Alerts</th><th class="sk"></th></tr></thead><tbody>${evs.map(e=>{const r=eventSeats(e),pk=S.packages.filter(p=>p.eventId===e.id),al=pk.filter(p=>p.status==='Active'&&avail(p)!=='Available').length,short=r.named<r.sold&&daysTo(e.date)<=30;return `<tr class="${sel&&sel.id===e.id?'sel':''}" data-act="evsel" data-id="${e.id}"><td><div class="name ell" style="max-width:280px">${esc(e.name)}</div><div class="muted ell" style="font-size:calc(12px * var(--workspace-text-scale, 1));max-width:280px">${esc(e.venue)}</div></td><td class="num">${fDate(e.date)} <span class="muted">${daysTo(e.date)}d</span></td><td style="min-width:170px"><div class="row"><div class="bar grow"><i style="width:${Math.min(100,r.sold/e.capacity*100)}%"></i></div><span class="num muted" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${r.sold>=e.capacity?'Full':r.sold+'/'+e.capacity}</span></div></td><td class="r num c-opt">${short?`<span style="color:var(--warn)">${r.named}/${r.sold}</span>`:''}</td><td class="r num c-opt">${r.orders}</td><td>${al?`<span class="pill warn">${al} low or sold out</span>`:''}</td><td class="sk">${spark('event',e.id,e.name,'row')}</td></tr>`}).join('')}</tbody></table></div>${sel?evDetail(sel,att):''}</div></div>`}
+  return `<div class="page ns-record-view"><div class="phead"><div class="row"><h1>${L('events')}</h1>${spark('list','events',L('events'))}</div><span class="sub">${evs.length} upcoming</span></div><div class="split ${sel?'open':''}"><div class="tablewrap" data-sc="evtable"><table class="tbl"><thead><tr><th>${L('event')}</th><th>Date</th><th>Sold / capacity</th><th class="r c-opt">Named</th><th class="r c-opt">${L('orders')}</th><th>Alerts</th><th class="sk"></th></tr></thead><tbody>${evs.map(e=>{const r=eventSeats(e),pk=S.packages.filter(p=>p.eventId===e.id),al=pk.filter(p=>p.status==='Active'&&avail(p)!=='Available').length,short=r.named<r.sold&&daysTo(e.date)<=30;return `<tr class="${sel&&sel.id===e.id?'sel':''}" data-act="evsel" data-id="${e.id}"><td><div class="name ell" style="max-width:280px">${esc(e.name)}</div><div class="muted ell" style="font-size:calc(12px * var(--workspace-text-scale, 1));max-width:280px">${esc(e.venue)}</div></td><td class="num">${fDate(e.date)} <span class="muted">${daysTo(e.date)}d</span></td><td style="min-width:170px"><div class="row"><div class="bar grow"><i style="width:${Math.min(100,r.sold/e.capacity*100)}%"></i></div><span class="num muted" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${r.sold>=e.capacity?'Full':r.sold+'/'+e.capacity}</span></div></td><td class="r num c-opt">${short?`<span style="color:var(--warn)">${r.named}/${r.sold}</span>`:''}</td><td class="r num c-opt">${r.orders}</td><td>${al?`<span class="pill warn">${al} low or sold out</span>`:''}</td><td class="sk">${spark('event',e.id,e.name,'row')}</td></tr>`}).join('')}</tbody></table></div>${sel?evDetail(sel,att):''}</div></div>`}
 function evDetail(e,att){const r=eventSeats(e),pk=S.packages.filter(p=>p.eventId===e.id),os=S.orders.filter(o=>o.eventId===e.id&&o.stage!=='Draft'&&o.named<seats(o));const tk=S.tasks.filter(t=>t.eventId===e.id&&!t.done);const ask=os.filter(o=>!o.namesRequested);
   return detailShell(esc(e.name),`${fDateY(e.date)} · ${daysTo(e.date)}d to go ${outPill(e)}`,`${taskBanner(att,'events',e.id)}
   <div class="alloc"><div class="row"><span class="grow muted">Places sold</span><b class="num">${r.sold} / ${e.capacity}</b></div><div class="bar"><i style="width:${Math.min(100,r.sold/e.capacity*100)}%"></i></div><div class="muted">${r.named} of ${r.sold} ${L('seats')} named</div></div>
@@ -2263,7 +2368,7 @@ function evDetail(e,att){const r=eventSeats(e),pk=S.packages.filter(p=>p.eventId
 
 /* ---------------------------------- PEOPLE --------------------------------- */
 function vPeople(att){const q=UI.pp.q.toLowerCase().trim();const rows=S.people.filter(inScope).filter(p=>!q||`${p.name} ${p.email} ${p.company} ${p.role}`.toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name));const sel=P(UI.sel.people);const dupIds=new Set(dupPairs().flatMap(d=>[d.a.id,d.b.id]));
-  return `<div class="page"><div class="phead"><div class="row"><h1>${L('people')}</h1>${spark('list','people',L('people'))}</div><span class="sub">${rows.length} ${L('people').toLowerCase()}</span><div class="right"><button class="ghost" data-act="newperson">${ic('plus','s')} Add ${L('person').toLowerCase()}</button></div></div>${S.biz==='events'&&UI.peopleCreate?customerForm():''}<div class="split ${sel?'open':''}"><div style="min-width:0"><div class="toolbar"><label class="search">${ic('search','s')}<input id="ppq" type="search" placeholder="Search name, email, company" value="${esc(UI.pp.q)}" data-input="ppq" aria-label="Search"></label><span class="grow"></span><span class="muted num">${rows.length} shown</span></div><div class="tablewrap" data-sc="pptable"><table class="tbl"><thead><tr><th>Name</th><th class="c-opt">Email</th><th class="r">Open ${L('orders').toLowerCase()}</th><th>Last contact</th><th class="c-opt">Owner</th><th class="sk"></th></tr></thead><tbody>${rows.slice(0,UI.more.people||200).map(p=>{const n=S.orders.filter(o=>o.personId===p.id&&o.stage!=='Completed').length;return `<tr class="${sel&&sel.id===p.id?'sel':''}" data-act="ppsel" data-id="${p.id}"><td><div class="name">${esc(p.name)}${dupIds.has(p.id)?' <span class="pill warn">possible duplicate</span>':''}</div><div class="muted" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${esc(p.company)}</div></td><td class="muted c-opt ell" style="max-width:260px">${esc(p.email)}</td><td class="r num">${n||''}</td><td class="muted">${ago(p.lastContact)} ago</td><td class="c-opt"><span class="own" title="${esc(p.owner)}">${esc(initials(p.owner))}</span></td><td class="sk">${spark('person',p.id,p.name,'row')}</td></tr>`}).join('')}${moreRow('people',UI.more.people||200,rows.length,6)}</tbody></table></div></div>${sel?ppDetail(sel,att):''}</div></div>`}
+  return `<div class="page ns-record-view"><div class="phead"><div class="row"><h1>${L('people')}</h1>${spark('list','people',L('people'))}</div><span class="sub">${rows.length} ${L('people').toLowerCase()}</span><div class="right"><button class="ghost" data-act="newperson">${ic('plus','s')} Add ${L('person').toLowerCase()}</button></div></div>${S.biz==='events'&&UI.peopleCreate?customerForm():''}<div class="split ${sel?'open':''}"><div style="min-width:0"><div class="toolbar"><label class="search">${ic('search','s')}<input id="ppq" type="search" placeholder="Search name, email, company" value="${esc(UI.pp.q)}" data-input="ppq" aria-label="Search"></label><span class="grow"></span><span class="muted num">${rows.length} shown</span></div><div class="tablewrap" data-sc="pptable"><table class="tbl"><thead><tr><th>Name</th><th class="c-opt">Email</th><th class="r">Open ${L('orders').toLowerCase()}</th><th>Last contact</th><th class="c-opt">Owner</th><th class="sk"></th></tr></thead><tbody>${rows.slice(0,UI.more.people||200).map(p=>{const n=S.orders.filter(o=>o.personId===p.id&&o.stage!=='Completed').length;return `<tr class="${sel&&sel.id===p.id?'sel':''}" data-act="ppsel" data-id="${p.id}"><td><div class="name">${esc(p.name)}${dupIds.has(p.id)?' <span class="pill warn">possible duplicate</span>':''}</div><div class="muted" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${esc(p.company)}</div></td><td class="muted c-opt ell" style="max-width:260px">${esc(p.email)}</td><td class="r num">${n||''}</td><td class="muted">${ago(p.lastContact)} ago</td><td class="c-opt"><span class="own" title="${esc(p.owner)}">${esc(initials(p.owner))}</span></td><td class="sk">${spark('person',p.id,p.name,'row')}</td></tr>`}).join('')}${moreRow('people',UI.more.people||200,rows.length,6)}</tbody></table></div></div>${sel?ppDetail(sel,att):''}</div></div>`}
 function ppDetail(p,att){const os=S.orders.filter(o=>o.personId===p.id),ds=S.deals.filter(d=>d.personId===p.id),ts=S.threads.filter(t=>t.personId===p.id),ms=S.meetings.filter(m=>m.personId===p.id);
   return detailShell(esc(p.name),`${esc(p.role||L('person'))} · ${esc(p.company)} ${outPill(p)}`,`${taskBanner(att,'people',p.id)}${reviewPanel('customer',p)}<dl class="kv sum"><dt>Email</dt><dd class="ell">${esc(p.email)}</dd><dt>Phone</dt><dd>${esc(p.phone)||'<span class="muted">None</span>'}</dd><dt>Owner</dt><dd>${esc(p.owner)}</dd><dt>Last contact</dt><dd>${fDateY(p.lastContact)}</dd></dl>
   ${os.length?sec(L('orders'),os.length,`<div class="list">${os.map(o=>`<div class="li click" data-act="goto" data-r="orders" data-id="${o.id}"><span class="num muted">#${o.number}</span><span class="grow ell">${esc(E(o.eventId).name)}</span><span class="num">${money(total(o))}</span>${stagePill(o.stage)}</div>`).join('')}</div>`):''}
@@ -2273,25 +2378,43 @@ function ppDetail(p,att){const os=S.orders.filter(o=>o.personId===p.id),ds=S.dea
 const stgDeal=s=>`<span class="stg"><i style="background:${s==='Won'?'var(--ok)':s==='Lost'?'var(--faint)':/Negotiation|Verbal/.test(s)?'var(--warn)':'var(--accent)'}"></i>${esc(s)}</span>`;
 
 /* ---------------------------------- INBOX ---------------------------------- */
-function vInbox(att){const f=UI.ib;const list=S.threads.filter(t=>!t.personId||inScope(t)).filter(t=>f.f==='all'||(f.f==='reply'?t.needsReply&&!t.handled:f.f==='unlinked'?!t.personId:true)).sort((a,b)=>(f.f==='reply'?1:-1)*a.msgs.at(-1).at.localeCompare(b.msgs.at(-1).at));
-  if(!list.find(t=>t.id===UI.sel.inbox)&&!S.threads.find(t=>t.id===UI.sel.inbox))UI.sel.inbox=list[0]?.id;
-  const t=S.threads.find(x=>x.id===UI.sel.inbox);
-  const cnt=k=>S.threads.filter(inScope).filter(t=>k==='all'||(k==='reply'?t.needsReply&&!t.handled:!t.personId)).length;
-  const o=t&&O(t.orderId),p=t&&P(t.personId);
-  return `<div class="inbox ${UI.ib.reading?'reading':''}"><div data-sc="iblist"><div style="padding:12px 12px 0"><div class="row" style="margin-bottom:8px"><h1 class="grow">Inbox</h1><span class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">Microsoft 365 + Google · synced 1m ago</span></div><div class="tabs">${[['reply','Needs reply'],['unlinked','Not in CRM'],['all','All']].map(([k,l])=>`<button aria-selected="${f.f===k}" data-act="ibf" data-v="${k}">${l} <span class="n">${cnt(k)}</span></button>`).join('')}</div></div>
-  ${list.map(x=>`<button class="thread ${x.unread?'unread':''}" data-act="ibsel" data-id="${x.id}" aria-selected="${t&&t.id===x.id}"><div class="row"><span class="fr ell grow">${esc(x.fromName)}</span>${(()=>{const h=(NOW-new Date(x.msgs.at(-1).at))/H,late=x.needsReply&&!x.handled&&h>24;return `<span class="${late?'':'faint'}" style="font-size:calc(11.5px * var(--workspace-text-scale, 1));${late?'color:var(--warn);font-weight:600':''}">${late?'waiting ':''}${ago(x.msgs.at(-1).at)}</span>`})()}</div><div class="ell">${esc(x.subject)}</div><div class="sn">${esc(x.msgs.at(-1).body)}</div><div class="row" style="margin-top:3px">${x.orderId?`<span class="pill acc">#${O(x.orderId)?.number}</span>`:''}${!x.personId?'<span class="pill warn">not in CRM</span>':''}${x.handled?'<span class="pill ok">handled</span>':x.needsReply&&f.f!=='reply'?'<span class="pill">needs reply</span>':''}</div></button>`).join('')||'<div class="empty">Nothing here.</div>'}</div>
-  <div style="padding:14px;display:grid;gap:12px;align-content:start" data-sc="ibread">${t?`<div class="row"><button class="ghost sm menu-btn" data-act="ibback">${ic('back','s')} Back</button><h2 class="grow" style="font-size:calc(16px * var(--workspace-text-scale, 1))">${esc(t.subject)}</h2></div>${taskBanner(att,'inbox',t.id)}${o?`<details class="ctx-inline"><summary>Order #${o.number} · ${esc(P(o.personId)?.company)} · ${o.stage} · ${relatedToOrder(o).filter(a=>a.id!=='th:'+t.id).length} other open items</summary>${orderMini(o)}</details>`:''}<div class="row wrap">${p?recLink('people',p.id,p.name):`<span class="pill warn">${esc(t.fromEmail)} not in CRM</span><button class="sm" data-act="addsender" data-id="${t.id}">${ic('plus','s')} Add as person</button>`}${o?recLink('orders',o.id,'Order #'+o.number):''}${o?recLink('events',o.eventId,E(o.eventId).name):''}</div>
-  ${t.msgs.map(m=>m.dir==='note'?`<div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${esc(m.body)} · started by AI draft</div>`:`<div class="msg ${m.dir==='out'?'out':''}"><div class="row"><b>${m.dir==='out'?'You':esc(t.fromName)}</b><span class="faint">${m.dir==='out'?'':esc(t.fromEmail)}</span><span class="grow"></span><span class="faint">${fDay(m.at)} ${fTime(m.at)}</span></div><p>${esc(m.body)}</p></div>`).join('')}
-  ${UI.ib.reply===t.id?`<div class="card"><div class="bd" style="display:grid;gap:8px"><textarea id="replybox" data-input="reply" data-id="${t.id}" placeholder="Write a reply…" aria-label="Reply">${esc(UI.ib.draft[t.id]??'')}</textarea><div class="acts"><button class="pri" data-act="send" data-id="${t.id}" ${(UI.ib.draft[t.id]||'').trim()?'':'disabled'}>Send (simulated)</button><button class="ghost" data-act="cancelreply" title="Draft is kept">Close draft</button><span class="faint" style="align-self:center;font-size:calc(12px * var(--workspace-text-scale, 1))">Sent replies log against the linked order.</span></div></div></div>`:`<div class="acts">${!t.handled?`<button class="pri" data-act="reply" data-id="${t.id}">Reply</button><button data-act="handled" data-id="${t.id}">${ic('check','s')} Mark handled</button>`:'<span class="pill ok">Handled</span>'}<button data-act="mailtask" data-id="${t.id}">${ic('task','s')} Create follow-up</button></div>`}`:'<div class="empty">Select a thread.</div>'}</div>
-  <div class="ibctx" style="padding:14px;display:grid;gap:12px;align-content:start;background:var(--sunken)"><h3>Context</h3>${o?orderMini(o):''}${p?personMini(p):''}${t&&!p?'<div class="muted">This sender isn’t linked to anyone. Adding them runs duplicate screening first.</div>':''}${o?`<div class="sect"><h3>Open items on this order</h3><div class="list">${relatedToOrder(o).filter(a=>a.id!=='th:'+t.id).map(a=>`<div class="li click" data-act="drawer" data-id="${a.id}"><span class="dot ${a.bucket}"></span><span class="grow ell">${esc(a.title)}</span></div>`).join('')||'<div class="muted">None.</div>'}</div></div>`:''}</div></div>`}
+function matchesInboxFilter(thread,filter){
+  if(filter==='reply')return thread.needsReply&&!thread.handled;
+  if(filter==='unlinked')return !thread.personId;
+  return true;
+}
+function replyHasMessage(thread){
+  const body=UI.ib.draft[thread.id]?.trim();
+  return Boolean(body&&body!==`Hi ${thread.fromName.split(' ')[0]},`);
+}
+function openInboxFollowup(id){return S.tasks.find(task=>task.threadId===id&&!task.done);}
+function vInbox(att){
+  const f=UI.ib;
+  const scoped=S.threads.filter(thread=>inScope(thread));
+  const list=scoped.filter(thread=>matchesInboxFilter(thread,f.f))
+    .sort((a,b)=>(f.f==='reply'?1:-1)*a.msgs.at(-1).at.localeCompare(b.msgs.at(-1).at));
+  const t=list.find(thread=>thread.id===UI.sel.inbox)||list[0];
+  if(t?.id!==UI.sel.inbox){UI.sel.inbox=t?.id||null;f.reply=false;f.reading=false;}
+  const cnt=filter=>scoped.filter(thread=>matchesInboxFilter(thread,filter)).length;
+  const o=t&&O(t.orderId),p=t&&P(t.personId),followup=t&&openInboxFollowup(t.id);
+  return `<div class="inbox ${UI.ib.reading?'reading':''}"><div class="inbox-list" data-sc="iblist"><header class="inbox-header"><h1>Inbox</h1><span class="inbox-sync muted">Microsoft 365 + Google · synced 1m ago</span><div class="tabs" role="group" aria-label="Filter conversations">${[['reply','Needs reply'],['unlinked','Not in CRM'],['all','All']].map(([k,l])=>`<button aria-pressed="${f.f===k}" data-act="ibf" data-v="${k}">${l} <span class="n">${cnt(k)}</span></button>`).join('')}</div></header>
+  ${list.map(x=>`<button class="thread ${x.unread?'unread':''}" data-act="ibsel" data-id="${x.id}" aria-current="${t&&t.id===x.id}"><div class="row"><span class="fr ell grow">${esc(x.fromName)}</span>${(()=>{const h=(NOW-new Date(x.msgs.at(-1).at))/H,late=x.needsReply&&!x.handled&&h>24;return `<span class="${late?'':'faint'}" style="font-size:calc(11.5px * var(--workspace-text-scale, 1));${late?'color:var(--warn);font-weight:600':''}">${late?'waiting ':''}${ago(x.msgs.at(-1).at)}</span>`})()}</div><div class="ell">${esc(x.subject)}</div><div class="sn">${esc(x.msgs.at(-1).body)}</div><div class="row" style="margin-top:3px">${x.orderId?`<span class="pill acc">#${O(x.orderId)?.number}</span>`:''}${!x.personId?'<span class="pill warn">not in CRM</span>':''}${x.handled?'<span class="pill ok">handled</span>':x.needsReply&&f.f!=='reply'?'<span class="pill">needs reply</span>':''}</div></button>`).join('')||'<div class="empty">Nothing here.</div>'}</div>
+  <div class="inbox-conversation" data-sc="ibread"><section class="inbox-reader" aria-label="Conversation">${t?`<div class="row"><button class="ghost sm menu-btn" data-act="ibback">${ic('back','s')} Back</button><h2 id="inbox-subject" tabindex="-1" class="grow" style="font-size:calc(16px * var(--workspace-text-scale, 1))">${esc(t.subject)}</h2></div>${taskBanner(att,'inbox',t.id)}<div class="row wrap">${p?recLink('people',p.id,p.name):`<span class="pill warn">${esc(t.fromEmail)} not in CRM</span><button class="sm" data-act="addsender" data-id="${t.id}">${ic('plus','s')} Add as person</button>`}${o?recLink('orders',o.id,'Order #'+o.number):''}${o?recLink('events',o.eventId,E(o.eventId).name):''}</div>
+  ${t.msgs.map(m=>m.dir==='note'?`<div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${esc(m.body)} · started by AI draft</div>`:`<div class="msg ${m.dir==='out'?'out':''}"><div class="inbox-message-meta"><b>${m.dir==='out'?'You':esc(t.fromName)}</b>${m.dir==='out'?'':`<span class="muted">${esc(t.fromEmail)}</span>`}<time class="muted" datetime="${esc(m.at)}">${fDay(m.at)} ${fTime(m.at)}</time></div><p>${esc(m.body)}</p></div>`).join('')}
+  ${UI.ib.reply===t.id?`<div class="card"><div class="bd" style="display:grid;gap:8px"><textarea id="replybox" data-input="reply" data-id="${t.id}" placeholder="Write a reply…" aria-label="Reply">${esc(UI.ib.draft[t.id]??'')}</textarea><div class="acts"><button class="pri" data-act="send" data-id="${t.id}" ${replyHasMessage(t)?'':'disabled'}>Send (simulated)</button><button class="ghost" data-act="cancelreply" title="Draft is kept">Close draft</button><span class="faint" style="align-self:center;font-size:calc(12px * var(--workspace-text-scale, 1))">Sent replies log against the linked order.</span></div></div></div>`:`<div class="acts">${!t.handled?`<button class="pri" data-act="reply" data-id="${t.id}">Reply</button><button data-act="handled" data-id="${t.id}">${ic('check','s')} Mark handled</button>`:'<span class="pill ok">Handled</span>'}${followup?`<span class="pill">Follow-up due ${esc(fDay(followup.due))}</span>`:`<button data-act="mailtask" data-id="${t.id}">${ic('task','s')} Create follow-up</button>`}</div>`}`:'<div class="empty">Select a thread.</div>'}</section>
+  <aside class="ibctx" aria-label="Thread context" ${t?'':'hidden'}><h3>Context</h3>${o?orderMini(o):''}${p?personMini(p):''}${t&&!p?'<div class="muted">This sender isn’t linked to anyone. Adding them runs duplicate screening first.</div>':''}${o?`<div class="sect"><h3>Open items on this order</h3><div class="list">${relatedToOrder(o).filter(a=>a.id!=='th:'+t.id).map(a=>`<div class="li click" data-act="drawer" data-id="${a.id}"><span class="dot ${a.bucket}"></span><span class="grow ell">${esc(a.title)}</span></div>`).join('')||'<div class="muted">None.</div>'}</div></div>`:''}</aside></div></div>`}
 
 /* --------------------------------- CALENDAR -------------------------------- */
 function vCalendar(att){const mon=new Date('2026-11-16T00:00:00');const H0=8,H1=18,PX=64;const sel=S.meetings.find(m=>m.id===UI.sel.calendar);
   const days=[0,1,2,3,4].map(d=>new Date(mon.getTime()+d*DAY));
   const flagged=m=>!m.internal&&relatedTo(m).length;
-  const col=d=>{const ms=S.meetings.filter(m=>sameDay(m.start,d)&&(m.internal||!m.personId||inScope(m)));return `<div class="col ${sameDay(d,NOW)?'today':''}" style="height:${(H1-H0)*PX}px">${sameDay(d,NOW)?`<div class="nowmark" style="top:${(NOW.getHours()+NOW.getMinutes()/60-H0)*PX}px"></div>`:''}${ms.map(m=>{const s=new Date(m.start),e=new Date(m.end);const top=(s.getHours()+s.getMinutes()/60-H0)*PX,h=Math.max(20,(e-s)/36e5*PX-2);return `<button class="ev ${m.internal?'':'linked'} ${sel&&sel.id===m.id?'sel':''}" style="top:${top}px;height:${h}px" data-act="calsel" data-id="${m.id}">${flagged(m)?`<span class="flag" title="Open items on this account">${relatedTo(m).length} open</span>`:''}<b>${fTime(m.start)}</b> ${esc(m.title)}</button>`}).join('')}</div>`};
-  return `<div class="page"><div class="phead"><h1>Calendar</h1><span class="sub">Week of ${fDate(mon)} · ${esc(S.meetings[0]?.source||'Calendar')}, ${S.team.length} people</span><div class="right"><span class="row muted" style="font-size:calc(12px * var(--workspace-text-scale, 1))"><span class="dot" style="background:var(--accent)"></span>Linked to a customer <span class="dot" style="background:var(--info);margin-left:8px"></span>Internal</span></div></div>
-  <div class="split ${sel?'open':''}"><div class="weekwrap"><div class="week"><div class="dh2" style="border-left:0"></div>${days.map(d=>`<div class="dh2 ${sameDay(d,NOW)?'today':''}">${fDay(d)}</div>`).join('')}<div class="allday-l">All day</div>${days.map(d=>`<div class="allday">${S.events.filter(e=>sameDay(e.date,d)).map(e=>`<button class="adi ev-e" data-act="goto" data-r="events" data-id="${e.id}">${esc(e.name)}</button>`).join('')}${S.tasks.filter(t=>!t.done&&(sameDay(t.due,d)||(sameDay(d,NOW)&&new Date(t.due)<NOW&&!sameDay(t.due,NOW)))).map(t=>`<button class="adi ev-t ${new Date(t.due)<NOW&&!sameDay(t.due,NOW)?'late':''}" data-act="goto" data-r="${t.orderId?'orders':t.dealId?'deals':t.threadId?'inbox':'events'}" data-id="${t.orderId||t.dealId||t.threadId||t.eventId}" title="${esc(t.title)} · due ${fTime(t.due)} · ${esc(t.owner)}">${ic('task','s')} ${esc(t.title)}</button>`).join('')}</div>`).join('')}<div class="hrs">${Array.from({length:H1-H0},(_,i)=>`<div class="hr">${String(H0+i).padStart(2,'0')}:00</div>`).join('')}</div>${days.map(col).join('')}</div></div>
+  const col=d=>{const ms=S.meetings.filter(m=>sameDay(m.start,d)&&(m.internal||!m.personId||inScope(m))).sort((a,b)=>a.start.localeCompare(b.start));return `<div class="col ${sameDay(d,NOW)?'today':''}" style="height:${(H1-H0)*PX}px">${sameDay(d,NOW)?`<div class="nowmark" style="top:${(NOW.getHours()+NOW.getMinutes()/60-H0)*PX}px"></div>`:''}${ms.map(m=>{const s=new Date(m.start),e=new Date(m.end);const top=(s.getHours()+s.getMinutes()/60-H0)*PX,h=Math.max(20,(e-s)/36e5*PX-2);return `<button class="ev ${m.internal?'':'linked'} ${sel&&sel.id===m.id?'sel':''}" style="top:${top}px;height:${h}px" data-act="calsel" data-id="${m.id}" title="${esc(m.title)} · ${fTime(m.start)}–${fTime(m.end)}">${flagged(m)?`<span class="flag" title="Open items on this account">${relatedTo(m).length} open</span>`:''}<b>${fTime(m.start)}</b> <span class="meeting-title">${esc(m.title)}</span></button>`}).join('')}</div>`};
+  const allDay=d=>`<div class="allday" role="group" aria-label="All day">${S.events.filter(e=>sameDay(e.date,d)).map(e=>`<button class="adi ev-e" data-act="goto" data-r="events" data-id="${e.id}">${esc(e.name)}</button>`).join('')}${S.tasks.filter(t=>!t.done&&(sameDay(t.due,d)||(sameDay(d,NOW)&&new Date(t.due)<NOW&&!sameDay(t.due,NOW)))).map(t=>`<button class="adi ev-t ${new Date(t.due)<NOW&&!sameDay(t.due,NOW)?'late':''}" data-act="goto" data-r="${t.orderId?'orders':t.dealId?'deals':t.threadId?'inbox':'events'}" data-id="${t.orderId||t.dealId||t.threadId||t.eventId}" title="${esc(t.title)} · due ${fTime(t.due)} · ${esc(t.owner)}">${ic('task','s')} ${esc(t.title)}</button>`).join('')}</div>`;
+  return `<div class="page ns-record-view"><div class="phead"><h1>Calendar</h1><span class="sub">Week of ${fDate(mon)} · ${esc(S.meetings[0]?.source||'Calendar')}, ${S.team.length} people</span><div class="right"><span class="row muted" style="font-size:calc(12px * var(--workspace-text-scale, 1))"><span class="dot" style="background:var(--accent)"></span>Linked to a customer <span class="dot" style="background:var(--info);margin-left:8px"></span>Internal</span></div></div>
+  <div class="split ${sel?'open':''}"><div class="weekwrap"><div class="week">
+    <div class="calendar-axis"><div class="dh2"></div><div class="allday-l">All day</div><div class="hrs">${Array.from({length:H1-H0},(_,i)=>`<div class="hr">${String(H0+i).padStart(2,'0')}:00</div>`).join('')}</div></div>
+    ${days.map(d=>`<section class="calendar-day"><div class="dh2 ${sameDay(d,NOW)?'today':''}">${fDay(d)}</div>${allDay(d)}${col(d)}</section>`).join('')}
+  </div></div>
   ${sel?calDetail(sel,att):''}</div></div>`}
 function calDetail(m,att){const rel=m.internal?[]:relatedTo(m);const o=O(m.orderId),p=P(m.personId),e=E(m.eventId);
   return detailShell(esc(m.title),`${fDay(m.start)} · ${fTime(m.start)}–${fTime(m.end)}`,`${taskBanner(att,'calendar',m.id)}<dl class="kv"><dt>Where</dt><dd>${esc(m.where)}</dd><dt>Calendar</dt><dd>${m.source} · synced</dd>${p?`<dt>With</dt><dd>${recLink('people',p.id,p.name)} <span class="faint">${esc(p.company)}</span></dd>`:''}</dl>
@@ -2300,18 +2423,18 @@ function calDetail(m,att){const rel=m.internal?[]:relatedTo(m);const o=O(m.order
   ${p?`<div class="sect"><h3>Recent email</h3><div class="list">${S.threads.filter(t=>t.personId===p.id).slice(0,3).map(t=>`<div class="li click" data-act="goto" data-r="inbox" data-id="${t.id}">${ic('mail','s')}<span class="grow ell">${esc(t.subject)}</span><span class="faint">${ago(t.msgs.at(-1).at)}</span></div>`).join('')||'<div class="muted">None.</div>'}</div></div>`:''}`)}
 
 /* ------------------------------- DATA QUALITY ------------------------------- */
-function dupCmp(d,actions=true){const F=[['Name','name'],['Email','email'],['Phone','phone'],['Company','company'],['Role','role']];const side=(p,o)=>`<div class="card"><b>${esc(p.name)}</b><div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${S.orders.filter(x=>x.personId===p.id).length} orders · ${p.sources.sf?'Salesforce':''}${p.sources.sf&&p.sources.hs?' + ':''}${p.sources.hs?'HubSpot':''}</div><dl class="kv" style="margin-top:8px;grid-template-columns:64px 1fr">${F.map(([l,k])=>`<dt>${l}</dt><dd class="${p[k]!==o[k]?'diff':''}" style="${p[k]!==o[k]?'background:var(--warn-soft);border-radius:3px;padding:0 3px':''}">${esc(p[k])||'<span class="faint">empty</span>'}</dd>`).join('')}</dl>${actions?`<button class="sm" style="margin-top:8px" data-act="merge" data-keep="${p.id}" data-drop="${o.id}">Keep this, merge other in</button>`:''}</div>`;
+function dupCmp(d,actions=true){const F=[['Name','name'],['Email','email'],['Phone','phone'],['Company','company'],['Role','role']];const side=(p,o)=>`<div class="card"><b>${esc(p.name)}</b><div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${S.orders.filter(x=>x.personId===p.id).length} orders · ${p.sources.sf?'Salesforce':''}${p.sources.sf&&p.sources.hs?' + ':''}${p.sources.hs?'HubSpot':''}</div><dl class="kv comparison-fields">${F.map(([l,k])=>`<dt>${l}</dt><dd class="${p[k]!==o[k]?'diff':''}" style="${p[k]!==o[k]?'background:var(--warn-soft);border-radius:3px;padding:0 3px':''}">${esc(p[k])||'<span class="faint">empty</span>'}</dd>`).join('')}</dl>${actions?`<button class="sm" style="margin-top:8px" data-act="merge" data-keep="${p.id}" data-drop="${o.id}">Keep this, merge other in</button>`:''}</div>`;
   return `<div class="row wrap">${d.why.map(w=>`<span class="pill warn">${w}</span>`).join('')}</div><div class="cmp">${side(d.a,d.b)}${side(d.b,d.a)}</div>`}
-function vDQ(att){const ds=dupPairs();const sel=ds.find(d=>d.id===UI.sel.dq)||ds[0];
-  return `<div class="page"><div class="phead"><h1>Data quality</h1><span class="sub">${ds.length} possible duplicate${ds.length===1?'':'s'} · matched on exact email or phone</span></div><div class="split open"><div class="tablewrap"><table class="tbl"><thead><tr><th>Record A</th><th>Record B</th><th>Signals</th></tr></thead><tbody>${ds.map(d=>`<tr class="${sel&&sel.id===d.id?'sel':''}" data-act="dqsel" data-id="${d.id}"><td class="name">${esc(d.a.name)}</td><td class="name">${esc(d.b.name)}</td><td>${d.why.map(w=>`<span class="pill">${w}</span>`).join(' ')}</td></tr>`).join('')}</tbody></table>${ds.length?'':`<div class="empty">${ic('check')} No duplicates waiting.</div>`}</div>
-  ${sel?detailShell('Compare records','Pick the record to keep. Differing values on the other are kept as alternates; its orders move across.',`${taskBanner(att,'dq',sel.id)}${dupCmp(sel)}<div class="acts"><button data-act="separate" data-id="${sel.id}">Not the same person</button></div>`,null):'<div></div>'}</div></div>`}
+function vDQ(att){const ds=dupPairs();const sel=ds.find(d=>d.id===UI.sel.dq);
+  return `<div class="page ns-record-view"><div class="phead"><h1>Data quality</h1><span class="sub">${ds.length} possible duplicate${ds.length===1?'':'s'} · matched on exact email or phone</span></div><div class="split ${sel?'open':''}"><div class="tablewrap"><table class="tbl"><thead><tr><th>Record A</th><th>Record B</th><th>Signals</th></tr></thead><tbody>${ds.map(d=>`<tr class="${sel&&sel.id===d.id?'sel':''}" data-act="dqsel" data-id="${d.id}"><td class="name">${esc(d.a.name)}</td><td class="name">${esc(d.b.name)}</td><td>${d.why.map(w=>`<span class="pill">${w}</span>`).join(' ')}</td></tr>`).join('')}</tbody></table>${ds.length?'':`<div class="empty">${ic('check')} No duplicates waiting.</div>`}</div>
+  ${sel?detailShell('Compare records','Pick the record to keep. Differing values on the other are kept as alternates; its orders move across.',`${taskBanner(att,'dq',sel.id)}${dupCmp(sel)}<div class="acts"><button data-act="separate" data-id="${sel.id}">Not the same person</button></div>`):''}</div></div>`}
 
 /* -------------------------------- CONNECTIONS ------------------------------- */
 function conflictCmp(c){const ours=c.ours==='order total'?money(total(O(c.orderId))):c.ours;return `<div class="cmp"><div class="card"><div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">Integral</div><b>${esc(ours)}</b></div><div class="card"><div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${c.system}</div><b>${esc(c.theirs)}</b></div></div><div class="muted" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${c.field} on ${c.orderId?'order #'+O(c.orderId).number:esc(P(c.personId)?.name)} changed in both places since the last sync. Sync is paused for this record only.</div>`}
 function vSync(att){const sel=S.conflicts.find(c=>c.id===UI.sel.sync);const cn=S.connectors.find(c=>c.id===UI.sel.sync);
-  return `<div class="page"><div class="phead"><h1>Connections</h1><span class="sub">What Integral is syncing, and anything stuck</span></div>
+  return `<div class="page ns-record-view"><div class="phead"><h1>Connections</h1><span class="sub">What Integral is syncing, and anything stuck</span></div>
   <div class="conn">${S.connectors.map(c=>`<div class="card ${cn&&cn.id===c.id?'':''}" style="${cn&&cn.id===c.id?'box-shadow:0 0 0 2px var(--accent)':''}"><div class="hd"><span class="dot ${c.status==='Healthy'?'ok':c.status==='Expiring'?'today':'now'}"></span><b class="grow">${c.name}</b><span class="pill ${c.status==='Healthy'?'ok':c.status==='Expiring'?'warn':'crit'}">${c.status}</span></div><div class="bd" style="display:grid;gap:4px;font-size:calc(12.5px * var(--workspace-text-scale, 1))"><div class="muted">${c.scope}</div><div class="row"><span class="grow">${c.dir}</span><span class="faint">${c.records.toLocaleString('en-GB')} records · ${c.last}m ago</span></div>${c.note?`<div style="color:var(--warn)">${c.note}</div><div><button class="sm pri" data-act="reconnect" data-id="${c.id}">Reconnect (simulated)</button></div>`:''}</div></div>`).join('')}</div>
-  <div class="split ${sel?'open':''}"><div style="display:grid;gap:12px;min-width:0"><section class="card"><div class="hd"><h2 class="grow">Conflicts</h2><span class="faint">${S.conflicts.length}</span></div>${S.conflicts.length?`<table class="tbl"><thead><tr><th>Record</th><th>Field</th><th>System</th><th>Detected</th></tr></thead><tbody>${S.conflicts.map(c=>`<tr class="${sel&&sel.id===c.id?'sel':''}" data-act="syncsel" data-id="${c.id}"><td class="name">${c.orderId?'Order #'+O(c.orderId).number:esc(P(c.personId)?.name)}</td><td>${c.field}</td><td>${c.system}</td><td class="muted">${ago(c.at)} ago</td></tr>`).join('')}</tbody></table>`:`<div class="empty">${ic('check')} No conflicts.</div>`}</section>
+  <div class="split ${sel?'open':''}"><div style="display:grid;gap:12px;min-width:0"><section class="card"><div class="hd"><h2 class="grow">Conflicts</h2><span class="faint">${S.conflicts.length}</span></div>${S.conflicts.length?`<div class="conflict-table"><table class="tbl"><thead><tr><th>Record</th><th>Field</th><th>System</th><th>Detected</th></tr></thead><tbody>${S.conflicts.map(c=>`<tr class="${sel&&sel.id===c.id?'sel':''}" data-act="syncsel" data-id="${c.id}"><td class="name">${c.orderId?'Order #'+O(c.orderId).number:esc(P(c.personId)?.name)}</td><td>${c.field}</td><td>${c.system}</td><td class="muted">${ago(c.at)} ago</td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">${ic('check')} No conflicts.</div>`}</section>
   <section class="card"><div class="hd"><h2 class="grow">Rejected records</h2><span class="faint">${S.failed.length}</span></div><div class="bd list">${S.failed.map(f=>`<div class="li"><span class="dot now"></span><span class="grow">${esc(f.summary)}<div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">${f.system} · ${esc(f.record)}</div></span><button class="sm" data-act="retry" data-id="${f.id}">Retry</button></div>`).join('')||'<div class="muted">None.</div>'}</div></section>
   <section class="card"><div class="hd"><h2>Recent sync activity</h2></div><div class="bd list">${S.log.slice(0,8).map(l=>`<div class="li"><span class="faint num" style="width:44px">${ago(l.at)}</span><span>${esc(l.text)}</span></div>`).join('')}</div></section></div>
   ${sel?detailShell(`${sel.field} conflict`,`${sel.system} · ${ago(sel.at)} ago`,`${taskBanner(att,'sync',sel.id)}${conflictCmp(sel)}<div class="acts"><button class="pri" data-act="keepOurs" data-id="${sel.id}">Keep Integral value</button><button data-act="keepTheirs" data-id="${sel.id}">Use ${sel.system} value</button></div><div class="faint" style="font-size:calc(12px * var(--workspace-text-scale, 1))">The chosen value is written to both systems and the decision is logged.</div>`):''}</div></div>`}
@@ -2325,7 +2448,7 @@ function vDeals(att){const f=UI.dl;const B=BZ();const openSt=B.dealStages.slice(
   let rows=all.filter(d=>tabOk(d,f.stage)&&(!stF||d.stage===stF)&&(!q||`${d.name} ${P(d.personId)?.name} ${d.owner}`.toLowerCase().includes(q))).sort((a,b)=>b.value-a.value);
   const lim=UI.more.deals||200;const sel=D(UI.sel.deals);const multi=S.territories.length>1;
   const sum=rows.reduce((s,d)=>s+northstarNetDealValue(d),0),wt=rows.reduce((s,d)=>s+northstarNetDealValue(d)*d.prob,0);
-  return `<div class="page"><div class="phead"><div class="row"><h1>${L('deals')}</h1>${spark('list','deals',L('deals'))}</div><span class="sub num">${money(sum)} · ${money(wt)} weighted</span></div>
+  return `<div class="page ns-record-view"><div class="phead"><div class="row"><h1>${L('deals')}</h1>${spark('list','deals',L('deals'))}</div><span class="sub num">${money(sum)} · ${money(wt)} weighted</span></div>
   ${tabsHtml([['attn','Needs attention',all.filter(d=>attn.has(d.id)).length],['open','Open',all.filter(d=>!/Won|Lost/.test(d.stage)).length],['Won','Won',all.filter(d=>d.stage==='Won').length],['Lost','Lost',all.filter(d=>d.stage==='Lost').length]],f.stage,'dlstage')}
   <div class="split ${sel?'open':''}"><div style="min-width:0"><div class="toolbar"><label class="search">${ic('search','s')}<input id="dlq" type="search" placeholder="Search deal, contact, owner" value="${esc(f.q)}" data-input="dlq" aria-label="Search"></label><label class="tsel">Stage <select data-change="dlstagef" aria-label="Filter by stage"><option value="">Any</option>${openSt.map(x=>`<option ${stF===x?'selected':''}>${x}</option>`).join('')}</select></label><span class="grow"></span><span class="muted num">${rows.length} shown</span></div>
   <div class="tablewrap" data-sc="dltable"><table class="tbl"><thead><tr><th>Deal</th><th>Stage</th><th class="r">Value</th><th>Close</th><th>Last activity</th><th class="c-opt">Owner</th>${multi?'<th class="c-opt">Territory</th>':''}<th class="sk"></th></tr></thead><tbody>${rows.slice(0,lim).map(d=>{const quiet=Math.floor((NOW-new Date(d.lastActivity))/DAY),open=!/Won|Lost/.test(d.stage);return `<tr class="${sel&&sel.id===d.id?'sel':''}" data-act="dlsel" data-id="${d.id}"><td><div class="name ell" style="max-width:320px">${attn.has(d.id)?'<span class="dot today" style="margin-right:6px" title="Needs attention"></span>':''}${esc(d.name.split(' · ')[1]||d.name)}</div><div class="muted ell" style="font-size:calc(12px * var(--workspace-text-scale, 1));max-width:320px">${esc(P(d.personId)?.company)} · ${esc(P(d.personId)?.name)}</div></td><td>${stgDeal(d.stage)}</td><td class="r num">${money(northstarNetDealValue(d))}</td><td class="num" style="${new Date(d.closeDate)<NOW&&open?'color:var(--crit);font-weight:600':''}">${fDate(d.closeDate)}</td><td class="num ${quiet>=S.config.stallDays&&open?'':'muted'}" style="${quiet>=S.config.stallDays&&open?'color:var(--warn)':''}">${quiet}d ago</td><td class="c-opt"><span class="own" title="${esc(d.owner)}">${esc(initials(d.owner))}</span></td>${multi?`<td class="muted c-opt">${esc(TR(d.territory)?.name||'')}</td>`:''}<td class="sk">${spark('deal',d.id,d.name,'row')}</td></tr>`}).join('')}${moreRow('deals',lim,rows.length,multi?8:7)}</tbody></table>${rows.length?'':'<div class="empty">No deals here.</div>'}</div></div>
@@ -2367,7 +2490,7 @@ function vTerritories(att){const sel=TR(UI.sel.territories);const g=S.biz==='gro
   const tatt=rollup(att.filter(roleFilter).filter(a=>KIND[a.kind].g==='data'||KIND[a.kind].g==='calendar'||visible(KIND[a.kind].g)),false);const rows=S.territories.map(t=>{const st=terrStats(t);const its=tatt.filter(a=>(a.territory||terrOf(a))===t.id);return {t,st,now:its.filter(a=>a.bucket==='now').length,today:its.filter(a=>a.bucket==='today').length}}).sort((a,b)=>b.now-a.now||b.today-a.today);
   const tot=rows.reduce((s,r)=>({pipe:s.pipe+r.st.pipe,n:s.n+r.st.pipeN,b:s.b+r.st.booked,tg:s.tg+r.t.target*.6,oo:s.oo+r.st.openOrders,ov:s.ov+r.st.openVal,now:s.now+r.now,today:s.today+r.today,sla:s.sla+r.st.sla,ap:s.ap+r.st.appr}),{pipe:0,n:0,b:0,tg:0,oo:0,ov:0,now:0,today:0,sla:0,ap:0});
   const bar=p=>`<div class="row"><div class="bar grow ${p<.7?'crit':p<.9?'warn':''}"><i style="width:${Math.min(100,p*100)}%"></i></div><span class="num" style="min-width:40px;text-align:right">${Math.round(p*100)}%</span></div>`;
-  return `<div class="page"><div class="phead"><div class="row"><h1>Territories</h1>${spark('list','territories','territories')}</div><span class="sub">${S.territories.length} territories · booked vs pro-rata target this quarter</span></div>
+  return `<div class="page ns-record-view"><div class="phead"><div class="row"><h1>Territories</h1>${spark('list','territories','territories')}</div><span class="sub">${S.territories.length} territories · booked vs pro-rata target this quarter</span></div>
   <div class="split ${sel?'open':''}"><div class="tablewrap"><table class="tbl"><thead><tr><th>Territory</th><th class="c-tlead">Lead</th><th class="r">Open pipeline</th><th style="min-width:150px">Booked vs target</th><th class="r">Open ${L('orders').toLowerCase()}</th><th class="c-tnext">Next ${L('event').toLowerCase()}</th><th class="r" title="Team items for ${S.biz==='group'?esc(roleOf(UI.me)):'everyone'}, same rules as Home">Now</th><th class="r">Today</th>${g?'<th class="r">SLA at risk</th><th class="r">Approvals</th>':''}<th class="sk"></th></tr></thead><tbody>
   ${rows.map(({t,st,now,today})=>`<tr class="${sel&&sel.id===t.id?'sel':''} ${UI.scope===t.id?'scoped':''}" data-act="trsel" data-id="${t.id}"><td class="name">${esc(t.name)}${g?`<div class="faint" style="font-size:calc(11px * var(--workspace-text-scale, 1))">${[...new Set(S.events.filter(e=>e.territory===t.id).map(e=>e.brand.replace('Meridian ','')))].join(' · ')}</div>`:''}</td><td class="muted c-tlead">${esc(t.lead)}</td><td class="r num">${money(st.pipe)} <span class="faint">· ${st.pipeN}</span></td><td>${bar(st.pct)}</td><td class="r num">${st.openOrders} <span class="faint">· ${money(st.openVal)}</span></td><td class="num c-tnext">${st.next?`${fDate(st.next.date)} <span class="faint">${daysTo(st.next.date)}d</span>`:''}</td><td class="r num" style="${now?'color:var(--crit);font-weight:600':''}">${now||'–'}</td><td class="r num" style="${today?'color:var(--warn);font-weight:600':''}">${today||'–'}</td>${g?`<td class="r num">${st.sla||'–'}</td><td class="r num">${st.appr||'–'}</td>`:''}<td class="sk">${spark('territory',t.id,t.name,'row')}</td></tr>`).join('')}
   <tr class="totrow"><td class="name">All territories</td><td class="c-tlead"></td><td class="r num">${money(tot.pipe)} <span class="faint">· ${tot.n}</span></td><td>${bar(tot.b/tot.tg)}</td><td class="r num">${tot.oo} <span class="faint">· ${money(tot.ov)}</span></td><td class="c-tnext"></td><td class="r num">${tot.now}</td><td class="r num">${tot.today}</td>${g?`<td class="r num">${tot.sla}</td><td class="r num">${tot.ap}</td>`:''}<td></td></tr></tbody></table></div>
@@ -2966,7 +3089,9 @@ const ACT={
   mine:d=>{UI.mine=d.v==='1'},
   acct:d=>{UI.acct=UI.acct&&UI.acct.mid===d.id?null:{mid:d.id};UI.hf='all'},
   drawer:d=>{UI.drawer=d.id},closedrawer:()=>{UI.drawer=null},
-  goto:d=>{const it=d.from?findItem(d.from):null;UI.from=it?{item:it.id,title:it.title,route:d.r,id:d.id}:null;UI.route=d.r;UI.drawer=null;UI.navopen=false;
+  goto:d=>{const it=d.from?findItem(d.from):null;
+    const fromInbox=UI.route==='inbox'&&UI.sel.inbox&&['people','orders','events','deals'].includes(d.r);
+    UI.from=it?{item:it.id,title:it.title,route:d.r,id:d.id}:fromInbox?{origin:'inbox',route:d.r,id:d.id,threadId:UI.sel.inbox,filter:UI.ib.f,previous:UI.from}:null;UI.route=d.r;UI.drawer=null;UI.navopen=false;
     if(d.r==='inbox'){UI.ib.f='all';UI.ib.reading=true}if(d.q&&d.r==='orders'){UI.od.q=d.q;UI.od.stage='all';UI.od.stageF='';UI.sel.orders=null;return}
     if(d.r==='deals'&&D(d.id))UI.dl.stage='open',UI.dl.q='',UI.dl.stageF='';if(d.r==='deals'&&D(d.id)&&/Won|Lost/.test(D(d.id).stage))UI.dl.stage=D(d.id).stage;
     if(d.r==='tickets')UI.tc.f='all';if(d.r==='approvals')UI.apf=AP(d.id)?.status==='Pending'||!AP(d.id)?'pending':'done';
@@ -2976,6 +3101,10 @@ const ACT={
     if(d.r==='orders'){const o=O(d.id);if(o){UI.od.q='';UI.od.stage='all';UI.od.stageF=''}}
     if(d.r==='people')UI.pp.q='';
     UI.sel[d.r]=d.id;setTimeout(()=>document.querySelector('tr.sel')?.scrollIntoView({block:'nearest'}),0)},
+  ibreturn:()=>{
+    const from=UI.from;if(from?.origin!=='inbox')return;
+    ACT.goto({r:'inbox',id:from.threadId});UI.ib.f=from.filter;UI.from=from.previous;
+  },
   backhome:()=>{const from=UI.from;UI.route=from?.origin==='alerts'?'alerts':'home';UI.from=null;
     if(UI.route==='alerts')setTimeout(()=>(document.querySelector('[data-act="nsalertopen"][data-id="'+CSS.escape(from.item)+'"]')||document.getElementById('ns-alert-heading'))?.focus(),0)},
   closedetail:()=>{UI.sel[UI.route]=null},noop:()=>{},
@@ -2993,15 +3122,15 @@ const ACT={
   retry:d=>{snap();S.failed=S.failed.filter(f=>f.id!==d.id);logSync('HubSpot: rejected record retried, accepted with surname flagged for review');toast('Record accepted on retry',true)},
   merge:d=>{snap();const keep=P(d.keep),drop=P(d.drop);['phone','role','company'].forEach(k=>{if(!keep[k])keep[k]=drop[k]});keep.sources={sf:keep.sources.sf||drop.sources.sf,hs:keep.sources.hs||drop.sources.hs};S.orders.forEach(o=>{if(o.personId===drop.id)o.personId=keep.id});S.threads.forEach(t=>{if(t.personId===drop.id)t.personId=keep.id});S.conflicts.forEach(c=>{if(c.personId===drop.id)c.personId=keep.id});S.deals.forEach(d=>{if(d.personId===drop.id)d.personId=keep.id});S.approvals.forEach(a=>{if(a.personId===drop.id)a.personId=keep.id;if(a.subject==='customer'&&a.recordId===drop.id)a.recordId=keep.id});if(drop.onboarding&&!keep.onboarding)keep.onboarding=drop.onboarding;S.people=S.people.filter(p=>p!==drop);UI.sel.dq=null;toast(`Merged ${drop.name} into ${keep.name}`,true)},
   separate:d=>{snap();S.dismissed.push(d.id);UI.sel.dq=null;toast('Marked as different people',true)},
-  reply:d=>{UI.route='inbox';UI.sel.inbox=d.id;UI.ib.reply=d.id;const th=S.threads.find(t=>t.id===d.id);if(UI.ib.draft[d.id]==null)UI.ib.draft[d.id]=`Hi ${th.fromName.split(' ')[0]},\n\n`;UI.ib.reading=true;UI.drawer=null;if(!UI.from){const it=attention().find(a=>a.id==='th:'+d.id);if(it)UI.from={item:it.id,title:it.title,route:'inbox',id:d.id}}setTimeout(()=>{const b=document.getElementById('replybox');if(b){b.focus();b.setSelectionRange(b.value.length,b.value.length)}},0)},
+  reply:d=>{const fromOutside=UI.route!=='inbox';if(fromOutside)UI.ib.f='all';UI.route='inbox';UI.sel.inbox=d.id;UI.ib.reply=d.id;const th=S.threads.find(t=>t.id===d.id);if(UI.ib.draft[d.id]==null)UI.ib.draft[d.id]=`Hi ${th.fromName.split(' ')[0]},\n\n`;UI.ib.reading=true;UI.drawer=null;if(fromOutside&&!UI.from){const it=attention().find(a=>a.id==='th:'+d.id);if(it)UI.from={item:it.id,title:it.title,route:'inbox',id:d.id}}setTimeout(()=>{const b=document.getElementById('replybox');if(b){b.focus();b.setSelectionRange(b.value.length,b.value.length)}},0)},
   cancelreply:()=>{UI.ib.reply=false},
-  send:d=>{const t=S.threads.find(t=>t.id===d.id);const body=(UI.ib.draft[d.id]||'').trim();if(!body||body===`Hi ${t.fromName.split(' ')[0]},`){toast('Write a reply first');return}snap();delete UI.ib.draft[d.id];t.msgs.push({dir:'out',at:NOW.toISOString(),body});t.handled=true;t.needsReply=false;UI.ib.reply=false;toast('Reply sent (simulated) and logged',true)},
-  handled:d=>{snap();const t=S.threads.find(t=>t.id===d.id);t.handled=true;t.unread=false;toast('Marked handled',true)},
-  mailtask:d=>{snap();const t=S.threads.find(t=>t.id===d.id);S.tasks.push({id:'k-'+(S.tasks.length+1),title:`Follow up: ${t.subject}`,orderId:t.orderId||null,eventId:null,personId:t.personId,threadId:t.id,due:new Date(NOW.getTime()+DAY).toISOString(),owner:UI.me,done:false});toast('Follow-up created for tomorrow',true)},
+  send:d=>{const t=S.threads.find(t=>t.id===d.id);const body=(UI.ib.draft[d.id]||'').trim();if(!replyHasMessage(t)){toast('Write a reply first');return}snap();delete UI.ib.draft[d.id];t.msgs.push({dir:'out',at:NOW.toISOString(),body});t.handled=true;t.needsReply=false;t.unread=false;UI.ib.reply=false;toast('Reply sent (simulated) and logged',true)},
+  handled:d=>{snap();const t=S.threads.find(t=>t.id===d.id);t.handled=true;t.needsReply=false;t.unread=false;toast('Marked handled',true)},
+  mailtask:d=>{if(openInboxFollowup(d.id))return;snap();const t=S.threads.find(t=>t.id===d.id);S.tasks.push({id:'k-'+(S.tasks.length+1),title:`Follow up: ${t.subject}`,orderId:t.orderId||null,dealId:t.dealId||null,eventId:null,personId:t.personId,threadId:t.id,due:new Date(NOW.getTime()+DAY).toISOString(),owner:UI.me,done:false});toast('Follow-up created for tomorrow',true)},
   addsender:d=>{const t=S.threads.find(t=>t.id===d.id);if(S.biz==='events'){
-    const match=S.people.find(p=>p.email.toLowerCase()===t.fromEmail.toLowerCase());if(match){snap();t.personId=match.id;toast('Linked to existing contact '+match.name,true);return}
+    const match=S.people.find(p=>t.fromEmail&&p.email?.trim().toLowerCase()===t.fromEmail.trim().toLowerCase());if(match){snap();t.personId=match.id;toast('Linked to existing contact '+match.name,true);return}
   }snap();const id='p'+(S.people.length+100);S.people.push({id,name:t.fromName,email:t.fromEmail,phone:'',company:t.fromEmail.split('@')[1].split('.')[0].replace(/^\w/,c=>c.toUpperCase()),role:'',owner:'You',sources:{sf:null,hs:null},lastContact:NOW.toISOString()});t.personId=id;if(S.biz==='events'){const p=P(id);p.territory=UI.scope||S.territories[0].id;p.onboarding='Pending';requestReview('customer',id,false);return}toast(`${t.fromName} added. No duplicates found.`,true)},
-  ibf:d=>{UI.ib.f=d.v},ibsel:d=>{UI.sel.inbox=d.id;UI.ib.reply=false;UI.ib.reading=true;const t=S.threads.find(t=>t.id===d.id);t.unread=false},ibback:()=>{UI.ib.reading=false},
+  ibf:d=>{UI.ib.f=d.v;UI.ib.reply=false;UI.ib.reading=false;UI.from=null},ibsel:d=>{UI.sel.inbox=d.id;UI.ib.reply=false;UI.ib.reading=true;UI.from=null;const t=S.threads.find(t=>t.id===d.id);if(t.unread){t.unread=false;if(S.biz==='events')northstarDirty=true;}},ibback:()=>{UI.ib.reading=false},
   calsel:d=>{UI.sel.calendar=d.id},
   odsel:d=>{UI.sel.orders=UI.sel.orders===d.id?null:d.id},odstage:d=>{UI.od.stage=d.v},odsort:d=>{UI.od.sort=[d.k,UI.od.sort[0]===d.k?-UI.od.sort[1]:1]},
   evsel:d=>{UI.sel.events=UI.sel.events===d.id?null:d.id},
@@ -3099,6 +3228,11 @@ const ACT={
   aidiscard:d=>{UI.ai.props[d.p].status='discarded'}
 };
 document.addEventListener('click',e=>{
+  if(e.target.closest('[data-classic-clarity-toggle]')){
+    applyClassicClarity(!classicClarity);
+    try { localStorage.setItem(glassClarityKey,String(classicClarity)); } catch {}
+    return;
+  }
   const t=e.target.closest('[data-act]');
   if(UI.menu&&!e.target.closest('.menu')&&!(t&&t.dataset.act==='menu')){UI.menu=null;if(!t){render();return}}
   if(!t)return;
@@ -3111,6 +3245,19 @@ document.addEventListener('click',e=>{
   const act=t.dataset.act;if(!ACT[act])return;
   if(t.tagName==='INPUT'&&t.type==='checkbox'){e.stopPropagation()}
   ACT[act](t.dataset,e);render();
+  if(UI.route==='inbox'){
+    const current=document.querySelector('.thread[aria-current=true]');
+    const subject=document.getElementById('inbox-subject');
+    const filter=document.querySelector('[data-act=ibf][aria-pressed=true]');
+    const readerVisible=Boolean(subject?.getClientRects().length);
+    if(act==='ibsel'||act==='ibreturn')subject?.focus();
+    if(act==='ibback')(current||filter)?.focus();
+    if(act==='cancelreply')document.querySelector('.inbox-reader > .acts [data-act=reply]')?.focus();
+    if(['send','handled','mailtask','addsender'].includes(act)){
+      const target=readerVisible&&UI.sel.inbox===t.dataset.id?subject:current||filter;
+      target?.focus();
+    }
+  }else if(act==='goto'&&UI.from?.origin==='inbox')document.querySelector('[data-act=ibreturn]')?.focus();
   if(act==='menu' && t.dataset.v==='look' && UI.menu==='look' && e.detail===0)document.getElementById('workspace-size')?.focus();
   if(act==='navtoggle')document.querySelector(UI.navopen?'.rail-close':'.menu-btn')?.focus();
   if(mobileNav && !UI.navopen && ['route','goto'].includes(act))focusClassicHeading();
@@ -3126,7 +3273,7 @@ document.addEventListener('input',e=>{const t=e.target;
   if(k==='aiq'){UI.ai.draft=t.value;return}
   if(k==='ofield'){const o=O(t.dataset.id);o.fields[t.dataset.f]=t.value;return}
   if(k==='dlq'){UI.dl.q=t.value;render();return}
-  if(k==='reply'){UI.ib.draft[t.dataset.id]=t.value;const b=document.querySelector('[data-act="send"]');if(b)b.disabled=!t.value.trim();return} // no re-render while typing
+  if(k==='reply'){UI.ib.draft[t.dataset.id]=t.value;const b=document.querySelector('[data-act="send"]');if(b)b.disabled=!replyHasMessage(S.threads.find(thread=>thread.id===t.dataset.id));return} // no re-render while typing
   if(k==='alloc')return; // committed on change/Enter, not per keystroke
   if(k==='pkq')UI.pk.q=t.value;
   if(k==='odq')UI.od.q=t.value;if(k==='ppq')UI.pp.q=t.value;
@@ -3148,7 +3295,13 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape' && UI.navopen && !UI.menu){e.preventDefault();UI.navopen=false;render();document.querySelector('.menu-btn')?.focus();return}
   const ae=document.activeElement;const typing=/INPUT|TEXTAREA|SELECT/.test(ae.tagName);
   if(typing&&e.key==='Enter'&&ae.dataset.input==='alloc'){ae.blur();return}
-  if(e.key==='Escape'){if(typing){ae.blur();return}if(UI.menu){UI.menu=null}else if(UI.ai.open){UI.ai.open=false}else if(UI.drawer){UI.drawer=null}else if(UI.acct){UI.acct=null}else if(UI.sel[UI.route]){UI.sel[UI.route]=null}else if(inNorthstarPreview()){e.preventDefault();notifyNorthstarHost('data-saver-northstar-close');return}else return;e.preventDefault();render();return}
+  if(e.key==='Escape'&&UI.route==='inbox'&&!UI.menu&&!UI.ai.open&&!UI.drawer){
+    const cancel=document.querySelector('[data-act=cancelreply]');
+    const back=document.querySelector('[data-act=ibback]');
+    if(cancel){e.preventDefault();cancel.click();return;}
+    if(UI.ib.reading&&back?.getClientRects().length){e.preventDefault();back.click();return;}
+  }
+  if(e.key==='Escape'){if(typing){ae.blur();return}if(UI.menu){UI.menu=null}else if(UI.ai.open){UI.ai.open=false}else if(UI.drawer){UI.drawer=null}else if(UI.acct){UI.acct=null}else if(UI.route!=='inbox'&&UI.sel[UI.route]){UI.sel[UI.route]=null}else if(inNorthstarPreview()){e.preventDefault();notifyNorthstarHost('data-saver-northstar-close');return}else return;e.preventDefault();render();return}
   if(typing)return;
   // Non-button elements that act like buttons (table rows, list items) respond to Enter/Space.
   if((e.key==='Enter'||e.key===' ')&&ae.matches('[data-act][role=button]')){e.preventDefault();ae.click();return}
@@ -3198,12 +3351,17 @@ function syncHash(){const sel=UI.route==='home'?'':(UI.sel[UI.route]||'');const 
 // set the look, palette, theme, business and role in one go, then fall back to the normal #business-page-record form.
 const ROLE_AS={you:'You',sales:'Priya S.',ops:'Jas B.',finance:'Mo D.'};
 function defaultMine(n){return S.biz!=='group'||!/^Head of|support lead|director/i.test(titleOf(n))}
+function readInboxAddress(id){
+  UI.ib.reading=Boolean(id);UI.ib.reply=false;
+  const thread=id&&S.threads.find(item=>item.id===id);
+  if(thread&&!matchesInboxFilter(thread,UI.ib.f))UI.ib.f='all';
+}
 function readReviewHash(){const m=location.hash.match(/^#v-([a-z]+)-([a-z]+)-(light|dark|auto)-(coach|events|group)-(you|sales|ops|finance|member\d+)-([a-z]+)(?:-([a-z0-9]+))?$/i);if(!m)return false;
   const [,look,tint,theme,b,role,r,id]=m;setLook(look);setTint(tint);if(theme==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.dataset.theme=theme;
   if(b!==S.biz){BIZKEY=b;try{localStorage.setItem('ds-biz',b)}catch{}S=openSample(b);undoStack=[];const keepAi=UI.ai;Object.assign(UI,freshUI());UI.ai={...keepAi,msgs:[],props:{}}}
   const nm=b==='coach'?'You':ROLE_AS[role]||(b==='events'&&S.team[Number(role.slice(6))]?.[0])||'You';if(nm!==UI.me||b!==S.biz){UI.me=nm;UI.mine=defaultMine(nm)}
-  if(VIEWS[r]){UI.route=r;UI.sel[r]=id||null}lastHash=null;return true}
-function readHash(){if(readReviewHash())return true;const m=location.hash.match(/^#(coach|events|group)-([a-z]+)(?:-([a-z0-9]+))?$/i);if(!m||!VIEWS[m[2]])return false;const [,b,r,id]=m;if(b!==S.biz){BIZKEY=b;try{localStorage.setItem('ds-biz',b)}catch{}S=openSample(b);undoStack=[];const keepAi=UI.ai;Object.assign(UI,freshUI());UI.ai={...keepAi,msgs:[],props:{}}}UI.route=r;if(id)UI.sel[r]=id;else if(r!=='home')UI.sel[r]=null;UI.drawer=null;return true}
+  if(VIEWS[r]){UI.route=r;UI.sel[r]=id||null;if(r==='inbox')readInboxAddress(id);}lastHash=null;return true}
+function readHash(){if(readReviewHash())return true;const m=location.hash.match(/^#(coach|events|group)-([a-z]+)(?:-([a-z0-9]+))?$/i);if(!m||!VIEWS[m[2]])return false;const [,b,r,id]=m;if(b!==S.biz){BIZKEY=b;try{localStorage.setItem('ds-biz',b)}catch{}S=openSample(b);undoStack=[];const keepAi=UI.ai;Object.assign(UI,freshUI());UI.ai={...keepAi,msgs:[],props:{}}}UI.route=r;if(id)UI.sel[r]=id;else if(r!=='home')UI.sel[r]=null;if(r==='inbox')readInboxAddress(id);UI.drawer=null;return true}
 window.addEventListener('hashchange',()=>{if(location.hash===lastHash)return;lastHash=location.hash;if(readHash()){lastHash=null;render();}});
 
 /* ------------------------------ command palette ----------------------------- */
@@ -3229,7 +3387,11 @@ function openPalette(){if(document.getElementById('pal'))return;
   document.getElementById('pal').onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();dismiss()}else if(e.key==='Tab'){e.preventDefault();(document.activeElement===q?close:q).focus()}};
   run();q.focus()}
 
-if (app) applyClassicTextSize();
+if (app) {
+  applyClassicTextSize();
+  applyClassicClarity(readGlassPreferences().clarity);
+  observeGlassClarity(applyClassicClarity);
+}
 readHash();render();
 </script>
 </body>

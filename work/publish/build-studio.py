@@ -97,7 +97,7 @@ existing = re.sub(r'\n?<!-- INDUSTRY_STUDIO_BEGIN -->[\s\S]*?<!-- INDUSTRY_STUDI
 for marker in ['SHARED_TEXT_SIZE_JS', 'SHARED_TEXT_SIZE_CSS']:
     existing = re.sub(r'/\* '+marker+r'_BEGIN \*/[\s\S]*?/\* '+marker+r'_END \*/\n?', '', existing)
 existing = scale_type_sizes(existing)
-size_js = '\n'.join((source / name).read_text() for name in ['workspace-text-preference.js', 'workspace-text-size.js'])
+size_js = '\n'.join((source / name).read_text() for name in ['glass-preferences.js', 'workspace-text-preference.js', 'workspace-text-size.js'])
 size_js = re.sub(r'^import[^\n]+\n', '', size_js, flags=re.M).replace('export ', '')
 size_css = (source / 'workspace-text-size.css').read_text()
 existing = existing.replace("'use strict';\n", "'use strict';\n/* SHARED_TEXT_SIZE_JS_BEGIN */\n" + size_js + "/* SHARED_TEXT_SIZE_JS_END */\n", 1)
