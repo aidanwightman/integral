@@ -70,7 +70,7 @@ html[data-design=glass][data-mode] .ps-role-bar button[aria-pressed=true]{backgr
  :root[data-design=glass][data-mode] .hero:before{top:400px;width:290px;height:340px;right:16px}
  :root[data-design=glass][data-glass-menu=true] .site-header nav{background:var(--lg-menu);border-color:var(--gi-edge);border-radius:26px;box-shadow:var(--gi-shadow);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);animation:glass-reveal .22s ease}
  :root[data-design=glass][data-glass-menu=true] .site-header nav a:hover{background:var(--lg-soft)}
- :root[data-design=glass][data-mode] .hero :is(.button,.text-link,#site-mode){font-size:13px;padding:13px 18px}
+ :root[data-design=glass][data-mode] .hero :is(.button,.text-link,#site-mode){font-size:.875rem;padding:13px 18px}
 }
 /* Legible solid fallback rather than returning to the old green treatment. */
 :root[data-design=glass][data-glass-clarity=true]{--gi-glass:var(--surface);--control-glass:var(--surface);--lg-panel:var(--surface);--lg-menu:var(--surface)}

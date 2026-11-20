@@ -1,7 +1,9 @@
 #outcome-stories {
   --case-radius: 1.25rem;
   --case-surface: var(--surface);
-  container-type: inline-size;
+  --case-text-scale: var(--guide-text-scale, 1);
+  font-size: calc(1rem * var(--case-text-scale));
+  container: cases / inline-size;
   margin-block-start: clamp(2rem, 4vw, 3.5rem);
   padding-block-start: clamp(1.4rem, 3vw, 2.25rem);
   border-block-start: 1px solid var(--line);
@@ -15,9 +17,9 @@
   gap: .6rem 2rem;
   margin-block-end: 1.25rem;
 }
-.outcome-stories-heading .eyebrow { margin: 0 0 .45rem; }
+#outcome-stories .outcome-stories-heading .eyebrow { margin: 0 0 .45rem; font-size: max(.75rem, .8em); }
 .outcome-stories-heading h3 {
-  font-size: clamp(1.65rem, 3.4vw, 2.5rem);
+  font-size: calc(clamp(1.65rem, 3.4vw, 2.5rem) * var(--case-text-scale));
   letter-spacing: -.04em;
   line-height: 1.1;
   margin: 0;
@@ -26,7 +28,7 @@
   margin: 0;
   max-width: 50ch;
   color: var(--muted);
-  font-size: .9375rem;
+  font-size: .9375em;
   line-height: 1.55;
 }
 .outcome-story-grid { min-width: 0; }
@@ -35,7 +37,7 @@
 .outcome-category {
   margin: 0 0 .25rem;
   font-family: inherit;
-  font-size: .875rem;
+  font-size: max(.75rem, .875em);
   line-height: 1.4;
   font-weight: 650;
   color: var(--muted);
@@ -55,7 +57,7 @@
   border-radius: calc(var(--case-radius) * .52);
   box-shadow: none;
   font: inherit;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 550;
   line-height: 1.35;
   text-align: start;
@@ -102,7 +104,7 @@
   gap: .25rem .65rem;
   margin: 0 0 .8rem;
   color: var(--muted);
-  font-size: .875rem;
+  font-size: max(.75rem, .875em);
   font-weight: 600;
   line-height: 1.45;
 }
@@ -130,19 +132,19 @@
   margin: 0;
   color: var(--ink);
   font: inherit;
-  font-size: clamp(1.35rem, 2.7vw, 2.1rem);
+  font-size: calc(clamp(1.35rem, 2.7vw, 2.1rem) * var(--case-text-scale));
   font-weight: 630;
   line-height: 1.15;
   letter-spacing: -.038em;
   text-wrap: balance;
 }
-.outcome-situation { max-width: 56ch; margin: .7rem 0 0; color: var(--muted); font-size: 1rem; line-height: 1.55; }
+.outcome-situation { max-width: 56ch; margin: .7rem 0 0; color: var(--muted); font-size: 1em; line-height: 1.55; }
 .outcome-path { margin: 1.2rem 0 1rem; padding: 0; list-style: none; color: var(--ink); }
 .outcome-path li {
   position: relative;
   margin: 0;
   padding: 0 0 .65rem 1.35rem;
-  font-size: .9375rem;
+  font-size: .9375em;
   font-weight: 550;
   line-height: 1.45;
 }
@@ -173,7 +175,7 @@
   border-radius: calc(var(--case-radius) * .6);
   background: var(--action);
   color: var(--action-text);
-  font-size: .95rem;
+  font-size: .95em;
   line-height: 1.35;
   font-weight: 650;
   text-align: center;
@@ -191,10 +193,10 @@ html[data-design=bento] .outcome-case { border-block-start: .3rem solid var(--ac
 html[data-design=glass]:not([data-glass-clarity=true]) .outcome-case {
   background: linear-gradient(127deg, color-mix(in srgb, var(--case-surface) 93%, var(--print-paper)), color-mix(in srgb, var(--case-surface) 85%, var(--print-colour)));
 }
-@container (min-width: 46rem) {
+@container cases (min-width: max(46rem, 39em)) {
   .outcome-story-grid {
     display: grid;
-    grid-template-columns: minmax(12rem, .65fr) minmax(0, 1.35fr);
+    grid-template-columns: minmax(12em, .65fr) minmax(0, 1.35fr);
     column-gap: clamp(1rem, 3vw, 2.75rem);
     row-gap: .15rem;
   }

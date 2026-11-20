@@ -98,7 +98,7 @@ html[data-design] .hero.ps-has-story .hero-foot {
 html[data-design] .hero .hero-main .hero-fee {
   margin: 0 0 1.35rem;
   max-width: 26ch;
-  color: var(--ink);
+  color: inherit;
   font-size: clamp(1.45rem, 2.15vw, 2rem);
   font-weight: 650;
   line-height: 1.15;
@@ -209,4 +209,23 @@ html[data-edition=glass][data-design=glass] .ps-explainer-intro h2 { max-width: 
 }
 @media (forced-colors: active), print {
   .hero-imprint, .hero-main::after, #savings-detail[data-tenet=closed] > :first-child::after { display: none; }
+}
+
+/* Keep the opening label, headline and reading copy in proportion inside the Bento tile. */
+html[data-design=bento] .hero-main .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: .55em;
+  margin: 0 0 1.15rem;
+  font-size: .75rem;
+  letter-spacing: .07em;
+}
+html[data-design=bento] .hero-main .hero-imprint { color: inherit; }
+html[data-design=bento] .hero-main .hero-copy {
+  font-size: clamp(1rem, 1.35vw, 1.1875rem);
+  line-height: 1.48;
+}
+html[data-design=bento] .hero-main .hero-copy p + p { margin-block-start: .27em; }
+@media (max-width: 480px) {
+  html[data-design=bento] .hero-main .actions { gap: .55rem .9rem; }
 }

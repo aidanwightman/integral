@@ -120,3 +120,29 @@ html:is([data-design=bento],[data-design=signal])[data-mode] .site-header > :is(
     outline-offset: 2px;
   }
 }
+
+/* These controls carry working links and role choices inside the compact previews. */
+html[data-design][data-mode] :is(.hero .actions, .closing .actions) > :is(a, button),
+html[data-design][data-mode] .site-header > .button,
+html[data-design][data-mode] #demo .role-tabs button,
+html[data-design][data-mode] .ps-hero .ps-role-bar button,
+html[data-design][data-mode] .ps-hero .ps-slice-link {
+  font-size: .875rem;
+  line-height: 1.35;
+}
+html[data-design][data-mode] .ps-hero .ps-sample {
+  max-width: none;
+  font-size: .75rem;
+  line-height: 1.3;
+  white-space: normal;
+}
+html[data-design][data-mode] .ps-hero .ps-role-bar {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+html[data-design][data-mode] .ps-hero .ps-role-bar > button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+html[data-design=glass][data-mode] .ps-hero .ps-data-slice :is(td, .preview-record-link) { font-size: .875rem; }
+html[data-design=glass][data-mode] .ps-hero .ps-data-slice th { font-size: .75rem; }

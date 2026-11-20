@@ -22,20 +22,22 @@
 #tour-meter::-webkit-progress-value { background: var(--accent); border-radius: inherit; }
 #tour-meter::-moz-progress-bar { background: var(--accent); border-radius: inherit; }
 
-/* Only the walkthrough shares the workspace reading size. Geometry and artwork
-   keep their own dimensions as the questions and recommendations change. */
+/* The workspace setting changes type while the artwork keeps its own dimensions. */
 #walkthrough {
   --tour-scale: var(--guide-text-scale, 1);
+  container: walkthrough / inline-size;
   font-size: calc(1rem * var(--tour-scale));
 }
 #walkthrough :is(h2,h3,p,button,.tour-choice-text) { overflow-wrap: anywhere; }
-#walkthrough #tour-section-title { font-size: calc(clamp(34px, 4.5vw, 58px) * var(--tour-scale)); }
+#walkthrough #tour-section-title {
+  font-size: min(calc(clamp(2.125rem, 4.5vw, 3.625rem) * var(--tour-scale)), max(2rem, 16cqi));
+}
 #walkthrough .intro-copy { font-size: calc(15px * var(--tour-scale)); }
-#walkthrough .eyebrow { font-size: calc(10px * var(--tour-scale)); }
+#walkthrough .eyebrow { font-size: max(.75rem, .8125em); }
 #walkthrough .tour-question h3 { font-size: calc(clamp(24px, 3vw, 36px) * var(--tour-scale)); }
 #walkthrough .tour-question label { font-size: calc(14px * var(--tour-scale)); }
 #walkthrough .tour-result-heading h3 { font-size: calc(24px * var(--tour-scale)); }
-#walkthrough :is(#tour-next,#tour-back,#tour-edit,#tour-explore) { font-size: calc(13px * var(--tour-scale)); }
+#walkthrough :is(#tour-next,#tour-back,#tour-edit,#tour-explore) { font-size: max(.8125rem, .9375em); }
 #walkthrough :is(.actions button, .tour-result-heading button) {
   max-width: 100%;
   height: auto;
@@ -53,8 +55,10 @@
   cursor: pointer;
 }
 #walkthrough .tour-choice-text {
-  display: block;
-  padding: .65em 2.15em .65em .85em;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .55rem max(2rem, 1.35em) .55rem .75rem;
   border: 1px solid var(--edge);
   border-radius: 9px;
   color: var(--ink);
@@ -65,7 +69,7 @@
 #walkthrough .tour-choice-text::after {
   content: "";
   position: absolute;
-  right: .85em;
+  right: .75rem;
   top: 50%;
   width: .4em;
   height: .4em;

@@ -1,7 +1,7 @@
 /* Load last: one compact, revealable appearance studio across every identity. */
 html[data-design][data-mode] .site-header{flex-wrap:wrap;align-items:center;gap:12px}
-html[data-design][data-mode] .site-header .glass-design-launcher{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:10px 13px;font-family:inherit;font-size:12px;font-weight:650;line-height:1.3;white-space:nowrap;cursor:pointer}
-html[data-design][data-mode] .site-header .glass-mobile-menu{display:none;align-items:center;justify-content:center;min-height:44px;padding:10px 12px;font-size:12px;font-weight:650;cursor:pointer}
+html[data-design][data-mode] .site-header .glass-design-launcher{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:10px 13px;font-family:inherit;font-size:.875rem;font-weight:650;line-height:1.3;white-space:nowrap;cursor:pointer}
+html[data-design][data-mode] .site-header .glass-mobile-menu{display:none;align-items:center;justify-content:center;min-height:44px;padding:10px 12px;font-size:.875rem;font-weight:650;cursor:pointer}
 html[data-design][data-mode] .site-header .appearance-controls{position:absolute;inset:auto 16px auto auto;top:calc(100% + 9px);width:min(340px,calc(100vw - 32px));max-height:calc(100dvh - 120px);overflow:auto;display:none;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;padding:17px;margin:0;z-index:50;box-sizing:border-box;border:1px solid var(--edge);background:var(--surface);color:var(--ink);box-shadow:0 16px 36px #0003}
 html[data-design][data-mode][data-glass-tools=true] .site-header .appearance-controls{display:grid}
 html[data-design][data-mode] .site-header .appearance-controls[hidden],html[data-design][data-mode] .glass-clarity-control[hidden]{display:none!important}
@@ -33,7 +33,7 @@ html:is([data-design=signal],[data-design=bento])[data-mode] .site-header .appea
  html[data-design=bento][data-mode][data-glass-menu=true] .site-header nav{border-radius:15px}
 }
 @media(max-width:480px){
- html[data-design][data-mode] .site-header .glass-design-launcher{padding:10px;font-size:11px}
+ html[data-design][data-mode] .site-header .glass-design-launcher{padding:10px}
  html[data-design][data-mode] .site-header .glass-design-launcher .control-icon{display:none}
  html[data-design][data-mode] .site-header .appearance-controls{right:8px;width:min(340px,calc(100vw - 32px))}
 }
@@ -47,7 +47,7 @@ html[data-design=glass][data-mode] .site-header .appearance-controls{background:
 @media (max-width:420px) {
   html[data-design][data-mode] .site-header {
     display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-columns:minmax(0,.93fr) minmax(0,1.07fr);
     grid-template-areas:"brand menu" "demo settings";
     gap:6px 8px;
   }
@@ -65,4 +65,9 @@ html[data-design=glass][data-mode] .site-header .appearance-controls{background:
     gap:4px!important;
     white-space:normal;
   }
+}
+@media (max-width: 360px) {
+  html[data-design][data-mode] .site-header { grid-template-columns: minmax(0,.84fr) minmax(0,1.16fr); }
+  html[data-design][data-mode] .site-header > .button span[aria-hidden="true"] { display: none; }
+  html[data-design][data-mode] .site-header .control-chevron { width: .7rem; height: .7rem; }
 }
