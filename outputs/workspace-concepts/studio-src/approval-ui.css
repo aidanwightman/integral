@@ -1,0 +1,25 @@
+.approval-workspace{display:grid;gap:1rem;max-width:62rem}
+.approval-panel{padding:clamp(1rem,2vw,1.6rem);min-width:0}
+.approval-panel>h2{margin:0 0 .8rem}
+.approval-card{border-top:1px solid var(--border);padding:.8rem 0}
+.approval-card:last-child{padding-bottom:0}
+.approval-card>summary{display:flex;align-items:center;gap:.8rem;justify-content:space-between;cursor:pointer;min-height:2.75rem}
+.approval-card>summary:after{content:'›';font-size:1.2rem;line-height:1;margin-inline-start:.2rem}
+.approval-card[open]>summary:after{transform:rotate(90deg)}
+.approval-card>summary>span:first-child{flex:1;min-width:0;overflow-wrap:anywhere}
+.approval-card>summary small,.approval-card>summary strong{display:block}
+.approval-card>summary small{color:var(--muted);margin-bottom:.25rem}
+.approval-card .pill{white-space:normal;text-align:center}
+.approval-detail{max-width:43rem;padding:0 0 .35rem}
+.approval-detail p,.approval-history li p{overflow-wrap:anywhere}
+.approval-form{max-width:37rem;margin:.9rem 0;display:grid;gap:.7rem}
+.approval-form>button{justify-self:start}
+.approval-form input,.approval-form select,.approval-form textarea{max-width:100%;width:100%;min-width:0}
+.approval-form label{min-width:0}
+.approval-form .row-actions,.approval-types{display:flex;flex-wrap:wrap;gap:.5rem}
+.approval-history{margin-top:1rem;color:var(--muted)}
+.approval-history summary{cursor:pointer}
+.approval-history li{margin-block:.7rem}
+.approval-history li p{margin:.2rem 0}
+.record-signoffs{margin-block:1rem}
+.approval-types button[aria-pressed="true"]{outline:2px solid var(--accent);outline-offset:1px}

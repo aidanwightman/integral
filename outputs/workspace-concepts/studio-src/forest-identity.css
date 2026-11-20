@@ -1,0 +1,30 @@
+/* Forest: fern chrome, linen workplane. No glass materials or Bento mosaic. */
+.scene.forest{--bg:#e4e8dd;--panel:#fffcf4;--soft:#eeeedf;--ink:#203b2c;--muted:#62705e;--accent:#315d43;--border:#cad0be;--heading-wash:#ecefdf;--control-border:#9eaf98;background:#e4e8dd;color:var(--ink)}
+.forest .forest-workspace{display:grid;grid-template-columns:190px minmax(0,1fr);background:#f3f1e6;border:1px solid #bcc7b5;border-radius:10px;overflow:hidden;box-shadow:0 5px 20px #213c2910}
+.forest .side-nav{background:#294b37;color:#f5f4e8;padding:18px 12px;border-right:1px solid #1f3b2b}
+.forest .workspace-brand{padding:0 4px 18px;border-bottom:1px solid #6c826b}
+.forest .workspace-mark{background:#dce7be;color:#294b37;border-radius:7px}
+.forest .workspace-brand small,.forest .side-caption,.forest .side-note{color:#c1d0b9}
+.forest .side-caption{font-size:10px;letter-spacing:.1em;margin:19px 8px 9px}
+.forest .view-nav{display:flex;flex-direction:column;gap:3px;overflow:visible}
+.forest .view-nav button{color:#e4eada;background:transparent;border:1px solid transparent!important;border-radius:5px;text-align:left;padding:9px 10px;min-height:36px;box-shadow:none!important}
+.forest .view-nav button:hover{background:#3b6047}
+.forest .view-nav button.active{background:#e9edce;color:#24472f;border-color:#e9edce!important;font-weight:750}
+.forest .side-nav .quiet{color:#e7eddc;border-color:#809477;background:#36563e}
+.forest .forest-workplane{min-width:0}
+.forest .forest-context{display:flex;justify-content:space-between;gap:16px;padding:13px 20px;border-bottom:1px solid #c4cdb8;background:#dde5d3;font-size:11px;font-weight:650}
+.forest .page{padding:22px}
+.forest .page-heading{border-bottom:1px solid #cbd1bf;padding-bottom:16px}
+.forest .page-heading h1{font-family:Georgia,serif;font-weight:500;letter-spacing:-.8px;font-size:34px}
+.forest .stat{background:#fdfbf1;border:1px solid #ccd3bf;border-radius:5px;box-shadow:none}
+.forest .stat-value{color:#2c563b}
+.forest .panel{background:#fffcf4;border:1px solid #c7cfbb;border-radius:7px;box-shadow:none}
+.forest .panel-head{background:#e9eddb;border-bottom:1px solid #c7cfbb;padding:14px 17px;margin:0}
+.forest .panel-head h2{color:#29452e;font-family:Georgia,serif;font-size:19px;font-weight:500}
+.forest .panel-body{padding-top:16px}
+.forest .primary{background:#315d43;color:#fffdf4;border-color:#315d43}
+.forest th{background:#e8ecdc;color:#385337}
+.forest .board-column{background:#e3e9d9;border:1px solid #c7d0ba;border-radius:7px}
+.forest .deal-card{background:#fffcf4;border:1px solid #c5cfb7;border-radius:5px}
+.mini-forest{background:#e7eadc;color:#315d43}.mini-forest .mini-nav{background:#294b37;border-radius:5px 0 0 5px}.mini-forest .mini-nav i{background:#e2ecc9}.mini-forest .mini-page{background:#faf7ea;border-radius:0 5px 5px 0}.mini-forest .mini-stats i{background:#e1e6cd}
+@media(max-width:800px){.forest .forest-workspace{display:block}.forest .side-nav{padding:10px;border:0}.forest .workspace-brand,.forest .side-caption,.forest .side-note{display:none}.forest .view-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.forest .view-nav button{font-size:10px;padding:7px 5px;min-width:0;line-height:1.35}.forest .view-nav .glyph{width:13px}.forest .side-nav>.quiet{display:none}.forest .forest-context{padding:10px 13px}.forest .forest-context span:last-child{display:none}.forest .page{padding:17px 13px}.forest .page-heading h1{font-size:28px}}

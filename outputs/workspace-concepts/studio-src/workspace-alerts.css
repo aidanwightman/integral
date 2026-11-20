@@ -1,0 +1,21 @@
+.glass-command-tools{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.workspace-alert-bell b{border-radius:1em;min-width:1.55em;padding:1px 4px;background:#ffe4a6;color:#644000;text-align:center}
+.workspace-alert-list{list-style:none;margin:0;padding:0}
+.workspace-alert-list>li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0;border-bottom:1px solid var(--border)}
+.workspace-alert-list>li>div{min-width:0;overflow-wrap:anywhere}
+.workspace-alert-list h2{font-size:16px;margin:5px 0}
+.workspace-alert-list p{margin:4px 0;color:var(--muted)}
+.workspace-alert-list small,.workspace-alert-list .alert-owner{font-size:12px}
+.workspace-alert-list button{flex-shrink:0}
+.workspace-alert-notice{position:fixed;z-index:20;right:16px;bottom:max(16px,env(safe-area-inset-bottom));width:max-content;max-width:min(360px,calc(100vw - 32px));display:flex;gap:12px;align-items:flex-start;padding:13px;border-radius:16px;background:#fffaf0;color:#382d22;box-shadow:0 8px 30px #29211f35;text-align:left;overflow-wrap:anywhere}
+.workspace-alert-notice strong{display:block;font-size:14px;line-height:1.45}
+.workspace-alert-notice .notice-symbol{color:#905314;padding-top:2px}
+.workspace-alert-notice button{background:transparent;color:inherit;border:0;box-shadow:none;padding:3px}
+.workspace-alert-notice .notice-link{padding:5px 0 0;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.workspace-alert-notice .notice-link svg{width:14px}
+#studio-root:has(.glass-identity[data-glass-mode=dark]) .workspace-alert-notice{color:#fbefdc;background:#393144}
+#studio-root:has(.glass-identity[data-glass-mode=dark]) .notice-symbol{color:#ffd297}
+@media(max-width:600px){.glass-command-tools{gap:4px}.glass-command-tools .workspace-alert-bell{gap:3px;padding:6px}.glass-command-tools .workspace-alert-bell>span{display:none}.glass-command-tools .workspace-alert-bell svg{width:16px}.glass-identity .glass-command-bar{flex-wrap:wrap;gap:6px}.workspace-alert-list>li{align-items:flex-start;flex-direction:column;gap:8px}}
+.workspace-alert-list .alert-kind b{display:inline-block;border-radius:4px;margin-right:4px;padding:1px 6px;color:#792206;background:#ffddc9}
+body:has(.workspace-alert-notice) #studio-toast{bottom:auto;top:12px;max-width:calc(100vw - 50px)}
+.alert-filter{display:grid;gap:4px;align-self:center;font-size:12px;color:var(--muted)}.alert-filter select{max-width:100%}

@@ -1,0 +1,77 @@
+/* Landing hierarchy: load after existing identity/control sheets. Glass excluded. */
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-data-slice{margin-top:18px;border:1px solid var(--ps-line);background:var(--ps-card);overflow:auto}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-slice-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 15px;border-bottom:1px solid var(--ps-line)}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-slice-heading strong{font-size:14px;color:var(--ps-ink)}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-slice-heading>span{font-size:11px;color:var(--ps-muted)}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-data-slice table{width:100%;border-collapse:collapse;text-align:left}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-data-slice :is(th,td){padding:11px 13px;border-bottom:1px solid var(--ps-line);font-size:12px;line-height:1.45;color:var(--ps-ink)}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-data-slice th{font-size:11px;font-weight:700;background:var(--ps-surface)}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-slice-link{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:12px 15px;font-size:12px;font-weight:650;color:var(--ps-accent);text-underline-offset:4px}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-role-bar button{min-height:44px;font-size:12px;font-family:inherit}
+/* Editorial: ink rules, an ochre margin and restrained print-colour fields. */
+html[data-design=editorial] .hero{background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 8%,transparent) 0 3%,transparent 3% 100%)}
+html[data-design=editorial] .hero-main{border-left:3px solid var(--accent);padding-left:24px}
+html[data-design=editorial] .hero .eyebrow{display:inline-block;padding:7px 11px;background:var(--wash);border-bottom:1px solid var(--edge);color:var(--ink)}
+html[data-design=editorial] .es-landing-index{background:var(--wash);border-block:1px solid var(--edge);padding:14px 18px}
+html[data-design=editorial] .ps-contact{padding-bottom:17px;border-bottom:1px solid var(--ps-ink)}
+html[data-design=editorial] .ps-role-bar{gap:0;border-block:1px solid var(--ps-ink);padding:4px 0}
+html[data-design=editorial] .ps-role-bar button{border-radius:0;border-right:1px solid var(--ps-line)}
+html[data-design=editorial] .ps-data-slice{border:0;border-top:3px solid var(--ps-ink)}
+html[data-design=editorial] .ps-example-grid article{border-radius:0;border:0;border-left:2px solid var(--ps-line);background:transparent}
+html[data-design=editorial] .ps-followup{background:var(--ps-card)}
+html[data-design=editorial] .section-intro .eyebrow{color:var(--accent);font-weight:750;letter-spacing:.12em}
+html[data-design=editorial] .walkthrough{background:linear-gradient(90deg,var(--wash) 0 22%,transparent 22%)}
+html[data-design=editorial][data-mode=dark] .ps-hero{--ps-ink:#f1ebdb;--ps-muted:#c2bcad;--ps-line:#686b5c;--ps-surface:#292d25;--ps-card:#34382f;--ps-accent:#edb099}
+/* Signal: title bar > command strip > record plane; no repeated floating cards. */
+html[data-design=signal] .ps-contact{background:var(--ps-surface);padding:14px;border-bottom:2px solid var(--ps-line)}
+html[data-design=signal] .ps-role-bar{background:var(--ps-surface);border-block:1px solid var(--ps-line);padding:5px;gap:4px}
+html[data-design=signal] .ps-role-bar button{border:1px solid var(--ps-line);background:var(--ps-card);color:var(--ps-ink);box-shadow:inset 1px 1px #ffffff40}
+html[data-design=signal] .ps-role-bar button[aria-pressed=true]{background:var(--ps-accent);color:var(--ps-card);box-shadow:inset 0 -3px currentColor}
+html[data-design=signal] .ps-data-slice{border:1px solid var(--ps-line);box-shadow:none}
+html[data-design=signal] .ps-slice-heading{border-left:5px solid var(--ps-accent);background:var(--ps-surface)}
+html[data-design=signal] .ps-example-grid article{box-shadow:none;border-width:1px}
+html[data-design=signal] .section-intro>.eyebrow{display:inline-block;padding:7px 10px;background:var(--ink);color:var(--paper);font-family:ui-monospace,monospace;font-weight:700}
+html[data-design=signal] .walkthrough{border-bottom:2px solid var(--edge)}
+html[data-design=signal][data-mode=dark] .ps-hero{--ps-ink:#e5f0ec;--ps-muted:#b4c8c3;--ps-line:#587a78;--ps-surface:#243b3e;--ps-card:#192e32;--ps-accent:#b9dbe0}
+/* Bento: grouped modules with one large anchor, quieter supporting tiles. */
+html[data-design=bento] .ps-contact{padding:16px;border-radius:17px;background:var(--ps-ink);color:var(--ps-card)}
+html[data-design=bento] .ps-contact :is(h2,p,.ps-overline,.ps-record-state){color:var(--ps-card)}
+html[data-design=bento] .ps-role-bar{padding:5px;border-radius:14px;background:var(--ps-surface);border:1px solid var(--ps-line)}
+html[data-design=bento] .ps-role-bar button{flex:1;border-radius:9px;padding-inline:8px}
+html[data-design=bento] .ps-data-slice{border-radius:16px;box-shadow:0 3px 0 color-mix(in srgb,var(--ps-ink) 9%,transparent)}
+html[data-design=bento] .section-intro>.eyebrow{display:inline-block;padding:8px 13px;border-radius:8px;background:var(--ink);color:var(--paper);font-weight:700}
+html[data-design=bento] .ps-example-grid .ps-call{border-color:transparent;background:var(--ps-surface)}
+html[data-design=bento] .ps-example-grid .ps-followup{border-color:var(--ps-line)}
+/* Forest: opaque field-guide surfaces. Preserve calm green material, not Glass blur. */
+:root[data-design=forest][data-mode]{--paper:#edf0e7;--ink:#213b31;--muted:#52665a;--surface:#fafbf5;--wash:#dfe7d7;--line:#bdcdbd;--edge:#7d9783;--accent:#37654b;--action:#284e39;--action-text:#fffdf3;--header:#f3f6ed;--band:#203e30;--band-text:#f4f5e9;--band-muted:#c4d7c5;--green:#d8e9bc}
+:root[data-design=forest][data-mode][data-mode=dark]{--paper:#17271f;--ink:#edf2e4;--muted:#b7c9ba;--surface:#23392b;--wash:#2b4433;--line:#4e6855;--edge:#7b9980;--accent:#bdd9ad;--action:#cee3b9;--action-text:#1c3527;--header:#21372a;--band:#294733;--band-text:#f0f4e7;--band-muted:#c4d7c5}
+:root[data-design=forest][data-mode] body{background:var(--paper)}
+:root[data-design=forest][data-mode] .site-header{background:var(--header);border-color:var(--edge);border-bottom:3px solid var(--accent);border-radius:12px;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 4px 12px #102b1b0d}
+:root[data-design=forest][data-mode] .hero-main{border-left:3px solid var(--edge);padding-left:24px}
+:root[data-design=forest][data-mode] .ps-hero{--ps-ink:var(--ink);--ps-muted:var(--muted);--ps-line:var(--line);--ps-surface:var(--wash);--ps-card:var(--surface);--ps-accent:var(--accent);background:var(--surface);transform:none;backdrop-filter:none;border:1px solid var(--edge);border-radius:16px;box-shadow:0 12px 26px #102b1b14}
+:root[data-design=forest][data-mode][data-mode=dark] .ps-hero{background:var(--surface);border-color:var(--edge);box-shadow:0 12px 26px #0002}
+:root[data-design=forest][data-mode] .ps-window-bar{background:var(--wash);border-bottom:1px solid var(--edge)}
+:root[data-design=forest][data-mode] .ps-contact{border-left:3px solid var(--accent);padding-left:14px}
+:root[data-design=forest][data-mode] .ps-role-bar{border-block:1px solid var(--edge);padding:6px 0;gap:5px}
+:root[data-design=forest][data-mode] .ps-role-bar button{border-radius:6px}
+:root[data-design=forest][data-mode] .ps-data-slice{border-radius:8px}
+:root[data-design=forest][data-mode] .ps-example-grid article{border-radius:8px;box-shadow:none}
+:root[data-design=forest][data-mode] .ps-followup{border-top:3px solid var(--accent)}
+:root[data-design=forest][data-mode] :is(.demo-section,.ownership){background:var(--wash);border-block:1px solid var(--edge)}
+:root[data-design=forest][data-mode] :is(.section-intro,.ps-explainer-intro){border-left:3px solid var(--accent);padding-left:22px}
+:root[data-design=forest][data-mode] .tour-onboarding{background:var(--surface);border:1px solid var(--edge);border-top:4px solid var(--accent);border-radius:12px;box-shadow:none}
+:root[data-design=forest][data-mode] .appearance-controls :is(button,select){background:var(--surface);color:var(--ink);border-color:var(--edge)}
+@media(max-width:760px){
+ html:is([data-design=editorial],[data-design=forest]) .hero-main{padding-left:16px}
+ html[data-design=editorial] .walkthrough{background:var(--wash)}
+ html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-data-slice :is(th,td){padding:10px 8px;font-size:11px}
+ html:is([data-design=editorial],[data-design=signal],[data-design=bento],[data-design=forest]) .ps-slice-heading{padding:12px 10px;flex-wrap:wrap}
+ html[data-design=bento] .ps-role-bar button{flex:1 1 calc(50% - 5px)}
+ :root[data-design=forest][data-mode] :is(.section-intro,.ps-explainer-intro){padding-left:15px}
+}
+/* Contact metadata inherits the anchor tile's inverse colours, not legacy hero-copy colour. */
+html[data-design=bento] .hero.ps-has-story .ps-contact :is(p,.ps-overline,.ps-record-state){color:var(--ps-card);opacity:1}
+:root[data-design=forest][data-mode] .site-header :is(.wordmark,.brand-symbol,nav a,.glass-design-launcher){color:var(--ink)}
+:root[data-design=forest][data-mode] .site-header .glass-design-launcher{background:var(--surface);border-color:var(--edge)}
+:root[data-design=forest][data-mode] .site-header .glass-mobile-menu{color:var(--ink);background:var(--surface);border-color:var(--edge)}
+@media(max-width:800px){:root[data-design=forest][data-mode] .site-header nav{background:var(--surface);border:1px solid var(--edge);box-shadow:0 8px 20px #102b1b18}:root[data-design=forest][data-mode] .site-header nav a{color:var(--ink)}}

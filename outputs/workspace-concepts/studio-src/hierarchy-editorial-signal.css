@@ -1,0 +1,63 @@
+/* Scoped hierarchy pass. Load after editorial-signal-identity.css. */
+.editorial .es-publication{--border:#c5bdac;--muted:#625b4d;--panel:#fffdf7}
+.editorial .es-contents{background:#eae5d9;border-right:1px solid #aaa18f;padding:23px 14px 20px}
+.editorial .es-contents-heading{font-size:14px;border-bottom:3px solid #302f26;padding-bottom:12px}
+.editorial .es-contents-heading span{font-size:11px;line-height:1.5}
+.editorial .es-chapter{border-bottom-color:#c4baa7;padding:12px 8px}
+.editorial .es-chapter.active{background:#292e25;color:#fffdf7;border-left:4px solid #9b702b;padding-left:4px}
+.editorial .es-running-head{color:#554d3e;border-bottom-color:#9d927d;font-size:11px}
+.editorial .es-reading .page-heading{border-bottom:3px solid #302f26;padding-bottom:20px;margin-bottom:22px}
+.editorial .es-reading .page-heading h1{font-weight:700;letter-spacing:-1.1px}
+.editorial .es-reading .page-heading p{color:#5f5749;line-height:1.65}
+.editorial .es-reading .stat-grid{background:#eee8da;border-top:1px solid #bcb19a;border-bottom:1px solid #8f846c}
+.editorial .es-reading .stat-label{font-size:11px;color:#554d3f;font-weight:650}
+.editorial .es-reading .stat-note{font-size:11px;color:#625a4a}
+.editorial .es-reading .panel{background:#fffdf7;border:1px solid #c5bdac;border-top:3px solid #454334;box-shadow:none}
+.editorial .es-reading .panel-head{padding:15px 17px 13px;background:#f0eadc;border-bottom:1px solid #c5bdac;margin-bottom:14px}
+.editorial .es-reading .panel-head h2{font:700 23px/1.2 Georgia,serif;letter-spacing:-.4px}
+.editorial .es-reading .panel-head p{font-size:12px;color:#625a4b}
+.editorial .es-reading .panel-body{padding:0 17px 18px}
+.editorial .es-reading :is(.role-panel,.depth-panel){background:#fffdf7;border:1px solid #c5bdac;border-top:2px solid #635d4e;box-shadow:none}
+.editorial .es-reading :is(.role-panel,.depth-panel) h2{font-weight:750;color:#292e25}
+.editorial .es-reading .toolbar{padding:12px;background:#eae4d6;border:1px solid #c5bdac}
+.editorial .es-reading :is(th,td small,.footnote){font-size:11px}
+.editorial .es-reading th{background:#e6dfcf;color:#4c4639;border-bottom:1px solid #948872}
+.editorial .es-reading .record-link{font-weight:650;text-decoration:underline;text-decoration-color:#b5ac99;text-underline-offset:3px}
+.signal .es-command-desk{--es-chrome:#d0d3cc;--es-paper:#edf0e8;--es-shadow:#66756b}
+.signal .es-programs{background:#d6dcd4;border-color:#65766b}
+.signal .es-programs-title{font-size:12px;background:#bfcbbf;color:#20392e;margin:-10px -10px 0;padding:11px 12px;border-bottom:2px solid #607568}
+.signal .es-program-group summary{font-size:12px;color:#24392f}
+.signal .es-program-group[open] summary{border-bottom:1px solid #adb9ac;margin-bottom:5px}
+.signal .es-app.active{background:#173f75;color:white;border-color:#0e2d53;box-shadow:inset 3px 0 #a8c6ef;font-weight:750}
+.signal .es-app.active svg{color:inherit}
+.signal .es-app:hover:not(.active),.signal .es-domain:hover{background:#f5f7ed;border-color:#66796b}
+.signal .es-active-application{--panel:#fffef7;--border:#acb8a8;--muted:#4d6053}
+.signal .es-active-application .page-heading{border-bottom:2px solid #738672;padding-bottom:17px}
+.signal .es-active-application .page-heading h1{font-weight:800;color:#142d23}
+.signal .es-active-application .page-heading p{color:#4c5e50;font-size:13px}
+.signal .es-active-application .stat{background:#fffef7;border-color:#9eaf9c;border-top:3px solid #61785e}
+.signal .es-active-application .stat-label{font-size:11px;font-weight:650;color:#435a48}
+.signal .es-active-application .stat-note{font-size:11px;color:#51614f}
+.signal .es-active-application .panel{background:#fffef7;border-color:#8e9f8b}
+.signal .es-active-application .panel-head{background:#d7dfd0;border-bottom:1px solid #8e9f8b;padding:13px 15px}
+.signal .es-active-application .panel-head h2{font-size:15px;font-weight:750;color:#203b29}
+.signal .es-active-application .panel-head p{font-size:12px;color:#455c48}
+.signal .es-active-application :is(.role-panel,.depth-panel){background:#fffef7;border:1px solid #8e9f8b;box-shadow:none}
+.signal .es-active-application :is(.role-panel,.depth-panel) h2{font-weight:750;color:#203b29}
+.signal .es-active-application .toolbar{padding:11px;background:#dfe5d8;border:1px solid #a5b29f}
+.signal .es-active-application th{background:#e3e8dc;color:#3f5544;border-bottom:1px solid #94a28c;font-size:11px}
+.signal .es-active-application :is(td small,.footnote,.es-window-context){font-size:11px}
+.signal .es-active-application .record-link{font-weight:700;color:#173f75}
+@media(max-width:720px){
+.editorial .es-contents{padding:14px 12px;border-right:0;border-bottom:2px solid #958970}
+.editorial .es-contents-heading{font-size:13px}
+.editorial .es-reading .panel-head{padding:13px 12px}
+.editorial .es-reading .panel-head h2{font-size:21px}
+.editorial .es-reading .panel-body{padding:0 12px 15px}
+.signal .es-programs-title{margin:-7px -7px 5px;padding:9px 10px}
+.signal .es-programs nav>.es-app.active{background:#173f75;color:white}
+.signal .es-active-application .panel-head{padding:12px}
+.editorial .es-reading .toolbar,.signal .es-active-application .toolbar{padding:9px;flex-wrap:wrap}
+}
+/* Keep the scrollable chart inside its grid track on narrow publication pages. */
+.editorial .es-reading :is(.stack,.two-col,.panel-body),.signal .es-active-application :is(.stack,.two-col,.panel-body){min-width:0}

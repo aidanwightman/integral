@@ -1,0 +1,79 @@
+/* Final identity-scoped hierarchy layer. No geometry or navigation rewiring. */
+/* Atlas: dark command bar, sage layer rail, pale plotting canvas, white inspector. */
+.scene.atlas .al-atlas{--border:#b8c7ba;--control-border:#829886;--heading-wash:#e8efe5}
+.scene.atlas .al-atlas-bar{background:#233e32;color:#f5f8f1;border-bottom:1px solid #182e24}
+.scene.atlas .al-atlas-bar .workspace-brand small,.scene.atlas .al-atlas-bar .al-location span{color:#c5d6c9}
+.scene.atlas .al-atlas-bar .workspace-mark{background:#dce9ce;color:#203a2c;border-color:#adc3ab}
+.scene.atlas .al-atlas-bar .al-location{border-left-color:#718976}
+.scene.atlas .al-atlas-bar .al-domain{background:#395545;color:#f5f8f1;border-color:#829b87}
+.scene.atlas .al-atlas-layers{background:#dce5d7;border-right:1px solid #a6b8a4}
+.scene.atlas .al-rail-heading{border-bottom:1px solid #afc0ac;margin-bottom:12px;color:#294231}
+.scene.atlas .al-nav-group h2{color:#4d654f;font-weight:750}
+.scene.atlas .al-nav-group button{color:#29412f}
+.scene.atlas .al-nav-group button.active{background:#fffef8;color:#183f2b;box-shadow:inset 3px 0 #235c49,0 1px 2px #29412f12}
+.scene.atlas .al-nav-group button:hover:not(.active){background:#cbd9c5}
+.scene.atlas .al-atlas-workspace{background-color:#eef2e9}
+.scene.atlas .al-canvas-caption{background:#e1eadb;color:#3d5943;border-bottom-color:#b3c3ad}
+.scene.atlas .al-atlas .page-heading{padding-bottom:15px;border-bottom:1px solid #c1ceba}
+.scene.atlas .al-atlas .panel{background:#fffefb;border:1px solid #b5c5b0;box-shadow:0 2px 0 #566d4810}
+.scene.atlas .al-atlas .panel-head{background:#e5edde;border-bottom:1px solid #bdcdb5;margin-bottom:0;padding:14px 15px}
+.scene.atlas .al-atlas .panel-head h2{color:#213c28;font-size:15px;letter-spacing:-.15px}
+.scene.atlas .al-atlas .panel-head p{color:#4e644e}
+.scene.atlas .al-atlas .panel-body{padding-top:14px}
+.scene.atlas .al-atlas .stat-grid{background:#fffef8;border:1px solid #b4c5ac}
+.scene.atlas .al-atlas .stat-value{color:#214b34}
+.scene.atlas .al-context{background:#fffef8;border-left:2px solid #a4b89a}
+.scene.atlas .al-context-head{border-bottom:1px solid #bdcbb5;padding-bottom:10px}
+.scene.atlas .al-record-queue button.selected{background:#dfebd5;box-shadow:inset 3px 0 #235c49}
+.scene.atlas .al-coordinate-bar{background:#d4e0cb;color:#3b573e}
+/* Ledger: one navy masthead, steel tab strip, white ruled workbook, blue-grey evidence gutter. */
+.scene.ledger .al-ledger{--border:#b9c6d1;--control-border:#8195a8}
+.scene.ledger .al-ledger-bar{background:#142c40;border-bottom:3px solid #7390a9}
+.scene.ledger .al-ledger-tabs{background:#d9e2ea;border-bottom:1px solid #92a6b8}
+.scene.ledger .al-tab-group{border-right-color:#adbdcb}
+.scene.ledger .al-tab-group>span{color:#415b71;font-weight:750}
+.scene.ledger .al-tab-group button{color:#344f66}
+.scene.ledger .al-tab-group button.active{background:#fff;color:#153c5c;box-shadow:inset 0 -3px #244c70;font-weight:750}
+.scene.ledger .al-tab-group button:hover:not(.active){background:#c4d3df}
+.scene.ledger .al-sheet-caption{background:#edf2f6;border-bottom:1px solid #b7c5d0;color:#344f66}
+.scene.ledger .al-ledger-sheet{background:#f0f3f6}
+.scene.ledger .al-ledger .page-heading{padding-bottom:14px;border-bottom:2px solid #bac9d6}
+.scene.ledger .al-ledger .panel{background:#fff;border:1px solid #adbdca;box-shadow:none}
+.scene.ledger .al-ledger .panel-head{background:#dde7ef;border-bottom:1px solid #aabfce;padding:12px 14px;margin-bottom:0}
+.scene.ledger .al-ledger .panel-head h2{font-size:14px;color:#193e5c;font-weight:750;letter-spacing:0}
+.scene.ledger .al-ledger .panel-head p{color:#4d6377}
+.scene.ledger .al-ledger .stat-grid{border-color:#aebfcd;background:white}
+.scene.ledger .al-ledger .stat{background:#fff!important}
+.scene.ledger .al-ledger .stat-value{color:#153b5a}
+.scene.ledger .al-ledger th{background:#e3ebf2;color:#284c69;border-bottom:1px solid #9fb4c5}
+.scene.ledger .al-ledger tr:nth-child(even) td{background:#f1f5f8}
+.scene.ledger .al-evidence{background:#e3ebf1;border-left:2px solid #9eb3c4}
+.scene.ledger .al-evidence-label{color:#294960}
+.scene.ledger .al-record-queue button{border-bottom-color:#bdcbd6;color:#2b465c}
+.scene.ledger .al-record-queue button.selected{background:#fff;box-shadow:inset 3px 0 #244c70}
+.scene.ledger .al-ledger-status{background:#cedae4;color:#304c63;border-top-color:#98afc1}
+/* Bento: tactile modules, strong launchpad separation, coloured category headers. */
+.scene.bento{background:#dce4d5;--border:#aebea5;--control-border:#7e9474}
+.scene.bento .bento-top{background:#f7f8eb;border:1px solid #b3c2a7;border-bottom:3px solid #344b2f;border-radius:15px 15px 0 0;padding:15px 17px}
+.scene.bento .bento-launchpad{background:#cedbc3;border:1px solid #aebfa2;border-top:0;padding:12px;margin:0 0 18px;border-radius:0 0 15px 15px}
+.scene.bento .bento-launcher{border-color:#a0b091;box-shadow:0 2px 0 #aebb9f}
+.scene.bento .bento-launcher summary{color:#293b23}
+.scene.bento .bento-launcher[open]{background:#d6ea9d;border-color:#94aa65;box-shadow:0 2px 0 #a3b77a}
+.scene.bento .page-heading{border-bottom:1px solid #afbea4;padding-bottom:17px}
+.scene.bento .panel,.scene.bento .scenario-summary{border-color:#aebda2;box-shadow:0 3px 0 #aeba9d33}
+.scene.bento .panel-head{background:#e9edda;border-bottom:1px solid #bdc8a7;margin-bottom:0;padding:17px 20px}
+.scene.bento .panel-head h2{color:#253d27;font-size:18px}
+.scene.bento .panel-head p{color:#52634a}
+.scene.bento .panel-body{padding-top:17px}
+.scene.bento .bento-evidence .panel-head{background:#deebbf}
+.scene.bento .bento-detail .panel-head{background:#efd6aa;border-bottom-color:#d2b98f}
+.scene.bento .bento-next{border:1px solid #173d24;box-shadow:0 3px 0 #a4b49a}
+.scene.bento .role-toolbar{background:#f3f4df;border-color:#a4b58f}
+.scene.bento .board-column{background:#c8d8bb;border:1px solid #a9bc99}
+.scene.bento .deal-card{background:#fffef9;border-color:#aabf9b}
+@media(max-width:800px){
+ .scene.atlas .al-atlas-layers{border-right:0;border-bottom:2px solid #a6b8a4}
+ .scene.atlas .al-context{border-left:0;border-top:2px solid #a4b89a}
+ .scene.ledger .al-evidence{border-left:0;border-top:2px solid #9eb3c4}
+}
+@media(max-width:650px){.scene.bento .bento-top{padding:12px}.scene.bento .bento-launchpad{padding:9px}.scene.bento .panel-head{padding:15px 16px}}

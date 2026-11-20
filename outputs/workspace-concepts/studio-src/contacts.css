@@ -1,0 +1,197 @@
+.crm-content { display: grid; gap: 16px; }
+.crm-card { padding: clamp(16px, 2vw, 26px); min-width: 0; }
+.crm-card h2, .crm-card h3 { margin: 0 0 10px; }
+.crm-card p { margin: 8px 0 14px; }
+.crm-toolbar, .crm-actions, .crm-match-row, .crm-message summary { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.crm-toolbar { justify-content: space-between; margin-bottom: 16px; }
+.crm-toolbar label, .crm-fields label { display: grid; gap: 6px; min-width: 0; font-weight: 600; }
+.crm-toolbar select { max-width: 100%; }
+.crm-fields, .crm-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.crm-fields :is(input,textarea,select) { min-width: 0; width: 100%; }
+.crm-fields textarea { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--panel); color: var(--ink); font: inherit; resize: vertical; }
+.crm-fields fieldset { padding: 12px; border: 1px solid var(--border); border-radius: 8px; }
+.crm-fields [hidden] { display: none; }
+.crm-fields .crm-wide { grid-column: 1 / -1; }
+.crm-fields .crm-check, .crm-check { display: flex; align-items: center; gap: 8px; }
+.crm-check input { width: auto; }
+.crm-card form > .crm-actions, .crm-card form > button { margin-top: 16px; }
+.crm-match { margin-block: 16px; border-left: 3px solid var(--warn); padding: 12px; }
+.crm-match-row, .crm-message summary { justify-content: space-between; }
+.crm-match-row, .crm-message, .crm-history li { padding-block: 10px; border-bottom: 1px solid var(--border); }
+.crm-message summary { cursor: pointer; }
+.crm-message pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.crm-history { padding-left: 18px; }
+.crm-details { margin: 16px 0; }
+.crm-details dt { color: var(--muted); font-size: 12px; }
+.crm-details dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.crm-call-notes { margin-block: 16px; overflow-wrap: anywhere; }
+.crm-call-notes article { border-inline-start: 2px solid var(--border); padding-inline-start: 12px; margin-block: 12px; }
+.crm-call-notes article p { margin-block: 4px; white-space: pre-wrap; }
+.crm-call-notes details > form { margin-block: 12px; }
+.crm-call-notes .crm-actions { margin-top: 12px; }
+@media (max-width: 650px) {
+  .crm-fields, .crm-details { grid-template-columns: minmax(0, 1fr); }
+  .crm-toolbar label { width: 100%; }
+}
+
+.email-research-group {
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+.email-research-group > summary {
+  padding: 13px 0;
+  cursor: pointer;
+}
+.email-research-group > summary strong { margin-inline-end: 10px; }
+.email-research-group > summary span { color: var(--muted); }
+.email-research-body {
+  padding: 0 0 14px 18px;
+  overflow-wrap: anywhere;
+}
+.email-research-examples > summary { cursor: pointer; }
+.email-research-examples ul {
+  padding: 0;
+  list-style: none;
+  max-height: 19rem;
+  overflow-y: auto;
+}
+.email-research-examples li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+.email-research-examples li span { color: var(--muted); font-size: .9em; }
+
+[data-email-field] { display: grid; gap: .45rem; min-width: 0; }
+.crm-email-controls, .crm-email-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
+.crm-email-controls input[data-email-entry] {
+  flex: 1 1 9rem;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.5rem;
+  padding: .45rem .65rem;
+  border: 1px solid var(--control-border, var(--border));
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+}
+.crm-email-controls .crm-find-email, .crm-lookup-dialog [data-close-lookup] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 2.5rem;
+}
+.crm-email-controls .crm-find-email { white-space: nowrap; }
+.crm-find-email svg, .crm-wand-mark svg { display: block; width: 1.1rem; height: 1.1rem; flex: none; }
+.crm-email-options { padding-block: .35rem; }
+.crm-email-options > summary { cursor: pointer; }
+.crm-email-options[open] { flex: 1 0 100%; min-width: 0; }
+.crm-email-options .crm-fields { grid-template-columns: 1fr; gap: .7rem; margin-block-start: .6rem; }
+.crm-email-tools { margin-block-start: .45rem; }
+.crm-email-note { margin: .3rem 0; font-size: .875em; color: var(--muted); overflow-wrap: anywhere; }
+[data-email-field] [hidden] { display: none; }
+
+dialog.crm-lookup-dialog {
+  width: min(39rem, calc(100% - 2rem));
+  max-width: none;
+  max-height: min(85vh, 46rem);
+  max-height: min(85dvh, 46rem);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--control-border, var(--border));
+  border-radius: var(--radius, 14px);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 24px 72px #10182840;
+}
+.crm-lookup-dialog[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.crm-lookup-dialog::backdrop { background: #10182877; }
+.crm-lookup-head, .crm-lookup-footer {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: .95rem 1.25rem;
+}
+.crm-lookup-head { border-bottom: 1px solid var(--border); }
+.crm-lookup-head h2 { margin: 0; color: var(--ink); font-size: 1.25rem; line-height: 1.25; }
+.crm-lookup-head p { margin: .2rem 0 0; font-size: .875em; color: var(--muted); }
+.crm-wand-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: .65rem;
+  background: var(--soft);
+  color: var(--action-ink, var(--accent));
+}
+.crm-lookup-dialog [data-close-lookup] { margin-inline-start: auto; min-width: 2.5rem; flex-shrink: 0; }
+.crm-lookup-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 1rem 1.25rem; overflow-wrap: anywhere; }
+.crm-lookup-body p { margin: .3rem 0 .85rem; }
+.crm-lookup-body .email-research-group { margin: 0; }
+.crm-lookup-body .email-research-group > summary { padding-block: .85rem; }
+.crm-lookup-body .email-research-body { padding-inline-start: .85rem; }
+.crm-lookup-body [data-use-suggestion] { margin-block: 0 .7rem; }
+.crm-lookup-body .email-research-examples ul { max-height: min(16rem, 34vh); margin-block: .55rem; }
+.crm-lookup-footer { justify-content: flex-end; padding-block: .75rem; border-top: 1px solid var(--border); }
+.crm-lookup-footer p { margin: 0; font-size: .875em; color: var(--muted); }
+.crm-lookup-loading {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 7.5rem;
+  padding-inline: .35rem;
+}
+.crm-lookup-loading p { margin: 0; }
+.crm-lookup-spinner {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--control-border, var(--border));
+  border-inline-start-color: var(--accent);
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .crm-lookup-spinner { animation: crm-lookup-spin .9s linear infinite; }
+}
+@keyframes crm-lookup-spin { to { transform: rotate(1turn); } }
+.crm-lookup-status {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+:is([data-email-field], .crm-lookup-dialog) :is(input, button, select, summary, [tabindex="0"]):focus-visible {
+  outline: 2px solid var(--focus-ring, var(--accent)); outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  dialog.crm-lookup-dialog { width: calc(100% - 1rem); max-height: 90vh; max-height: 90dvh; }
+  .crm-lookup-head, .crm-lookup-body, .crm-lookup-footer { padding-inline: .85rem; }
+  .crm-lookup-head { gap: .5rem; }
+  .crm-lookup-body .email-research-body { padding-inline-start: .45rem; }
+  .crm-email-controls .crm-find-email, .crm-lookup-dialog [data-close-lookup] { min-height: 44px; }
+}
+
+.pipeline-record { display: grid; gap: .8rem; margin: 1rem 0; padding-block: 1rem; border-block: 1px solid var(--border); }
+.pipeline-record h3, .pipeline-record p { margin: 0; }
+.pipeline-record .crm-fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap: .8rem; }
+.pipeline-invite summary { cursor: pointer; padding-block: .35rem; font-weight: 650; }
+.pipeline-invite[open] .crm-fields { margin-block: .55rem; }
+.pipeline-record .pipeline-error { color: var(--bad); font-weight: 600; }
+.pipeline-record .pipeline-error:empty { display: none; }
+.pipeline-actions { flex-wrap: wrap; }
+
+.finance-context { display: block; margin-top: .25rem; color: var(--muted); }
+.finance-queues { margin-block-start: .8rem; }
+.finance-record { display: grid; gap: .7rem; margin-block: 1rem; padding-block: 1rem; border-block: 1px solid var(--border); }
+.finance-record :is(h3,h4,p) { margin: 0; }
+.finance-record .crm-fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,12rem),1fr)); }
+.finance-history { margin: 0; padding-inline-start: 1.4rem; }
+.finance-history li + li { margin-block-start: .6rem; }
+.finance-record [data-finance-error] { color: var(--bad); }
+.finance-record [data-finance-error]:empty { display: none; }

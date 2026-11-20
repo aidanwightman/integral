@@ -1,0 +1,5 @@
+/* Header and its appearance row travel as one surface without changing layout. */
+html[data-design] .site-header{transition:transform 320ms cubic-bezier(.22,.8,.25,1),opacity 240ms ease,padding 200ms ease,box-shadow 200ms ease}
+html[data-design] .site-header.scroll-hidden{transform:translateY(calc(-100% - 32px));opacity:0;pointer-events:none}
+html[data-design] .site-header:focus-within{pointer-events:auto}
+@media(prefers-reduced-motion:reduce){html[data-design] .site-header{transition:none}html{scroll-behavior:auto}}

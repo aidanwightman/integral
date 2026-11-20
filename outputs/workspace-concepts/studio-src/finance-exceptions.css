@@ -1,0 +1,29 @@
+/* The list and detail split only when both fit at the current reading size. */
+.finance-exceptions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:1rem}
+.finance-exceptions>aside{flex:1 1 15em}
+.finance-exceptions>.finance-exception-panel{flex:1.4 1 20em}
+.finance-exceptions aside{display:grid;gap:1rem;min-width:0}
+.finance-exception-panel{padding:clamp(1rem,2vw,1.5rem);min-width:0;overflow-wrap:anywhere}
+.finance-exception-panel h2{margin:0 0 .7rem}
+.finance-exception-panel h3{margin:1.2rem 0 .4rem}
+.finance-case-list{container:statement-lines / inline-size;list-style:none;margin:0;padding:0}
+.finance-case-list li+li,.finance-resolution{border-top:1px solid var(--border)}
+.finance-case-list button{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:start;gap:.55rem;padding:.7rem .45rem;border-radius:.45rem;min-height:3.5rem;height:auto;background:transparent;border:0}
+.finance-case-list button[aria-current="true"]{background:var(--bg);box-shadow:inset 3px 0 var(--accent)}
+.finance-case-list button > span:first-child{min-width:0}
+.finance-case-list button > span:last-child{flex:none;max-width:100%;text-align:end}
+.finance-case-list small,.finance-case-history small{display:block;color:var(--muted);margin-top:.2rem}
+.finance-source{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:.7rem;margin:1rem 0}
+.finance-source dt{font-size:.8rem;color:var(--muted)}
+.finance-source dd{margin:.2rem 0 0;font-weight:600}
+.finance-resolution{padding:.75rem 0}
+.finance-exceptions summary{cursor:pointer;font-weight:600}
+.finance-case-form{display:grid;gap:.7rem;margin:.8rem 0;max-width:36rem}
+.finance-case-form input:not([type="checkbox"]),.finance-case-form textarea,.finance-case-form select{width:100%;min-width:0;max-width:100%}
+.finance-case-form>button{justify-self:start}
+.finance-case-history li{margin-block:.6rem}
+.finance-case-history p{margin:.2rem 0}
+@container statement-lines (max-width: 11.5em) {
+  .finance-case-list button{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:.4rem}
+  .finance-case-list button > span:last-child{text-align:start}
+}

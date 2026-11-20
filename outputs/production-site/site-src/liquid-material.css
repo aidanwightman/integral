@@ -1,0 +1,118 @@
+/* Liquid Glass: a neutral optical layer over colour, distinct from Forest.
+   Based on the separate glass study, with readable content below floating chrome. */
+:root[data-design=glass]{
+ --gi-mark-fill:linear-gradient(125deg,#f9fbff,#e6edf9 47%,#edf2fb);--gi-mark-edge:#d7e2f4;
+ --gi-ink:#182b4b;--gi-muted:#4d5e7b;--gi-surface:#edf2fb;--gi-line:#536b9630;
+ --gi-glass:linear-gradient(125deg,#ffffff80,#ffffff24 47%,#ffffff59);
+ --gi-edge:#ffffffc9;--gi-shadow:inset 0 1px 1px #fff,inset 0 -1px 1px #ffffff70,0 8px 28px #3d507d1c,0 1px 3px #27375518;
+ --paper:#edf2fb;--ink:var(--gi-ink);--muted:var(--gi-muted);--surface:#f5f7fc;--wash:#e4eaf6;--line:var(--gi-line);--edge:#899fbe;--accent:#285cc2;--green:#2459bd;
+ --control-glass:var(--gi-glass);--control-edge:#ffffffb8;--control-shadow:var(--gi-shadow);--control-focus:#265bc6;--cr-ring:#265bc6;
+ --primary-glass:linear-gradient(155deg,#668fedeb,#2859d9f2 76%);--primary-ink:#fff;--primary-edge:#ffffffa3;
+ --lg-menu:#eef3fbf5;--lg-panel:#f8faffb3;--lg-soft:#ffffff40;--lg-shadow:#294b7826;
+}
+:root[data-design=glass][data-mode=dark]{
+ --gi-mark-fill:linear-gradient(125deg,#35445e,#25334c 48%,#2c3954);--gi-mark-edge:#546780;
+ --gi-ink:#edf3ff;--gi-muted:#b9c7e2;--gi-surface:#151f36;--gi-line:#b4c7ef38;
+ --gi-glass:linear-gradient(125deg,#d1dfff26,#98b6ed0a 48%,#c8c2ff14);
+ --gi-edge:#e1ebff65;--gi-shadow:inset 0 1px 1px #ffffff65,inset 0 -1px 1px #a8bdff20,0 10px 28px #0003,0 1px 2px #0003;
+ --paper:#11192b;--ink:var(--gi-ink);--muted:var(--gi-muted);--surface:#1c2943;--wash:#22324e;--line:var(--gi-line);--edge:#6c85ab;--accent:#a6c7ff;--green:#b9d0ff;
+ --control-glass:var(--gi-glass);--control-edge:#d9e6ff61;--control-shadow:var(--gi-shadow);--control-focus:#aecaff;--cr-ring:#aecaff;
+ --primary-glass:linear-gradient(155deg,#769af5ed,#3863d9f2 80%);--primary-ink:#fff;--primary-edge:#b2cbff9e;
+ --lg-menu:#1d2a43f5;--lg-panel:#192740b8;--lg-soft:#c5d5ff0d;--lg-shadow:#0004;
+}
+html[data-design=glass][data-mode] body{isolation:isolate;background:var(--paper);color:var(--gi-ink)}
+html[data-design=glass][data-mode] body:before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 5% 0%,#83b7f680,transparent 58%),radial-gradient(ellipse at 94% 36%,#baa4f16e,transparent 56%),radial-gradient(ellipse at 53% 100%,#efd0b76b,transparent 62%);}
+html[data-design=glass][data-mode=dark] body:before{background:radial-gradient(ellipse at 6% 8%,#2455a974,transparent 53%),radial-gradient(ellipse at 94% 40%,#7859ac5c,transparent 55%),radial-gradient(ellipse at 50% 100%,#34687b30,transparent 50%)}
+/* Light travels through the header; no opaque brand-colour band. */
+:root[data-design=glass][data-mode] .site-header,:root[data-design=glass][data-mode] .site-header.glass-header-compact{background:var(--gi-glass);border:1px solid var(--gi-edge);border-radius:36px;box-shadow:var(--gi-shadow);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);padding:12px 18px}
+:root[data-design=glass][data-mode] .site-header :is(.wordmark,nav a){color:var(--gi-ink)}
+:root[data-design=glass][data-mode] .site-header nav a{border-radius:20px}
+:root[data-design=glass][data-mode] .site-header nav a:hover{background:var(--lg-soft);color:var(--gi-ink)}
+:root[data-design=glass][data-mode] .site-header .brand-symbol{background:var(--gi-mark-fill);color:var(--gi-ink);border:1px solid var(--gi-mark-edge);box-shadow:var(--gi-shadow);border-radius:11px}
+:root[data-design=glass][data-mode] .site-header :is(.glass-design-launcher,.glass-mobile-menu){background:var(--gi-glass);color:var(--gi-ink);border-color:var(--gi-edge);border-radius:24px;box-shadow:var(--gi-shadow);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+:root[data-design=glass][data-mode] .site-header :is(.glass-design-launcher,.glass-mobile-menu):hover,:root[data-design=glass][data-mode] .site-header :is(.glass-design-launcher,.glass-mobile-menu)[aria-expanded=true]{background:var(--lg-soft);border-color:var(--gi-edge)}
+:root[data-design=glass][data-mode] .site-header>.button.dark{--primary-glass:linear-gradient(155deg,#668fedeb,#2859d9f2 76%);--primary-ink:#fff;--primary-edge:#ffffffa3;border-radius:26px;box-shadow:inset 0 1px 1px #ffffff8c,0 4px 14px #2c59ad26}
+:root[data-design=glass][data-mode] :is(.button,.appearance-controls button,.appearance-controls select,.tour-coach button,.help-panel button,#site-mode,#shuffle-design,#coach-next){border-radius:25px;background:var(--control-glass);color:var(--gi-ink);border-color:var(--control-edge);box-shadow:var(--gi-shadow);backdrop-filter:blur(14px) saturate(150%);-webkit-backdrop-filter:blur(14px) saturate(150%);transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease}
+:root[data-design=glass][data-mode] :is(.button.dark,#coach-next,.help-panel button[type=submit]){background:var(--primary-glass);color:var(--primary-ink);border-color:var(--primary-edge);box-shadow:inset 0 1px 1px #ffffff8c,inset 0 -1px 1px #214cb133,0 5px 18px #315ec52b}
+:root[data-design=glass][data-mode] .hero :is(.button,.text-link,#site-mode){border-radius:28px;min-height:50px;padding:14px 22px}
+:root[data-design=glass][data-mode] .hero .actions>.text-link{background:var(--control-glass);color:var(--gi-ink);border-color:var(--gi-edge);box-shadow:var(--gi-shadow);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+:root[data-design=glass][data-mode] :is(.button,.hero .text-link,#site-mode,#shuffle-design):hover:not(:disabled){transform:translateY(-1px);box-shadow:inset 0 1px 1px #ffffffaa,0 8px 24px var(--lg-shadow);border-color:var(--gi-edge)}
+:root[data-design=glass][data-mode] :is(.button,.hero .text-link,#site-mode,#shuffle-design):active:not(:disabled){transform:scale(.98);box-shadow:inset 0 1px 2px #ffffff80,0 2px 8px var(--lg-shadow)}
+:root[data-design=glass][data-mode] .site-header :is(a,button):focus-visible{outline-color:var(--cr-ring)}
+:root[data-design=glass][data-mode] .hero{position:relative;isolation:isolate;padding-top:72px;padding-bottom:42px}
+:root[data-design=glass][data-mode] .hero:before{content:'';position:absolute;z-index:-1;pointer-events:none;width:440px;height:440px;right:0;top:25px;border-radius:46% 54% 60% 40%;transform:rotate(-20deg);background:linear-gradient(135deg,#ffffff60,#ffffff03 53%,#a2b5fa26);border:1px solid #ffffff86;box-shadow:inset 12px 15px 30px #ffffff58,inset -10px -15px 28px #6484c727,20px 30px 65px #5d75b21c}
+:root[data-design=glass][data-mode=dark] .hero:before{background:linear-gradient(135deg,#c9dfff26,#ffffff03 53%,#9a7de630);border-color:#d8e5ff52;box-shadow:inset 12px 15px 30px #ddeaff27,inset -10px -15px 28px #5671c222,20px 30px 65px #0003}
+:root[data-design=glass][data-mode] .hero h1 em{color:var(--accent);font-weight:450}
+:root[data-design=glass][data-mode] .hero .eyebrow{color:var(--gi-muted)}
+:root[data-design=glass][data-mode] .hero .hero-detail{color:var(--gi-muted)}
+/* The illustration has one translucent window and quiet, readable content planes. */
+html[data-design=glass][data-mode] .ps-hero{--ps-ink:var(--gi-ink);--ps-muted:var(--gi-muted);--ps-line:var(--gi-line);--ps-surface:var(--lg-soft);--ps-card:var(--lg-panel);--ps-accent:var(--accent);background:var(--gi-glass);border:1px solid var(--gi-edge);border-radius:28px;box-shadow:var(--gi-shadow),0 30px 70px var(--lg-shadow);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);transform:perspective(1400px) rotateY(-3deg) rotateZ(-1deg)}
+html[data-design=glass][data-mode] .ps-hero :is(.ps-window-bar,figcaption){background:var(--lg-soft)}
+html[data-design=glass][data-mode] .ps-avatar{background:var(--gi-mark-fill);color:var(--gi-ink);border:1px solid var(--gi-mark-edge);box-shadow:var(--gi-shadow)}
+html[data-design=glass][data-mode] .ps-hero :is(.ps-window-mark,.ps-path-active i){background:var(--primary-glass);color:#fff}
+html[data-design=glass][data-mode] .ps-role-bar{width:fit-content;padding:4px;border:1px solid var(--gi-edge);border-radius:28px;background:var(--gi-glass);box-shadow:var(--gi-shadow)}
+html[data-design=glass][data-mode] .ps-role-bar button{min-height:34px}
+html[data-design=glass][data-mode] .ps-role-bar button[aria-pressed=true]{background:var(--lg-panel);color:var(--gi-ink);box-shadow:inset 0 1px 1px #fff6,0 2px 5px var(--lg-shadow)}
+:root[data-design=glass][data-mode] :is(.demo-section,.ownership){background:var(--lg-soft);border-block:1px solid var(--gi-line)}
+:root[data-design=glass][data-mode] .savings-band{background:var(--lg-panel);color:var(--gi-ink);border-block:1px solid var(--gi-edge);box-shadow:inset 0 1px 0 #ffffff66}
+:root[data-design=glass][data-mode] .savings-band :is(h2,p,a,em,.eyebrow){color:var(--gi-ink)}
+:root[data-design=glass][data-mode] .demo-tools{background:var(--gi-glass);border-color:var(--gi-edge);box-shadow:var(--gi-shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+:root[data-design=glass][data-mode] .role-tabs{background:var(--lg-soft);border-color:var(--gi-edge);border-radius:24px}
+:root[data-design=glass][data-mode] .role-tabs button{border-radius:22px}
+:root[data-design=glass][data-mode] .role-tabs button[aria-pressed=true]{background:var(--lg-panel);color:var(--gi-ink);border-color:var(--gi-edge);box-shadow:var(--gi-shadow)}
+:root[data-design=glass][data-mode] .tour-onboarding{background:var(--lg-panel);border-color:var(--gi-edge);box-shadow:var(--gi-shadow)}
+:root[data-design=glass][data-mode] .appearance-controls{background:var(--lg-menu);border-color:var(--gi-edge);border-radius:26px;box-shadow:var(--gi-shadow),0 20px 60px var(--lg-shadow);backdrop-filter:blur(30px) saturate(140%);-webkit-backdrop-filter:blur(30px) saturate(140%);transform-origin:90% 0;animation:glass-reveal .22s cubic-bezier(.2,.8,.3,1)}
+:root[data-design=glass][data-mode] .appearance-controls option{background:var(--surface);color:var(--gi-ink)}
+@keyframes glass-reveal{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:760px){
+ :root[data-design=glass][data-mode] .site-header{border-radius:28px;padding:10px 12px}
+ :root[data-design=glass][data-mode] .hero{padding-top:44px}
+ :root[data-design=glass][data-mode] .hero:before{top:400px;width:290px;height:340px;right:16px}
+ :root[data-design=glass][data-glass-menu=true] .site-header nav{background:var(--lg-menu);border-color:var(--gi-edge);border-radius:26px;box-shadow:var(--gi-shadow);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);animation:glass-reveal .22s ease}
+ :root[data-design=glass][data-glass-menu=true] .site-header nav a:hover{background:var(--lg-soft)}
+ :root[data-design=glass][data-mode] .hero :is(.button,.text-link,#site-mode){font-size:13px;padding:13px 18px}
+}
+/* Legible solid fallback rather than returning to the old green treatment. */
+:root[data-design=glass][data-glass-clarity=true]{--gi-glass:var(--surface);--control-glass:var(--surface);--lg-panel:var(--surface);--lg-menu:var(--surface)}
+:root[data-design=glass][data-glass-clarity=true] :is(.site-header,.appearance-controls,.ps-hero,.demo-tools){background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none}
+@media(prefers-reduced-transparency:reduce){:root[data-design=glass]{--gi-glass:var(--surface);--control-glass:var(--surface);--lg-panel:var(--surface);--lg-menu:var(--surface)}:root[data-design=glass][data-mode] :is(.site-header,.appearance-controls,.ps-hero,.demo-tools){background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none}}
+@supports not (backdrop-filter:blur(1px)){:root[data-design=glass]{--gi-glass:var(--surface);--control-glass:var(--surface);--lg-panel:var(--surface);--lg-menu:var(--surface)}}
+@media(prefers-reduced-motion:reduce){:root[data-design=glass][data-mode] :is(button,a,.appearance-controls,.site-header nav){animation:none!important;transition:none!important;transform:none!important}}
+/* Decorative lens stays within the page canvas. */
+html[data-design=glass][data-mode] body{overflow-x:clip}
+/* Faint chapter light: colour belongs behind the material, not in opaque panels. */
+:root[data-design=glass][data-mode] body:before{opacity:.72}
+:root[data-design=glass][data-mode] .ps-explainer{background:radial-gradient(ellipse at 80% 45%,#b9d9f01c,transparent 68%)}
+:root[data-design=glass][data-mode] .demo-section{background:radial-gradient(ellipse at 8% 30%,#8fcbd01f,transparent 64%),var(--lg-soft)}
+:root[data-design=glass][data-mode] .walkthrough{background:radial-gradient(ellipse at 95% 45%,#c2a2e922,transparent 65%)}
+:root[data-design=glass][data-mode] .savings-band{background:radial-gradient(ellipse at 12% 40%,#efd1ae29,transparent 67%),var(--lg-panel)}
+:root[data-design=glass][data-mode] .ownership{background:radial-gradient(ellipse at 90% 55%,#a4cdd522,transparent 65%),var(--lg-soft)}
+/* Tinted liquid lenses: transmitted background, bright rim, quiet lower shadow. */
+:root[data-design=glass]{--primary-glass:linear-gradient(135deg,#ffffff8c 0%,#91b9ff80 38%,#7f9ef05e 73%,#ffffff70);--primary-ink:#15396e;--primary-edge:#ffffffd6}
+:root[data-design=glass][data-mode=dark]{--primary-glass:linear-gradient(135deg,#c2d9ff40,#648fdf50 38%,#786be33d 73%,#cbdcff28);--primary-ink:#f4f7ff;--primary-edge:#dbe9ff9c}
+:root[data-design=glass][data-mode] .site-header>.button.dark{--primary-glass:linear-gradient(135deg,#ffffff8c,#91b9ff80 38%,#7f9ef05e 73%,#ffffff70);--primary-ink:#15396e;--primary-edge:#ffffffd6}
+:root[data-design=glass][data-mode=dark] .site-header>.button.dark{--primary-glass:linear-gradient(135deg,#c2d9ff40,#648fdf50 38%,#786be33d 73%,#cbdcff28);--primary-ink:#f4f7ff;--primary-edge:#dbe9ff9c}
+:root[data-design=glass][data-mode] :is(.button.dark,#coach-next,.help-panel button[type=submit]){box-shadow:inset 0 1px 1px #ffffffc7,inset 1px 0 1px #ffffff6b,inset 0 -1px 1px #4d6baf29,0 5px 16px #4260a324;backdrop-filter:blur(12px) saturate(165%);-webkit-backdrop-filter:blur(12px) saturate(165%)}
+:root[data-design=glass][data-mode] :is(.button,.hero .text-link){position:relative;isolation:isolate;overflow:hidden}
+/* The glass homepage shows slices of the actual synthetic dataset. */
+.ps-data-slice{display:none}
+:root[data-design=glass][data-mode] .ps-example-grid{display:none}
+:root[data-design=glass][data-mode] .ps-data-slice{display:block;background:var(--lg-panel);border:1px solid var(--gi-edge);border-radius:18px;margin-top:16px;overflow:hidden;box-shadow:inset 0 1px 0 #ffffff70}
+:root[data-design=glass][data-mode] .ps-slice-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 15px 12px}
+:root[data-design=glass][data-mode] .ps-slice-heading strong{font-size:14px;color:var(--gi-ink)}
+:root[data-design=glass][data-mode] .ps-slice-heading>span{font-size:10px;color:var(--gi-muted)}
+:root[data-design=glass][data-mode] .ps-data-slice table{width:100%;border-collapse:collapse;font-size:12px;line-height:1.5}
+:root[data-design=glass][data-mode] .ps-data-slice :is(th,td){text-align:left;padding:12px 15px;border-bottom:1px solid var(--gi-line);vertical-align:middle}
+:root[data-design=glass][data-mode] .ps-data-slice th{font-size:10px;font-weight:550;letter-spacing:.03em;color:var(--gi-muted);padding-block:8px;background:var(--lg-soft)}
+:root[data-design=glass][data-mode] .ps-data-slice td{color:var(--gi-ink)}
+:root[data-design=glass][data-mode] .ps-data-slice :is(th,td):last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+:root[data-design=glass][data-mode] .ps-data-slice tbody tr:last-child td{border-bottom:0}
+:root[data-design=glass][data-mode] .ps-slice-link{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:12px 15px;border-top:1px solid var(--gi-line);color:var(--accent);font-size:11px;font-weight:600;text-decoration:none}
+:root[data-design=glass][data-mode] .ps-slice-link:hover{background:var(--lg-soft)}
+:root[data-design=glass][data-mode] .ps-role-bar{margin-top:18px}
+:root[data-design=glass][data-mode] .ps-role-detail{min-height:60px}
+:root[data-design=glass][data-mode] .ps-hero :is(.ps-window-mark,.ps-path-active i){background:var(--primary-glass);color:var(--primary-ink);border:1px solid var(--primary-edge);box-shadow:var(--gi-shadow)}
+@media(max-width:650px){:root[data-design=glass][data-mode] .ps-data-slice :is(th,td){padding:10px;font-size:11px}:root[data-design=glass][data-mode] .ps-data-slice th{font-size:10px}:root[data-design=glass][data-mode] .ps-slice-heading{padding:14px 10px}:root[data-design=glass][data-mode] .ps-role-bar button{min-height:40px}}
+/* Background form supports the product window rather than competing with it. */
+:root[data-design=glass][data-mode] .hero:before{opacity:.38;border-color:#ffffff48;box-shadow:inset 8px 12px 28px #ffffff30,inset -8px -12px 28px #8b9dc314,14px 24px 65px #7487b00d;filter:blur(.6px)}
+:root[data-design=glass][data-mode=dark] .hero:before{opacity:.28;border-color:#d8e5ff35;box-shadow:inset 8px 12px 28px #ddeaff20,inset -8px -12px 28px #5671c210,14px 24px 65px #0001}

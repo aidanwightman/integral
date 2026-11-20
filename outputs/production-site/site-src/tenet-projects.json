@@ -1,0 +1,97 @@
+[
+  {
+    "name": "PG Group",
+    "url": "https://www.linkedin.com/company/pggrp/",
+    "description": "Web3 consultancy on LinkedIn",
+    "icon": "pg-group.png",
+    "iconSource": "https://www.linkedin.com/company/pggrp/"
+  },
+  {
+    "name": "eBit",
+    "url": "https://ebit.gitbook.io/ebit.gg-litepaper-v1.0/introduction/ebit-game-selection",
+    "description": "eBit casino litepaper",
+    "icon": "ebit.png",
+    "iconSource": "https://ebit.gitbook.io/ebit.gg-litepaper-v1.0"
+  },
+  {
+    "name": "KICKZ.com",
+    "url": "https://www.kickz.com/en-GB",
+    "description": "KICKZ sneaker and basketball store",
+    "icon": "kickz.png",
+    "iconSource": "https://www.kickz.com/apple-touch-icon.png"
+  },
+  {
+    "name": "Deepvelopment",
+    "url": "https://deepvelopment.com/",
+    "description": "Engineering studio",
+    "icon": "deepvelopment.png",
+    "iconSource": "https://deepvelopment.com/icon.svg"
+  },
+  {
+    "name": "Blvck Paris",
+    "url": "https://blvck.com/pages/nft",
+    "description": "Web3 projects on Blvck Paris",
+    "icon": "blvck-paris.png",
+    "iconSource": "https://blvck.com/pages/nft"
+  },
+  {
+    "name": "Blank Studios",
+    "url": "https://studiosblank.com/",
+    "description": "Studio website",
+    "icon": "blank-studios.png",
+    "iconSource": "https://studiosblank.com/"
+  },
+  {
+    "name": "Bridge 3 Labs",
+    "url": "https://studiosblank.com/#why",
+    "description": "Bridge 3 Labs in the Studios Blank client gallery",
+    "icon": "bridge-3-labs.png",
+    "iconSource": "https://framerusercontent.com/images/WT7CCi9Qgz0RX7sSovLUpKCDxg.png"
+  },
+  {
+    "name": "Web Three Audit & Consult",
+    "initials": "W3"
+  },
+  {
+    "name": "Dysto Apez",
+    "url": "https://etherscan.io/token/0x648e8428e0104ec7d08667866a3568a72fe3898f",
+    "description": "Collection record on Etherscan",
+    "icon": "dysto-apez.png",
+    "iconSource": "https://web3.okx.com/nft/collection/eth/dysto-apez-official-1"
+  },
+  {
+    "name": "LlamaLabs",
+    "url": "https://blocknews.com/llamaverse/",
+    "description": "BlockNews profile of Llamaverse and LlamaLabs",
+    "icon": "llamalabs.png",
+    "iconSource": "https://www.youtube.com/channel/UCPMPVz2Jcwjjl0j7GqsjWIA/about"
+  },
+  {
+    "name": "Egg Heads Club",
+    "url": "https://medium.com/@eggheadsclub/the-birth-of-egg-heads-club-8d0ec8722e9f",
+    "description": "The project’s origin story",
+    "icon": "eggheadsclub.png",
+    "iconSource": "https://opensea.io/collection/eggheadsclub"
+  },
+  {
+    "name": "Forgotten 3thereal Worlds",
+    "url": "https://opensea.io/collection/forgotten-ethereal-worlds",
+    "description": "Collection on OpenSea",
+    "icon": "forgotten-ethereal-worlds.png",
+    "iconSource": "https://opensea.io/collection/forgotten-ethereal-worlds"
+  },
+  {
+    "name": "ZooVerse",
+    "url": "https://linktr.ee/ZooVerseNFT",
+    "description": "Project links",
+    "icon": "zooversegenesis.png",
+    "iconSource": "https://opensea.io/collection/zooversegenesis"
+  },
+  {
+    "name": "The Habibiz",
+    "url": "https://www.forbes.com/digital-assets/nfts/the-habibiz-hbz/",
+    "description": "Collection profile on Forbes",
+    "icon": "thehabibiz.png",
+    "iconSource": "https://opensea.io/collection/thehabibiz"
+  }
+]

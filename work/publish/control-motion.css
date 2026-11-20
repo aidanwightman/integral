@@ -1,0 +1,35 @@
+/* Shared by the site and the workspace. Identity sheets own the colours and borders.
+   Their ID-based selectors differ, so only interaction timing takes precedence here. */
+:root {
+  --control-settle: 300ms;
+  --control-ease: cubic-bezier(.25, .65, .35, 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :where(button, select, summary, .button, .text-link, .preview-record-link, .preset-card, nav a) {
+    transition-property: background-color, border-color, box-shadow, color, opacity, filter !important;
+    transition-duration: var(--control-settle) !important;
+    transition-timing-function: var(--control-ease) !important;
+  }
+
+  /* A press needs immediate acknowledgement; releasing it settles more slowly. */
+  :where(button, summary, .button, .text-link):active {
+    transition-duration: 100ms !important;
+  }
+
+  .control-chevron {
+    transition: transform 240ms var(--control-ease) !important;
+  }
+}
+
+/* Keep pointer targets fixed as their pressed or hovered surfaces change. */
+:where(button, .button, .text-link, .preset-card):is(:hover, :active) {
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button, select, summary, .button, .text-link, .preview-record-link, .preset-card, nav a, .control-chevron) {
+    transition: none !important;
+    animation: none !important;
+  }
+}

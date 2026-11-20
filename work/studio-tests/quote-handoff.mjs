@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {dataset, INDUSTRIES} from '../../outputs/workspace-concepts/studio-src/data.js';
+import {requestApproval,decideApproval} from '../../outputs/workspace-concepts/studio-src/approval-model.js';
+import {salesWorkbenchAction} from '../../outputs/workspace-concepts/studio-src/calling.js';
+import {quoteHandoffAction,quoteHandoffPanel} from '../../outputs/workspace-concepts/studio-src/quote-handoff.js';
+for (const {id} of INDUSTRIES) {
+  const d=dataset(id), s={role:'sales',callContact:d.contacts[0].id}, owner=d.team.find(t=>t.department==='Delivery');
+  salesWorkbenchAction(d,s,'sales-quote',{amount:'3200'});
+  const quote=d.quotes[0], send=(v)=>quoteHandoffAction(d,'sales','quote-handoff-send',quote.id,v);
+  const values={version:0,ownerId:owner.id,due:'2026-11-27',scope:'Connect the order form',criteria:'Customer signs off a test order'};
+  assert.throws(()=>send(values),/accepted quote/);
+  const signoff=requestApproval(d,'sales','quote',{targetId:quote.id,reason:'Approve the proposed scope and price.'});
+  decideApproval(d,'saleslead',signoff.id,1,'approved');
+  salesWorkbenchAction(d,s,'sales-quote-review',{id:quote.id});
+  assert.throws(()=>send({...values,criteria:' '}),/acceptance criteria/);
+  assert.throws(()=>send({...values,due:'2026-02-30'}),/date/);
+  assert.throws(()=>send({...values,ownerId:'invalid'}),/owner/);
+  assert.equal(quote.handoff,undefined);
+  send(values);
+  assert.match(quoteHandoffPanel(d,'operations'),/Customer signs off a test order/);
+  assert.throws(()=>send(values),/already changed/);
+  assert.throws(()=>quoteHandoffAction(d,'sales','quote-handoff-accept',quote.id,{version:1}),/operations review/);
+  const review=(act,v)=>quoteHandoffAction(d,'operations','quote-handoff-'+act,quote.id,v);
+  assert.throws(()=>review('return',{version:1,note:' '}),/Explain/);
+  review('return',{version:1,note:'Specify acceptance volume <script>'});
+  assert.match(quoteHandoffPanel(d,'sales'),/Specify acceptance volume &lt;script&gt;/);
+  send({...values,version:2,criteria:'Customer signs off five test orders'});
+  assert.throws(()=>review('return',{version:1,note:'Old retry'}),/already changed/);
+  review('accept',{version:3,note:'Team confirmed requirements'});
+  assert.throws(()=>review('accept',{version:3}),/already changed/);
+  assert.throws(()=>send({...values,version:4}),/Only a new/);
+  assert.equal(quote.handoff.history.length,4);
+  assert.match(quoteHandoffPanel(d,'sales'),/Accepted by operations/);
+  assert.equal(quote.handoff.history[0].criteria,values.criteria);
+  assert.equal(quote.handoff.criteria,'Customer signs off five test orders');
+  assert.equal(d.activity.filter(a=>a.recordId===quote.id && a.action.startsWith('Delivery handoff')).length,4);
+}
+console.log('PASS: quote lifecycle, validated scope/owner/date, operations return/resubmission/accept, stale retries, snapshots and shared history across eight industries.');

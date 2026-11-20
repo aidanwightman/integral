@@ -1,0 +1,36 @@
+/* Distinct control language; no header positioning or scroll overrides. */
+:root[data-design=editorial]{--ci-radius:2px;--ci-face:var(--paper);--ci-ink:var(--ink);--ci-edge:var(--ink);--ci-primary:var(--ink);--ci-primary-ink:var(--paper);--ci-shadow:none;--ci-focus:var(--ink)}
+:root[data-design=signal]{--ci-radius:3px;--ci-face:#e8ede4;--ci-ink:#213b3f;--ci-edge:#667e78;--ci-primary:#224953;--ci-primary-ink:#fff;--ci-shadow:inset 0 1px 0 #ffffffb3,0 2px 0 #7a9188;--ci-focus:#267481}
+:root[data-design=bento]{--ci-radius:13px;--ci-face:var(--surface);--ci-ink:var(--ink);--ci-edge:var(--line);--ci-primary:#294e37;--ci-primary-ink:#fff;--ci-shadow:0 2px 3px #173b2012;--ci-focus:#356943}
+:root[data-design=signal][data-mode=dark]{--ci-face:#304745;--ci-ink:#eff6e9;--ci-edge:#829b91;--ci-primary:#d4e6af;--ci-primary-ink:#233b31;--ci-shadow:inset 0 1px 0 #b8d1ba33,0 2px 0 #101f1c;--ci-focus:#d4e6af}
+:root[data-design=bento][data-mode=dark]{--ci-primary:#d6edac;--ci-primary-ink:#263f2d;--ci-edge:#82977b;--ci-focus:#dcf5b8}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(.button,.appearance-controls button,.appearance-controls select,#site-mode,#shuffle-design){min-height:44px;padding:10px 16px;border:1px solid var(--ci-edge);border-radius:var(--ci-radius);background:var(--ci-face);color:var(--ci-ink);box-shadow:var(--ci-shadow);font-family:inherit;font-size:13px;font-weight:650;line-height:1.35;letter-spacing:0;gap:9px;filter:none;backdrop-filter:none;-webkit-backdrop-filter:none;transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease,transform 100ms ease}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(.button.dark,#ci-primary-specificity){background:var(--ci-primary);color:var(--ci-primary-ink);border-color:var(--ci-primary)}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) .hero .button{min-height:48px;padding:12px 20px;font-size:14px}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) .button>span[aria-hidden=true]{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:18px;background:none;border:0;box-shadow:none;border-radius:0;font-size:18px;line-height:1}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) .text-link{font-family:inherit;font-weight:650;text-underline-offset:5px;text-decoration-thickness:1px;min-height:44px;align-items:center}
+:root[data-design=editorial] .text-link{text-decoration:underline}
+:root[data-design=editorial] .button{border-bottom-width:3px}
+:root[data-design=signal] :is(.button,.appearance-controls button,.appearance-controls select,#ci-font-specificity){font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+:root[data-design=signal] :is(.button.dark,#ci-primary-specificity){box-shadow:inset 0 1px 0 #ffffff38,0 2px 0 #152d31}
+:root[data-design=bento] .hero .button{border-radius:15px}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) .site-header nav{gap:4px}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) .site-header nav a{display:inline-flex;align-items:center;min-height:44px;padding:9px 11px;font-family:inherit;font-size:12px;font-weight:600;line-height:1.35;border-radius:var(--ci-radius);text-decoration:none;text-underline-offset:5px;transition:background-color 140ms ease}
+:root[data-design=editorial] .site-header nav a:hover{text-decoration:underline;text-decoration-thickness:2px}
+:root:is([data-design=signal],[data-design=bento]) .site-header nav a:hover{background:#ffffff1c;text-decoration:none}
+:root:is([data-design=signal],[data-design=bento]) .site-header>:is(.button.dark,#ci-primary-specificity){background:#d8eab5;color:#243c2c;border-color:#e1efca}
+:root:is([data-design=signal],[data-design=bento]) .site-header :is(.appearance-controls button,.appearance-controls select,#site-mode,#shuffle-design){background:#e9efe2;color:#213b2b;border-color:#a6b99b}
+:root:is([data-design=signal],[data-design=bento]) .site-header #site-mode[aria-pressed=true]{background:#e9efe2;color:#213b2b;border-color:#a6b99b}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(.role-tabs,.ps-role-bar) button{min-height:44px;padding:9px 13px;border:1px solid var(--ci-edge);border-radius:var(--ci-radius);background:var(--ci-face);color:var(--ci-ink);font-family:inherit;font-size:12px;font-weight:550;line-height:1.3;box-shadow:none}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(.role-tabs,.ps-role-bar) button[aria-pressed=true]{background:var(--ci-primary);color:var(--ci-primary-ink);border-color:var(--ci-primary);font-weight:750;box-shadow:inset 0 -3px 0 currentColor}
+:root[data-design=editorial] :is(.role-tabs,.ps-role-bar) button{border-width:0 0 2px}
+:root[data-design=signal] :is(.role-tabs,.ps-role-bar) button{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;box-shadow:var(--ci-shadow)}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(.button,.appearance-controls button,#site-mode,#shuffle-design):hover:not(:disabled){filter:none;transform:none;border-color:var(--ci-focus);box-shadow:inset 0 0 0 1px currentColor}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(.button,.appearance-controls button,#site-mode,#shuffle-design):active:not(:disabled){transform:translateY(1px);box-shadow:inset 0 2px 3px #0002}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(button,a,select,input,textarea,summary):focus-visible{outline:3px solid var(--ci-focus);outline-offset:3px}
+:root:is([data-design=signal],[data-design=bento]) .site-header :is(a,button,select):focus-visible{outline-color:#f0ffd4}
+:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(button,select):disabled{opacity:.48;cursor:not-allowed;filter:none;transform:none;box-shadow:none}
+@media(max-width:760px){:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) .site-header nav a{padding:9px 10px}:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) .appearance-controls :is(button,select){padding:10px 12px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(button,a,select){transition:none!important}:root:is([data-design=editorial],[data-design=signal],[data-design=bento]) :is(.button,.appearance-controls button,#site-mode,#shuffle-design):active{transform:none}}
+/* Bento hero is an inverse green panel in both modes; keep its action legible. */
+:root[data-design=bento] .hero :is(.button.dark,#ci-primary-specificity){background:#d8eab5;color:#243c2c;border-color:#e1efca;box-shadow:0 2px 3px #10291e26}

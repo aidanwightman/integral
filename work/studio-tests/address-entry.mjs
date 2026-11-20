@@ -1,0 +1,82 @@
+import assert from 'node:assert/strict';
+import {dataset} from '../../outputs/workspace-concepts/studio-src/data.js';
+import {logCompletedCall, saveContactEmail} from '../../outputs/workspace-concepts/studio-src/calling.js';
+import {crmBeginDraft, crmReadInbound, crmReviewContact, crmSaveContact} from '../../outputs/workspace-concepts/studio-src/contact-model.js';
+import {saveContactAddressEntry} from '../../outputs/workspace-concepts/studio-src/address-confirmation.js';
+
+const data = dataset('agency');
+const person = data.contacts[1];
+const candidate = 'morgan.quinn@juniperworks.example';
+const address = (fields) => saveContactAddressEntry(data, person.id, fields);
+logCompletedCall(data, {
+  contactId: person.id, ownerId: person.ownerId, direction: 'Inbound', endedAt: '2026-04-01T12:00:00Z',
+  durationSeconds: 155, outcome: 'Positive conversation', nextStep: 'Send pricing', runFollowUp: true
+});
+assert.equal(data.callJobs[0].status, 'Waiting for email');
+assert.equal(address({address:candidate.toUpperCase(), suggestedEmail:candidate}), 'suggested');
+assert.equal(person.email, '');
+assert.equal(person.suggestedEmail, candidate);
+const logCount = data.salesActivity.length;
+assert.equal(address({address:candidate}), 'suggested');
+assert.equal(data.salesActivity.length, logCount);
+assert.equal(crmBeginDraft(data, person.id).address, '');
+assert.equal(crmReadInbound(data, {sender:candidate,subject:'Hello',body:'Hello',received:'2026-04-02T10:00:00Z'}).contact, undefined);
+assert.throws(() => address({address:candidate,sourceId:'direct'}), /source/);
+assert.throws(() => saveContactEmail(data, person.id, candidate), /suggested/);
+assert.throws(() => saveContactAddressEntry(data, data.contacts[6].id, {address:candidate}), /another contact/);
+assert.equal(data.emailOutbox.length, 0);
+const proof = {address:candidate,sourceId:'direct',detail:'Person spelled their address.'};
+assert.equal(address(proof), 'confirmed');
+assert.equal(address(proof), 'confirmed');
+assert.equal(person.email, candidate);
+assert.equal(person.suggestedEmail, undefined);
+assert.equal(data.emailOutbox.length, 1);
+assert.throws(() => address({address:'stale@juniperworks.example',suggestedEmail:'stale@juniperworks.example'}), /already has/);
+assert.equal(person.email, candidate);
+
+const add = {firstName:'Ellis', lastName:'Green', ownerId:person.ownerId, accountId:person.accountId, emailAllowed:true};
+const guess = 'egreen@juniperworks.example';
+const fresh = crmSaveContact(data, {...add, email:guess, suggestedEmail:guess});
+assert.equal(fresh.email, '');
+assert.equal(fresh.suggestedEmail, guess);
+const edit = {editingId:fresh.id};
+crmSaveContact(data, {...add,title:'Account director',email:''}, edit);
+assert.equal(fresh.suggestedEmail, guess);
+crmSaveContact(data, {...add,email:guess.toUpperCase()}, edit);
+assert.equal(fresh.email, '');
+const conflict = {...add,firstName:'Elliot',email:guess};
+const matches = crmReviewContact(data, conflict).matches;
+assert.equal(matches.length,1);
+assert.equal(matches[0].exact,true);
+assert.equal(matches[0].savedEmailMatch,false);
+assert.throws(() => crmSaveContact(data, conflict, {reviewed:true}), /matching records/);
+assert.throws(() => crmSaveContact(data, {...add,email:candidate,suggestedEmail:candidate}, edit), /matching records/);
+crmSaveContact(data, {...add,email:'ellis.green@juniperworks.example',originalEmail:'',suggestedEmail:guess}, edit);
+assert.equal(fresh.email,'ellis.green@juniperworks.example');
+assert.equal(fresh.suggestedEmail,undefined);
+assert.throws(() => crmSaveContact(data,{...add,email:guess,originalEmail:''},edit),/address changed/);
+
+const removeGuess = crmSaveContact(data,{...add,firstName:'Rosa',email:'rgreen@juniperworks.example',suggestedEmail:'rgreen@juniperworks.example'});
+crmSaveContact(data,{...add,firstName:'Rosa',email:'',suggestedEmail:''},{editingId:removeGuess.id});
+assert.equal(removeGuess.email,'');
+assert.equal(removeGuess.suggestedEmail,undefined);
+
+const old = dataset('agency');
+const imported = old.contacts[1];
+imported.email = candidate;
+imported.emailStatus = 'inferred';
+assert.equal(saveContactAddressEntry(old,imported.id,{address:candidate}), 'suggested');
+assert.equal(imported.email,'');
+assert.equal(imported.suggestedEmail,candidate);
+const independentlyTyped = 'm.quinn+sales@juniperworks.example';
+assert.equal(saveContactAddressEntry(old,imported.id,{address:independentlyTyped,suggestedEmail:candidate}), 'entered');
+const manualEvents = old.salesActivity.length;
+assert.equal(saveContactAddressEntry(old,imported.id,{address:independentlyTyped}), 'entered');
+assert.equal(old.salesActivity.length, manualEvents);
+assert.equal(imported.suggestedEmail,undefined);
+assert.equal(imported.emailEvidence,undefined);
+imported.emailStatus = 'bounced';
+const fromKnownSender = crmReadInbound(old, {sender:independentlyTyped,subject:'Re: Pricing',body:'Thank you',received:'2026-04-02T09:20:00Z'});
+assert.equal(fromKnownSender.contact.id,imported.id);
+assert.equal(crmBeginDraft(old,imported.id).address,'');
+console.log('PASS: pending suggestions remain non-sendable across inline, add, edit and dialer; source confirmation, collisions, replay, stale edits and direct entry.');

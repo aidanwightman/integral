@@ -1,0 +1,23 @@
+# Integral
+
+The Integral website includes a guided tour and interactive workspaces for sales, finance, operations and people teams. The demos run in the browser using synthetic records.
+
+[Visit the Integral website](https://aidanwightman.github.io/integral/).
+
+## Build and preview
+
+From the repository root, run the following commands with Python 3.
+
+```sh
+python3 build.py
+python3 -m http.server 4184 --bind 127.0.0.1 --directory docs
+```
+
+Open the [local homepage](http://127.0.0.1:4184/). GitHub Pages serves the contents of `docs/` from the `main` branch. Commit updated source and its rebuilt pages together.
+
+## Source
+
+- Edit the landing page, guided walkthrough and project links in `outputs/production-site/site-src/`.
+- Edit the industry and role demos in `outputs/workspace-concepts/studio-src/`. The events workspace starts from `outputs/workspace-concepts/classic-template.html`.
+- Synthetic datasets and the optional SQLite schema live in `outputs/workspace-concepts/datasets/`. Run `python3 outputs/workspace-concepts/datasets/build-database.py` to rebuild the local database.
+- After building, run `node work/studio-tests/site.mjs` and `node work/studio-tests/tenet-partners.mjs` to check the landing page. Additional checks in the same directory cover CRM and finance workflows.

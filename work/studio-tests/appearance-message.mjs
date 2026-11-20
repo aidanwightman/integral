@@ -1,0 +1,122 @@
+import {usesPipelineMeetings,saveInvitationDetails} from '../../outputs/workspace-concepts/studio-src/pipeline-invitations.js';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import {INDUSTRIES,ROLES,LOOKS,dataset} from '../../outputs/workspace-concepts/studio-src/data.js';
+import {sum,balance,metrics,cashForecast,relationships,moveStage,reallocate} from '../../outputs/workspace-concepts/studio-src/model.js';
+for(const industry of INDUSTRIES){
+ const d=dataset(industry.id), ids=new Set(d.accounts.map(a=>a.id));
+ for(const kind of ['opportunities','invoices','work','domain']) for(const r of d[kind]) assert(ids.has(r.accountId));
+ assert.equal(metrics(d).allocated,sum(d.work.filter(w=>w.status!=='Complete'),'hours'));
+ const baseline=cashForecast(d);assert.equal(baseline[0].cash,d.openingCashPence+baseline[0].receipts-baseline[0].costs);
+ assert.equal(cashForecast(d,{delay:1})[0].receipts,0);
+ assert(cashForecast(d,{costChange:20}).at(-1).cash<baseline.at(-1).cash);
+ const invoice=d.invoices.find(i=>balance(i)>0), amount=balance(invoice);d.openingCashPence+=amount;invoice.paidPence=invoice.totalPence;
+ assert.equal(cashForecast(d).at(-1).cash,baseline.at(-1).cash);
+ const hours=metrics(d).allocated;reallocate(d,d.work[0].id,d.team[1].name);assert.equal(metrics(d).allocated,hours);
+ const opp=d.opportunities.find(o=>o.probability===.2);
+ saveInvitationDetails(d,opp.id,usesPipelineMeetings(d)?{meetingLink:'https://meet.example/review'}:{evidence1:'Customer reference 104'});
+ moveStage(d,opp.id);assert.equal(opp.probability,.45);assert.equal(opp.next,'Review the proposal');
+ for(const role of ROLES)for(const account of d.accounts){const g=relationships(d,account.id,role.id),nodes=new Set(g.nodes.map(n=>n.id));for(const e of g.edges)assert(nodes.has(e.from)&&nodes.has(e.to));}
+}
+const preferences=new Map([['data-saver-workspace-size','120']]);
+const elements=new Map();const element=()=>({innerHTML:'',handlers:{},dataset:{},style:{values:{},setProperty(k,v){this.values[k]=String(v)}},setAttribute(k,v){this[k]=v},querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s)},querySelectorAll(){return []},addEventListener(type,fn){this.handlers[type]=fn},classList:{add(){},remove(){}},focus(){}});
+const messageHandlers={};
+const posted=[];
+const parentWindow={postMessage:(message,origin)=>posted.push({message,origin})};
+const context=vm.createContext({document:{documentElement:element(),querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s);}},window:{parent:parentWindow,addEventListener(type,handler){const previous=messageHandlers[type];messageHandlers[type]=event=>{previous?.(event);handler(event)}},scrollTo(){}},location:{search:'?identity=glass',hash:'#studio/agency/finance/bento/forecast',origin:'https://example.test',protocol:'https:'},history:{replaceState(){}},structuredClone,URLSearchParams,queueMicrotask,localStorage:{getItem:k=>preferences.get(k)??null,setItem:(k,v)=>preferences.set(k,String(v))},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},console});
+const source=JSON.parse(fs.readFileSync('outputs/workspace-concepts/studio-src/package.json','utf8')).studioScripts.map(f=>fs.readFileSync('outputs/workspace-concepts/studio-src/'+f,'utf8').replace(/^import[^\n]+\n/gm,'').replace(/\bexport /g,'')).join('\n');
+vm.runInContext(source,context);
+assert.equal(vm.runInContext('state.look',context),'bento','Legacy identity query must not force Glass over the route');
+assert.equal(vm.runInContext('workspaceSize',context),120,'Saved display size restored');
+const sizeRoot=elements.get('#studio-root');
+sizeRoot.handlers.input({target:{id:'workspace-size',value:'130',dataset:{}}});
+assert.equal(preferences.get('data-saver-workspace-size'),'130');assert.equal(context.document.documentElement.style.values['--workspace-text-scale'],'1.3');assert.equal(elements.get('#workspace-size').getAttribute?.('aria-valuetext')||elements.get('#workspace-size')['aria-valuetext'],'130 percent');
+vm.runInContext('render()',context);assert.equal(vm.runInContext('workspaceSize',context),130,'Render must preserve display size');
+sizeRoot.handlers.input({target:{id:'workspace-size',value:'190',dataset:{}}});assert.equal(preferences.get('data-saver-workspace-size'),'175');
+sizeRoot.handlers.input({target:{id:'workspace-size',value:'bad',dataset:{}}});assert.equal(preferences.get('data-saver-workspace-size'),'100');
+console.log('PASS: legacy identity flag respects routed style; display size restores, persists, exposes accessible value and clamps inputs.');
+let renders=0;
+for(const i of INDUSTRIES)for(const r of ROLES)for(const l of LOOKS)for(const view of r.views){vm.runInContext(`Object.assign(state,${JSON.stringify({industry:i.id,role:r.id,look:l.id,view,gallery:false,account:null})});render()`,context);const html=elements.get('#studio-root').innerHTML;assert(html.includes('studio-main'));assert(!/NaN|undefined/.test(html));for(const destination of r.views)assert(html.includes('data-view="'+destination+'"'),`${l.id}/${r.id} lost ${destination}`);renders++;}
+console.log(`PASS: eight dataset integrity and business calculation checks; ${renders} view combinations rendered.`);
+
+vm.runInContext("Object.assign(state,{gallery:false,look:'glass',query:'keep this filter',graphSelected:'account-1'})",context);
+elements.get('#studio-root').handlers.change({target:{dataset:{select:'look'},value:'bento'}});
+assert.equal(vm.runInContext('state.query',context),'keep this filter');
+assert.equal(vm.runInContext('state.graphSelected',context),'account-1');
+console.log('PASS: every role destination remains reachable in each identity; appearance switching preserves search and graph selection.');
+
+for(const look of ['atlas','ledger']){
+ vm.runInContext(`Object.assign(state,{industry:'agency',role:'finance',look:'${look}',view:'forecast',gallery:false,graphSelected:null});showRecord(D().invoices.find(i=>balance(i)>0).id)`,context);
+ let html=elements.get('#studio-root').innerHTML;
+ assert(html.includes('id="record-title"'));assert(html.includes('Record full collection'));
+ assert.equal(elements.get('#studio-dialog').innerHTML,'');
+ vm.runInContext("onAction({target:{closest:()=>({dataset:{do:'collect',id:state.graphSelected}})}})",context);
+ assert.equal(vm.runInContext('balance(findRecord(state.graphSelected).record)',context),0);
+ assert(elements.get('#studio-root').innerHTML.includes('Fully collected'));
+ vm.runInContext('closeRecord()',context);assert.equal(vm.runInContext('state.graphSelected',context),null);
+ vm.runInContext(`Object.assign(state,{role:'operations',view:'timeline'});showRecord(D().work[0].id)`,context);
+ elements.get('#reassign-owner')??elements.set('#reassign-owner',element());
+ elements.get('#reassign-owner').value=vm.runInContext('D().team[1].name',context);
+ vm.runInContext("onAction({target:{closest:()=>({dataset:{do:'reassign',id:state.graphSelected}})}})",context);
+ assert.equal(vm.runInContext('findRecord(state.graphSelected).record.owner',context),elements.get('#reassign-owner').value);
+ vm.runInContext('closeRecord()',context);
+}
+console.log('PASS: Atlas/Ledger attached record collection, reassignment and close preserve functioning business actions without opening a modal.');
+
+const before=vm.runInContext("JSON.stringify({role:state.role,view:state.view,query:state.query,industry:state.industry,data:D()})",context);
+messageHandlers.message({source:{},origin:'https://example.test',data:{type:'data-saver-appearance',look:'forest'}});
+assert.notEqual(vm.runInContext('state.look',context),'forest');
+messageHandlers.message({source:parentWindow,origin:'https://attacker.test',data:{type:'data-saver-appearance',look:'forest'}});
+assert.notEqual(vm.runInContext('state.look',context),'forest');
+messageHandlers.message({source:parentWindow,origin:'https://example.test',data:{type:'data-saver-appearance',look:'forest'}});
+assert.equal(vm.runInContext('state.look',context),'forest');
+assert.equal(vm.runInContext("JSON.stringify({role:state.role,view:state.view,query:state.query,industry:state.industry,data:D()})",context),before);
+messageHandlers.message({source:parentWindow,origin:'https://example.test',data:{type:'data-saver-appearance',look:'invented'}});
+assert.equal(vm.runInContext('state.look',context),'forest');
+console.log('PASS: embedding appearance receiver rejects wrong source/origin/identity and preserves edited business data, role, view and filters.');
+
+const storedData=vm.runInContext('JSON.stringify([...stores])',context);
+messageHandlers.message({source:parentWindow,origin:'https://example.test',data:{type:'data-saver-navigate',industry:'field',role:'people',look:'forest',view:'leave'}});
+assert.equal(vm.runInContext('state.role',context),'people');
+assert.equal(vm.runInContext('state.view',context),'leave');
+assert.equal(vm.runInContext('state.industry',context),'field');
+assert.equal(vm.runInContext('JSON.stringify([...stores])',context),storedData);
+messageHandlers.message({source:parentWindow,origin:'https://example.test',data:{type:'data-saver-navigate',industry:'agency',role:'finance',look:'glass',view:'invented'}});
+assert.equal(vm.runInContext('state.view===R().defaultView',context),true);
+assert.equal(vm.runInContext('JSON.stringify([...stores])',context),storedData);
+messageHandlers.message({source:parentWindow,origin:'https://example.test',data:{type:'data-saver-navigate',industry:'invented',role:'finance',look:'forest',view:'overview'}});
+assert.equal(vm.runInContext('state.industry',context),'agency');
+console.log('PASS: validated parent navigation changes role/business without recreating edited datasets; invalid views fall back and invalid businesses are rejected.');
+
+context.location.search='?embed=site';
+const picker={dataset:{select:'look'},value:'northstar',isConnected:true,focus(){this.focused=true;}};
+const beforeNorthstar=vm.runInContext('JSON.stringify(state)',context);
+elements.get('#studio-root').handlers.change({target:picker});
+assert.equal(JSON.stringify(posted.at(-1)),JSON.stringify({message:{type:'data-saver-open-northstar'},origin:'https://example.test'}));
+assert.equal(vm.runInContext('JSON.stringify(state)',context),beforeNorthstar);
+assert.equal(picker.value,vm.runInContext('state.look',context));
+messageHandlers.message({source:parentWindow,origin:'https://example.test',data:{type:'data-saver-northstar-return'}});
+assert(picker.focused);
+const galleryHTML=vm.runInContext('gallery()',context);
+assert.equal((galleryHTML.match(/data-look="northstar"/g)||[]).length,1);
+assert.match(galleryHTML,/mini-northstar/);
+for(const look of LOOKS){
+  const html=vm.runInContext(`Object.assign(state,{look:${JSON.stringify(look.id)},gallery:false});render();root.innerHTML`,context);
+  assert.equal((html.match(/data-do="open-alerts" aria-label="Alerts,/g)||[]).length,1,`Permanent Alerts control in ${look.id}`);
+}
+console.log('PASS: Northstar picker and gallery preserve Studio state, return focus, and all seven Studio shells expose live Alerts.');
+
+const materialMessage={source:parentWindow,origin:'https://example.test',data:{type:'data-saver-appearance',look:'glass',mode:'dark',clarity:true}};
+vm.runInContext("state.look='glass';render()",context);
+const retainedRoot=elements.get('#studio-root');
+retainedRoot.innerHTML='draft still being edited';
+messageHandlers.message({...materialMessage,source:{}});
+assert.notEqual(preferences.get('data-saver-glass-clarity'),'true');
+messageHandlers.message(materialMessage);
+assert.deepEqual(JSON.parse(preferences.get('data-saver-glass-material-v1')),{mode:'dark',clarity:true});
+assert.equal(preferences.get('data-saver-glass-clarity'),'true');
+messageHandlers.message({...materialMessage,data:{...materialMessage.data,mode:null,clarity:'false'}});
+assert.deepEqual(JSON.parse(preferences.get('data-saver-glass-material-v1')),{mode:'dark',clarity:true});
+assert.equal(retainedRoot.innerHTML,'draft still being edited');
+console.log('PASS: trusted Glass preferences update in place and ignore invalid Clarity values.');

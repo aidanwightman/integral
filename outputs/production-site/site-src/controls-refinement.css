@@ -1,0 +1,57 @@
+/* Glass control system. Load last: shared legacy :is() rules contain ID specificity. */
+:root:is([data-design=glass],[data-design=forest]){--control-glass:linear-gradient(180deg,#ffffffed,#f2f6f1ed);--control-edge:#52715d55;--control-shadow:0 1px 2px #19312610;--primary-glass:linear-gradient(180deg,#2a5944,#234c3a);--primary-ink:#fff;--primary-edge:#204832;--control-focus:#37694c;--cr-hover:#e3ece4;--cr-ring:#37694c;--cr-disabled:#67756c}
+:root:is([data-design=glass],[data-design=forest])[data-mode=dark]{--control-glass:linear-gradient(180deg,#34483b,#2c3e32);--control-edge:#9cbaa264;--control-shadow:0 1px 2px #0002;--primary-glass:linear-gradient(180deg,#c3ddc6,#b1d1ba);--primary-ink:#183524;--primary-edge:#c5e0cc;--control-focus:#c8e6d0;--cr-hover:#405747;--cr-ring:#c8e6d0;--cr-disabled:#a0aca4}
+/* Matching the highest shared specificity avoids a second, competing visual system. */
+:root:is([data-design=glass],[data-design=forest]) :is(.button,.appearance-controls button,.appearance-controls select,.tour-coach button,.help-panel button,#site-mode,#shuffle-design,#coach-next){
+ min-height:44px;padding:10px 17px;border:1px solid var(--control-edge);border-radius:12px;background:var(--control-glass);color:var(--gi-ink);box-shadow:var(--control-shadow);font:560 13px/1.35 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.12px;gap:9px;backdrop-filter:none;-webkit-backdrop-filter:none;transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease,transform 100ms ease;filter:none
+}
+:root:is([data-design=glass],[data-design=forest]) :is(.button.dark,#coach-next,.help-panel button[type=submit]){background:var(--primary-glass);color:var(--primary-ink);border-color:var(--primary-edge);box-shadow:0 1px 2px #10291e26}
+:root:is([data-design=glass],[data-design=forest]) .hero :is(.button,.text-link){min-height:48px;padding:12px 19px;border-radius:13px;font-size:14px;gap:10px}
+:root:is([data-design=glass],[data-design=forest]) .hero .text-link{background:var(--control-glass);color:var(--gi-ink);border:1px solid var(--control-edge);box-shadow:var(--control-shadow);backdrop-filter:none;-webkit-backdrop-filter:none}
+:root:is([data-design=glass],[data-design=forest]) .button>span[aria-hidden=true]{display:inline-flex;align-items:center;justify-content:center;min-width:16px;width:16px;height:16px;background:none;border:0;border-radius:0;box-shadow:none;font-size:17px;line-height:1}
+:root:is([data-design=glass],[data-design=forest]) .control-icon{width:16px;height:16px;flex:0 0 16px;stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+:root:is([data-design=glass],[data-design=forest]) .site-header{border-radius:24px;padding:10px 18px;gap:18px;box-shadow:0 6px 20px #183a2a20;border-color:#58745f80;background:linear-gradient(110deg,#283d34f5,#254b39f5)}
+:root:is([data-design=glass],[data-design=forest]) .site-header.glass-header-compact{padding-block:8px;box-shadow:0 5px 16px #183a2a25}
+:root:is([data-design=glass],[data-design=forest]) .site-header .brand-symbol{box-shadow:none;border-color:#9db5a260;border-radius:9px;background:#b1cab519}
+:root:is([data-design=glass],[data-design=forest]) .site-header nav{gap:4px}
+:root:is([data-design=glass],[data-design=forest]) .site-header nav a{display:inline-flex;align-items:center;min-height:40px;padding:8px 10px;border-radius:9px;font-size:12px;font-weight:520;letter-spacing:0;text-decoration:none;transition:background-color 140ms ease;color:#f0f7f2}
+:root:is([data-design=glass],[data-design=forest]) .site-header nav a:hover{background:#b8d1bf1c;text-decoration:none;color:#fff}
+:root:is([data-design=glass],[data-design=forest]) .site-header :is(.glass-design-launcher,.glass-mobile-menu){display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:9px 12px;font:550 12px/1.3 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border:1px solid #9fbea958;border-radius:10px;color:#f3f8f4;background:#aecab50d;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;transition:background-color 140ms ease,border-color 140ms ease}
+:root:is([data-design=glass],[data-design=forest]) .site-header .glass-mobile-menu{display:none}
+:root:is([data-design=glass],[data-design=forest]) .site-header :is(.glass-design-launcher,.glass-mobile-menu):hover{background:#b8d1bf24;border-color:#b5cdbb90}
+:root:is([data-design=glass],[data-design=forest]) .site-header :is(.glass-design-launcher,.glass-mobile-menu)[aria-expanded=true]{background:#c6dfcd2b;border-color:#b7d6c0}
+:root:is([data-design=glass],[data-design=forest]) .site-header>.button.dark{--primary-glass:linear-gradient(180deg,#d7e8d8,#c9dfcc);--primary-ink:#1d3c2a;--primary-edge:#d6e9da;min-height:40px;padding:9px 14px;border-radius:10px;font-size:12px;box-shadow:0 1px 2px #10291e30}
+:root:is([data-design=glass],[data-design=forest]) .appearance-controls{padding:14px;border-radius:18px;border-color:var(--control-edge);box-shadow:0 12px 30px #10291e26;gap:8px}
+:root:is([data-design=glass],[data-design=forest]) .role-tabs{border-radius:16px;padding:4px;box-shadow:none;background:#6e8f7512;border-color:var(--control-edge)}
+:root:is([data-design=glass],[data-design=forest]) .role-tabs button{border-radius:11px;min-height:40px;font-size:12px;font-weight:520;padding:8px 13px}
+:root:is([data-design=glass],[data-design=forest]) .role-tabs button[aria-pressed=true]{background:var(--primary-glass);color:var(--primary-ink);border-color:var(--primary-edge);box-shadow:0 1px 3px #10291e20;font-weight:600}
+/* State changes remain visible without swelling, glossy rings or hover movement. */
+:root:is([data-design=glass],[data-design=forest]) :is(.button,.appearance-controls button,.hero .text-link,.tour-coach button,.help-panel button,#site-mode,#shuffle-design):hover:not(:disabled){transform:none;filter:none;box-shadow:0 2px 5px #19312620;border-color:var(--control-focus)}
+:root:is([data-design=glass],[data-design=forest]) :is(.button,.appearance-controls button,.hero .text-link,.tour-coach button,.help-panel button,#site-mode,#shuffle-design):active:not(:disabled){transform:translateY(1px);box-shadow:none;filter:brightness(.96)}
+:root:is([data-design=glass],[data-design=forest]) :is(button,a,select,input,textarea):focus-visible{outline:2px solid var(--cr-ring);outline-offset:3px}
+:root:is([data-design=glass],[data-design=forest]) .site-header :is(a,button):focus-visible{outline-color:#e0f2e5}
+:root:is([data-design=glass],[data-design=forest]) .appearance-controls :is(button,select):focus-visible{outline-color:var(--cr-ring)}
+:root:is([data-design=glass],[data-design=forest]) :is(button,select):disabled{opacity:.48;cursor:not-allowed;box-shadow:none;transform:none;filter:none}
+@media(max-width:760px){:root:is([data-design=glass],[data-design=forest]) .site-header{padding:10px 12px;border-radius:22px;gap:8px}:root:is([data-design=glass],[data-design=forest]) .site-header .glass-mobile-menu{display:inline-flex;min-height:44px}:root:is([data-design=glass],[data-design=forest]) .site-header :is(.glass-design-launcher,.button.dark){min-height:44px}:root:is([data-design=glass],[data-design=forest]) .hero :is(.button,.text-link){font-size:13px;min-height:48px}:root:is([data-design=glass],[data-design=forest]) .role-tabs button{min-height:44px;font-size:11px;padding:8px}:root:is([data-design=glass],[data-design=forest])[data-glass-menu=true] .site-header nav{border-radius:18px;padding:8px}:root:is([data-design=glass],[data-design=forest])[data-glass-menu=true] .site-header nav a{min-height:44px;padding:12px 14px}}
+@media(prefers-reduced-motion:reduce){:root:is([data-design=glass],[data-design=forest]) :is(button,a,select){transition:none!important;transform:none!important}}
+@media(prefers-reduced-transparency:reduce){:root:is([data-design=glass],[data-design=forest]) .site-header{background:#253e31;backdrop-filter:none;-webkit-backdrop-filter:none}}
+:root:is([data-design=glass],[data-design=forest]) .control-chevron{width:14px;height:14px;flex:0 0 14px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:transform 140ms ease;opacity:.75}
+:root:is([data-design=glass],[data-design=forest]) .glass-design-launcher[aria-expanded=true] .control-chevron{transform:rotate(180deg)}
+@media(prefers-reduced-motion:reduce){:root:is([data-design=glass],[data-design=forest]) .control-chevron{transition:none}}
+:root:is([data-design=glass],[data-design=forest]) .hero :is(.button,.text-link,#site-mode){min-height:48px;padding:12px 19px;border-radius:13px;font-size:14px;gap:10px}
+:root:is([data-design=glass],[data-design=forest]) .hero .actions>.text-link{background:var(--control-glass);color:var(--gi-ink);border:1px solid var(--control-edge);box-shadow:var(--control-shadow)}
+:root:is([data-design=glass],[data-design=forest])[data-mode=dark] .hero .actions>.text-link{background:var(--control-glass);color:var(--gi-ink);border-color:var(--control-edge)}
+@media(max-width:760px){:root:is([data-design=glass],[data-design=forest]) .hero :is(.button,.text-link,#site-mode){font-size:13px}}
+/* Restrained optical depth: one rim, diffuse transmission, no stacked bevels. */
+:root:is([data-design=glass],[data-design=forest]){--control-glass:linear-gradient(160deg,#ffffffd9,#edf4edb8);--control-shadow:inset 0 1px 0 #ffffffc4,0 1px 3px #19312616;--primary-glass:linear-gradient(160deg,#376b53,#214a38 75%)}
+:root:is([data-design=glass],[data-design=forest])[data-mode=dark]{--control-glass:linear-gradient(160deg,#45634bce,#263c30c9);--control-shadow:inset 0 1px 0 #d5f1dc24,0 2px 4px #0002;--primary-glass:linear-gradient(155deg,#d3ead7,#accdb8 80%)}
+:root:is([data-design=glass],[data-design=forest]) .site-header{background:linear-gradient(115deg,#304a3de8,#224b37e8);box-shadow:inset 0 1px 0 #e1f7e52b,0 6px 20px #183a2a20;backdrop-filter:blur(22px) saturate(125%);-webkit-backdrop-filter:blur(22px) saturate(125%)}
+:root:is([data-design=glass],[data-design=forest]) .site-header :is(.glass-design-launcher,.glass-mobile-menu){background:linear-gradient(160deg,#dbefdf19,#9bbba307);box-shadow:inset 0 1px 0 #e4f7e619}
+:root:is([data-design=glass],[data-design=forest]) :is(.button.dark,#coach-next,.help-panel button[type=submit]){box-shadow:inset 0 1px 0 #ffffff24,0 2px 3px #10291e22}
+:root:is([data-design=glass],[data-design=forest]) .appearance-controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+:root:is([data-design=glass],[data-design=forest])[data-glass-tools=true] .appearance-controls{display:grid}
+:root:is([data-design=glass],[data-design=forest]) .appearance-controls label{display:grid;grid-column:1/-1;gap:7px;width:100%;min-width:0}
+:root:is([data-design=glass],[data-design=forest]) .appearance-controls #site-design{display:block;width:100%;max-width:none;min-width:0;box-sizing:border-box}
+:root:is([data-design=glass],[data-design=forest]) .appearance-controls #shuffle-design{grid-column:1/-1;width:100%}
+:root:is([data-design=glass],[data-design=forest]) .appearance-controls :is(#site-mode,.glass-clarity-control){width:100%;padding-inline:8px;font-size:12px;min-width:0}
+@media(prefers-reduced-transparency:reduce){:root:is([data-design=glass],[data-design=forest]) .site-header{background:#253e31;backdrop-filter:none;-webkit-backdrop-filter:none}:root:is([data-design=glass],[data-design=forest]){--control-glass:#edf4ed}:root:is([data-design=glass],[data-design=forest])[data-mode=dark]{--control-glass:#304736}}

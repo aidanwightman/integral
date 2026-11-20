@@ -1,0 +1,77 @@
+/* Lower-page composition. No demo, hero, header or content changes. */
+html[data-design] :is(.approach,.ownership,.about,.savings-detail,.closing,.walkthrough){position:relative;isolation:isolate}
+/* Glass carries its light through chapters; gradients remain behind solid readable content. */
+html[data-design=glass] :is(.approach,.walkthrough){background:radial-gradient(ellipse at 94% 20%,#a6c4ff24,transparent 58%),radial-gradient(ellipse at 4% 85%,#c7b4f322,transparent 48%)}
+html[data-design=glass] .ownership{background:radial-gradient(ellipse at 10% 85%,#9fc8f52c,transparent 52%),linear-gradient(110deg,color-mix(in srgb,var(--surface) 74%,transparent),color-mix(in srgb,var(--wash) 65%,transparent));border-block:1px solid var(--line)}
+html[data-design=glass] .about{background:radial-gradient(ellipse at 80% 12%,#c4adf52b,transparent 55%)}
+html[data-design=glass] .savings-detail{background:radial-gradient(ellipse at 8% 40%,#97c4f528,transparent 52%)}
+html[data-design=glass] .closing{background:radial-gradient(ellipse at 88% 60%,#a4bef535,transparent 55%),radial-gradient(ellipse at 10% 90%,#c6aff425,transparent 45%);border-top:1px solid var(--line)}
+html[data-design=glass] .ownership-list article{padding:22px 0;border-bottom:1px solid var(--edge)}
+html[data-design=glass] .about-heading{padding:26px;border:1px solid var(--line);border-radius:26px;background:color-mix(in srgb,var(--surface) 72%,transparent);align-self:start}
+html[data-design=glass] .faq details{background:color-mix(in srgb,var(--surface) 74%,transparent);border:1px solid var(--line);border-radius:14px;padding:19px 22px;margin-bottom:10px}
+html[data-design=glass] .faq details[open]{border-color:var(--edge);box-shadow:inset 0 1px #ffffff40}
+/* Editorial: a chapter opener, a wide manifesto, then a narrow question index. */
+html[data-design=editorial] .approach>.section-intro{border-top:5px solid var(--ink);padding-top:25px}
+html[data-design=editorial] .ownership-grid{grid-template-columns:1fr;gap:30px}
+html[data-design=editorial] .ownership-grid>div:first-child{max-width:760px}
+html[data-design=editorial] .ownership-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+html[data-design=editorial] .ownership-list article{border-bottom:0;border-top:1px solid var(--edge);padding:20px 0;margin:0}
+html[data-design=editorial] .about{border-top:0;background:linear-gradient(90deg,transparent 0 67%,color-mix(in srgb,var(--accent) 7%,transparent) 67%)}
+html[data-design=editorial] .faq summary{font-family:Georgia,serif;font-size:20px;font-weight:400}
+html[data-design=editorial] .closing{background:linear-gradient(90deg,var(--wash) 0 4%,transparent 4%);padding-left:clamp(30px,5vw,65px)}
+/* Signal: process ledger, rights register, testimony and a compact command ending. */
+html[data-design=signal] .approach-steps{gap:0;border-top:2px solid var(--edge)}
+html[data-design=signal] .approach-steps li{padding:24px;border-top:0;border-bottom:1px solid var(--edge);background:var(--surface)}
+html[data-design=signal] .approach-steps li:nth-child(even){background:var(--wash)}
+html[data-design=signal] .ownership-list{border-left:3px solid var(--accent);padding-left:24px}
+html[data-design=signal] .about-heading{border-top:5px solid var(--accent);padding-top:22px}
+html[data-design=signal] .experience-note{background:var(--wash);padding:20px;border:1px solid var(--edge)}
+html[data-design=signal] .savings-detail{border-top:3px solid var(--edge)}
+html[data-design=signal] .faq details[open]{border-left:5px solid var(--accent)}
+html[data-design=signal] .closing{background:var(--wash);border-block:2px solid var(--edge)}
+/* Bento: green is the recurring chapter colour, cream is the reading surface. */
+html[data-design=bento] :is(.approach,.ownership,.about,.savings-detail,.closing,.walkthrough){--ink:#243c2c;--muted:#5b6b57;--paper:#eef1e5;--surface:#fffef6;--wash:#dce8bf;--line:#bdcbb3;--edge:#829b74;--accent:#356244;--action:#356244;--action-text:#fff;--sr-card:#fffef6;--sr-bold:#284a35;--sr-pale:#dce8bf}
+html[data-design=bento][data-mode=dark] :is(.approach,.ownership,.about,.savings-detail,.closing,.walkthrough){--ink:#f0f2dd;--muted:#bdccb3;--paper:#18251e;--surface:#263a2d;--wash:#3c542f;--line:#546a49;--edge:#98af83;--accent:#d5ed93;--action:#d5ed93;--action-text:#203921;--sr-card:#263a2d;--sr-bold:#284a35;--sr-pale:#3c542f}
+html[data-design=bento] .approach-steps li{background:var(--sr-card);color:var(--ink);border-color:var(--line)}
+html[data-design=bento] .approach-steps li:first-child{background:var(--sr-bold);color:#f5f5e8}
+html[data-design=bento] .approach-steps li:first-child :is(p,.step-number){color:#d4e0bd}
+html[data-design=bento] .approach-steps li:last-child{background:var(--sr-pale)}
+html[data-design=bento] .ownership{background:var(--wash)}
+html[data-design=bento] .ownership-list article{background:var(--surface)}
+html[data-design=bento] .about-heading{background:var(--sr-bold);color:#f5f5e8}
+html[data-design=bento] .about-heading :is(.eyebrow,.founder-name,.founder-name span){color:#d4e0bd}
+html[data-design=bento] .faq details{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:10px}
+html[data-design=bento] .faq details[open]{background:var(--wash);border-color:var(--edge)}
+html[data-design=bento] .closing{background:var(--sr-bold);color:#f5f5e8;border:0;border-radius:28px;margin-block:24px 40px}
+html[data-design=bento] .closing>p,html[data-design=bento] .closing .text-link{color:#d4e0bd}
+html[data-design=bento] .closing .text-link{border-color:#a8be8d}
+html[data-design=bento] .closing :is(.button.dark,#sr-action){background:#dbeaab;color:#243c2c;border-color:#dbeaab}
+/* Forest: field notes and quiet ledger rows, never luminous Glass decoration. */
+html[data-design=forest] .approach-steps{gap:0;border-top:1px solid var(--edge)}
+html[data-design=forest] .approach-steps li{border:0;border-right:1px solid var(--line);border-radius:0;background:transparent;padding:25px}
+html[data-design=forest] .ownership{background:linear-gradient(115deg,var(--wash),var(--paper));border-block:1px solid var(--edge)}
+html[data-design=forest] .about-heading{border-left:4px solid var(--accent);padding-left:25px}
+html[data-design=forest] .faq details[open]{background:var(--surface);padding:20px;border-left:3px solid var(--accent)}
+html[data-design=forest] .closing{background:var(--wash);border-top:3px solid var(--accent)}
+/* Alternate reading compositions at desktop without reordering interactive controls. */
+@media(min-width:900px){
+ html:is([data-design=glass],[data-design=forest]) .ownership-grid{grid-template-columns:1.15fr .85fr;gap:70px}
+ html:is([data-design=glass],[data-design=forest]) .ownership-grid>div:first-child{grid-column:2;grid-row:1}
+ html:is([data-design=glass],[data-design=forest]) .ownership-list{grid-column:1;grid-row:1}
+ html:is([data-design=glass],[data-design=signal],[data-design=bento]) .savings-detail{grid-template-columns:1.2fr .8fr}
+ html:is([data-design=glass],[data-design=signal],[data-design=bento]) .savings-detail>div:first-child{grid-column:2;grid-row:1}
+ html:is([data-design=glass],[data-design=signal],[data-design=bento]) .savings-detail>.faq{grid-column:1;grid-row:1}
+ html[data-design=glass] .closing{display:grid;grid-template-columns:1.2fr 1fr;gap:20px 70px}
+ html[data-design=glass] .closing>.eyebrow{grid-column:1/-1;margin:0}
+ html[data-design=glass] .closing>h2{grid-column:1;grid-row:2/4}
+ html[data-design=glass] .closing>p:not(.eyebrow){grid-column:2;margin:0;align-self:end}
+ html[data-design=glass] .closing>.actions{grid-column:2;align-self:start}
+ html[data-design=editorial] .savings-detail{grid-template-columns:.8fr 1.2fr}
+}
+@media(max-width:899px){
+ html[data-design=editorial] .ownership-list{grid-template-columns:1fr;gap:8px}
+ html[data-design=editorial] .about{background:none}
+ html[data-design=bento] .closing{width:calc(100% - 24px);border-radius:22px;padding-inline:24px}
+ html[data-design=forest] .approach-steps li{padding:20px 15px;border-bottom:1px solid var(--line)}
+ html[data-design=glass] .about-heading{padding:22px}
+}

@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {workspaceAlertTracker,workspaceAlertNotice,workspaceAlertView} from '../../outputs/workspace-concepts/studio-src/workspace-alerts.js';
+
+const seed={key:'meeting/1',title:'Invitation awaiting reply',detail:'Event one',opportunityId:'deal1'};
+const request={key:'approval/1',title:'Review deal terms',detail:'Event <two>',requestId:'request1',revision:1};
+const desk=workspaceAlertTracker([seed]);
+assert.deepEqual(desk.update([seed],false),[]);
+assert.deepEqual(desk.update([seed,request],false),[request]);
+assert.deepEqual(desk.update([seed,request],false),[request]);
+desk.dismiss();
+assert.deepEqual(desk.update([seed,request],false),[]);
+const revised={...request,revision:3};
+assert.deepEqual(desk.update([seed,revised],false),[revised]);
+assert.deepEqual(desk.update([revised],true),[]);
+assert.deepEqual(desk.update([seed],false),[seed]);
+assert.deepEqual(desk.update([],false),[]);
+assert.equal(workspaceAlertNotice([]),'');
+assert.match(workspaceAlertNotice([seed,request]),/2 updates/);
+assert.match(workspaceAlertView([seed,request]),/Event &lt;two&gt;/);
+assert.match(workspaceAlertView([seed,request]),/Open opportunity/);
+assert.match(workspaceAlertView([]),/up to date/);
+console.log('Workspace alert changes, dismissal, repeat revisions and queue navigation passed.');
+
+const {dataset}=await import('../../outputs/workspace-concepts/studio-src/data.js');
+const {recordDependency,peopleDeliveryAlerts}=await import('../../outputs/workspace-concepts/studio-src/operational-exceptions.js');
+const d=dataset('events'), work=d.work.find(w=>w.issue && w.status!=='Complete');
+const open=()=>peopleDeliveryAlerts(d,'operations').find(a=>a.recordId===work.id);
+assert.ok(open().detail.includes(work.title));
+assert.throws(()=>recordDependency(d,work.id,'finance',{decision:'clear',note:'Released'},0));
+recordDependency(d,work.id,'operations',{decision:'follow',note:'Confirm supply with venue.',due:'2026-11-24'},0);
+assert.equal(open().due,'2026-11-24');
+assert.throws(()=>recordDependency(d,work.id,'operations',{decision:'clear',note:'Stale update'},0));
+assert.throws(()=>recordDependency(d,work.id,'operations',{decision:'clear',note:''},1));
+recordDependency(d,work.id,'operations',{decision:'clear',note:'Venue confirmation DC-31 received.'},1);
+assert.equal(open(),undefined);assert.match(d.activity[0].detail,/DC-31/);
+assert.ok(peopleDeliveryAlerts(d,'people').some(a=>a.leaveId && /coverage/i.test(a.title)));
+console.log('Delivery dependency and coverage alerts resolve back to the source record.');
