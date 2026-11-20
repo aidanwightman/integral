@@ -101,7 +101,9 @@ html #workspace-dialog :is(#tour-coach,#training-panel) {
 #workspace-dialog :is(#tour-coach,#training-panel) h3 {font-size: 1.4em; line-height: 1.15;}
 #workspace-dialog #coach-step-title {font-size: 1.17em; line-height: 1.3;}
 #workspace-dialog :is(#coach-context,#coach-count,.coach-honesty,.coach-top .eyebrow) {font-size: .86em;}
+#workspace-dialog .coach-top :is(.eyebrow,button) {margin: 0;}
 #workspace-dialog .coach-top button {flex: 0 0 44px; min-height: 44px;}
+#workspace-dialog #training-panel > .muted {font-size: .86em;}
 #workspace-dialog .tour-coach .actions {flex-wrap: wrap;}
 #workspace-dialog #training-panel :is(input,textarea,select) {display:block;}
 html:is([data-design=glass],[data-design=forest])[data-glass-clarity=true] #workspace-dialog :is(#tour-coach,#training-panel) button {

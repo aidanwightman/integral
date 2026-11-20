@@ -134,6 +134,14 @@ for (const role of ROLES) {
 }
 console.log('PASS: Northstar picker and gallery preserve Studio state, return focus, and all seven Studio shells expose live Alerts.');
 
+vm.runInContext("Object.assign(state,{look:'glass',gallery:false});render()",context);
+const glassMarkup=elements.get('#studio-root').innerHTML;
+const toolbar=glassMarkup.slice(0,glassMarkup.indexOf('</header>'));
+assert.match(toolbar,/data-glass-action="clarity"/,'Clarity is accessible directly in the top toolbar');
+assert.equal((glassMarkup.match(/data-glass-action="clarity"/g)||[]).length,1);
+vm.runInContext("state.look='bento';render()",context);
+assert(!elements.get('#studio-root').innerHTML.includes('data-glass-action="clarity"'),'Only offer the control on a workspace with Glass surfaces');
+
 const materialMessage={source:parentWindow,origin:'https://example.test',data:{type:'data-saver-appearance',look:'glass',mode:'dark',clarity:true}};
 vm.runInContext("state.look='glass';render()",context);
 const retainedRoot=elements.get('#studio-root');

@@ -51,6 +51,11 @@ const personAvatar=name=>`<span class="avatar">${e(shortName(name))}</span>`;
 const link=(record,label)=>b('record',e(label||record.name||record.title||record.number),'text-button record-link',`data-id="${record.id}"`);
 const sumText=(value)=>`${value.toLocaleString('en-GB')}`;
 
+// The sticky toolbar can wrap when the pane narrows or the visitor enlarges type.
+const toolbarObserver = typeof ResizeObserver === 'function' ? new ResizeObserver(([entry]) => {
+  document.documentElement.style.setProperty('--workspace-toolbar-height', entry.target.offsetHeight + 'px');
+}) : null;
+
 let workspaceSize = defaultWorkspaceTextSize;
 function applyWorkspaceSize(value = workspaceSize) {
   workspaceSize = setWorkspaceTextSize(value);
@@ -68,7 +73,10 @@ const appearanceChoices=[...LOOKS,NORTHSTAR_APPEARANCE];
 
 function demoBar(){
   const select=(name,label,items,value)=>`<div class="selector"><label for="choose-${name}">${label}</label><select id="choose-${name}" data-select="${name}">${items.map(i=>`<option value="${i.id}" ${i.id===value?'selected':''}>${e(i.name)}</option>`).join('')}</select></div>`;
-  return `<header class="demo-bar"><a class="demo-brand" data-do="site-home" href="../production-site/index.html" target="_top" aria-label="Integral home"><span class="brand-logo" aria-hidden="true">i.</span><span>Integral<small>Home</small></span></a><div class="selectors">${select('industry','Business',INDUSTRIES,state.industry)}${select('role','Function',ROLES,state.role)}${select('look','Appearance',appearanceChoices,state.look)}</div>${workspaceTextSizeControl(workspaceSize)}${b('gallery',glyph('layers')+' Gallery','','aria-label="Open workspace gallery"')}${window.parent!==window?b('close-embed',glyph('left'),'icon-button','aria-label="Close workspace" title="Close workspace"'):''}</header>`;
+  const clarity=state.look==='glass'&&!state.gallery
+    ? '<button class="workspace-clarity" type="button" data-glass-action="clarity" aria-pressed="true" title="Use opaque surfaces for easier reading"><span class="clarity-indicator" aria-hidden="true"></span>Clarity</button>'
+    : '';
+  return `<header class="demo-bar"><a class="demo-brand" data-do="site-home" href="../production-site/index.html" target="_top" aria-label="Integral home"><span class="brand-logo" aria-hidden="true">i.</span><span>Integral<small>Home</small></span></a><div class="selectors">${select('industry','Business',INDUSTRIES,state.industry)}${select('role','Function',ROLES,state.role)}${select('look','Appearance',appearanceChoices,state.look)}</div>${workspaceTextSizeControl(workspaceSize)}${clarity}${b('gallery',glyph('layers')+' Gallery','','aria-label="Open workspace gallery"')}${window.parent!==window?b('close-embed',glyph('left'),'icon-button','aria-label="Close workspace" title="Close workspace"'):''}</header>`;
 }
 function viewNav(iconOnly=false){return R().views.map(v=>b('view',glyph(v==='overview'?'home':v)+(iconOnly?'':e(viewLabels[v])),state.view===v?'active':'',`data-view="${v}" aria-label="${e(viewLabels[v])}" ${state.view===v?'aria-current="page"':''}`)).join('');}
 function brand(){return `<div class="workspace-brand"><span class="workspace-mark">${D().config.short}</span><div><strong>${e(D().config.brand)}</strong><small>${e(R().name)} · demo workspace</small></div></div>`;}
@@ -188,6 +196,10 @@ function render(){
     state.view === 'approvals' ? approvalView(D(),state) :
     state.view==='contacts'?contactWorkspace(D(),state):state.view==='commissions'?commissionView(D(),state):state.view==='outcomes'?outcomeView(D(),state):heading()+(ROLE_TITLES[state.view]?roleView(D(),state):({overview:overviewView,board:boardView,forecast:forecastView,timeline:timelineView,capacity:capacityView,graph:graphView,records:recordsView}[state.view]||overviewView)()), alerts);
   root.innerHTML = demoBar() + content + workspaceAlertNotice(notices);
+  if (toolbarObserver) {
+    toolbarObserver.disconnect();
+    toolbarObserver.observe(root.querySelector('.demo-bar'));
+  }
   applyWorkspaceSize();
   syncURL();
 }

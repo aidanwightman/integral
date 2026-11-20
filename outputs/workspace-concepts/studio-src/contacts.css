@@ -5,7 +5,8 @@
 .crm-toolbar, .crm-actions, .crm-match-row, .crm-message summary { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
 .crm-toolbar { justify-content: space-between; margin-bottom: 16px; }
 .crm-toolbar label, .crm-fields label { display: grid; gap: 6px; min-width: 0; font-weight: 600; }
-.crm-toolbar select { max-width: 100%; }
+.crm-toolbar > label { max-width:100%; grid-template-columns:minmax(0,1fr); }
+.crm-toolbar select { min-width:0; max-width:100%; }
 .crm-fields, .crm-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .crm-fields :is(input,textarea,select) { min-width: 0; width: 100%; }
 .crm-fields textarea { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--panel); color: var(--ink); font: inherit; resize: vertical; }
