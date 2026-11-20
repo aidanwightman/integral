@@ -5,7 +5,7 @@ const northstarSite=installNorthstarPreview({
   fallbackHash:()=>'#demo',
   onReturn(trigger){
     if(workspaceDialog.open){
-      frame.focus();
+      frame.focus({preventScroll:true});
       frame.contentWindow.postMessage({type:'data-saver-northstar-return'},location.protocol==='file:'?'*':location.origin);
     }else (trigger||document.querySelector('.glass-design-launcher'))?.focus({preventScroll:true});
   },

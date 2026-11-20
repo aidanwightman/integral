@@ -5,16 +5,19 @@ export function installNorthstarPreview({dialog,url,fallbackHash,onReturn,onHome
   const hash='#northstar-events';
   let trigger=null;
   let goingBack=false;
+  let frameStarted=false;
   let homeAfterClose=false;
   function show(){
     if(dialog.open)return;
-    if(!frame.hasAttribute('src')){
+    if(!frameStarted){
       const target=new URL(url,document.baseURI);
       target.searchParams.set('embed','northstar');
-      frame.src=target.href;
+      // A new iframe history entry would consume Back before the preview hash in Safari.
+      frame.contentWindow.location.replace(target.href);
+      frameStarted=true;
     }
     dialog.showModal();
-    back.focus();
+    back.focus({preventScroll:true});
   }
   function finish(){
     if(!dialog.open)return;

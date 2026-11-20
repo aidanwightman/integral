@@ -12,7 +12,7 @@ const previewData=__PRODUCT_SLICES__;
 const roleNames={sales:'Sales',people:'People & HR',finance:'Finance',operations:'Operations',saleslead:'Sales leadership',leadership:'Company leadership'};
 const designNames={glass:'Liquid Glass',forest:'Forest',editorial:'Editorial',signal:'Signal',bento:'Bento',atlas:'Atlas',ledger:'Ledger'};
 const roleTools={sales:'Calls · Pipeline · Follow-up automations',people:'Leave · Coverage · Employee records',finance:'Receipts · Collections · Commissions',operations:'Delivery · Dependencies · Capacity',saleslead:'Performance · Coaching · Activity evidence',leadership:'Teams · Pipeline · Business performance'};
-let currentRole='sales',workspaceRoute=null,workspaceTrigger=null;
+let currentRole='sales',workspaceRoute=null,workspaceTrigger=null,workspaceOrigin=null;
 const financeFocus=document.getElementById('finance-focus');
 const financePreviewViews=new Set(['workbench','financeexceptions','collections','commissions']);
 function previewView(role){
@@ -21,15 +21,91 @@ function previewView(role){
 financeFocus.addEventListener('change',()=>{if(currentRole==='finance')renderSnapshot('finance')});
 function selectedLook(){return document.documentElement.dataset.design||'glass';}
 function showRole(role,animate=false){const r=roleRoutes[role];if(!r||(animate&&currentRole===role))return;currentRole=role;document.querySelectorAll('[data-role]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.role===role)));transitionPreview('snapshot',[document.querySelector('.demo-caption'),document.querySelector('.snapshot-content')],()=>{document.getElementById('role-title').textContent=r.title;document.getElementById('role-description').textContent=r.description;renderSnapshot(role);},animate);}
-function renderSnapshot(role){
-  document.getElementById('snapshot-tool-list').hidden=role==='finance';
-  document.getElementById('finance-focus-field').hidden=role!=='finance';
-  const data=previewData[role]||previewData[role==='saleslead'?'sales':'operations'];document.getElementById('snapshot-context').textContent=roleNames[role]+' / '+(designNames[selectedLook()]||'Workspace');document.getElementById('snapshot-title').textContent=data.title;document.getElementById('snapshot-caption').textContent=data.title+' — synthetic example records';document.getElementById('snapshot-tools').textContent=roleTools[role];const tr=document.createElement('tr');data.columns.forEach(value=>{const th=document.createElement('th');th.scope='col';th.textContent=value;tr.append(th)});document.getElementById('snapshot-columns').replaceChildren(tr);document.getElementById('snapshot-rows').replaceChildren(...data.rows.map(row=>{const tr=document.createElement('tr');row.forEach((value,index)=>{const td=document.createElement('td');if(index===0){const link=document.createElement('a');link.className='preview-record-link';link.textContent=value;link.href=DEMO_URL+`#studio/agency/${role}/${selectedLook()}/${data.view||roleRoutes[role].view}`;link.setAttribute('aria-label',value+' — open '+roleNames[role]+' workspace');link.addEventListener('click',event=>{if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();openWorkspace(role,'agency',data.view||roleRoutes[role].view,link);});td.append(link);}else td.textContent=value;tr.append(td)});return tr}));expand.href=DEMO_URL+`#studio/agency/${role}/${selectedLook()}/${previewView(role)}`;}
-function syncWorkspaceAppearance(){const look=selectedLook();document.getElementById('workspace-design-label').textContent=(designNames[look]||look)+' workspace';if(workspaceRoute)workspaceRoute.look=look;if(frame.getAttribute('src'))frame.contentWindow.postMessage({type:'data-saver-appearance',look,mode:document.documentElement.dataset.mode||'light',clarity:document.documentElement.dataset.glassClarity==='true'},location.protocol==='file:'?'*':location.origin);renderSnapshot(currentRole);}
-function openWorkspace(role=currentRole,industry=workspaceRoute?.role===role?workspaceRoute.industry:'agency',view=workspaceRoute?.role===role?workspaceRoute.view:roleRoutes[role].view,trigger=document.activeElement,outcomeCase=null){showRole(role);workspaceTrigger=trigger;const look=selectedLook();const same=workspaceRoute&&workspaceRoute.role===role&&workspaceRoute.industry===industry&&workspaceRoute.view===view&&workspaceRoute.outcomeCase===outcomeCase;if(!same){workspaceRoute={role,industry,look,view,outcomeCase};if(!frame.getAttribute('src'))frame.src=DEMO_URL+`?embed=site&build=__WORKSPACE_BUILD__#studio/${industry}/${role}/${look}/${view}${outcomeCase?'/'+encodeURIComponent(outcomeCase):''}`;else navigateWorkspace();}if(!workspaceDialog.open){workspaceDialog.showModal();document.documentElement.classList.add('workspace-is-open');}document.getElementById('close-workspace').focus();syncWorkspaceAppearance();}
+let snapshotRole = null;
+let snapshotLinks = [];
+function renderSnapshot(role) {
+  const data = previewData[role] || previewData[role === 'saleslead' ? 'sales' : 'operations'];
+  const look = selectedLook();
+  const view = data.view || roleRoutes[role].view;
+  document.getElementById('snapshot-tool-list').hidden = role === 'finance';
+  document.getElementById('finance-focus-field').hidden = role !== 'finance';
+  document.getElementById('snapshot-context').textContent = roleNames[role] + ' / ' + (designNames[look] || 'Workspace');
+  if (snapshotRole !== role) {
+    snapshotRole = role;
+    snapshotLinks = [];
+    document.getElementById('snapshot-title').textContent = data.title;
+    document.getElementById('snapshot-caption').textContent = data.title + ' — synthetic example records';
+    document.getElementById('snapshot-tools').textContent = roleTools[role];
+    const heading = document.createElement('tr');
+    for (const value of data.columns) {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      th.textContent = value;
+      heading.append(th);
+    }
+    document.getElementById('snapshot-columns').replaceChildren(heading);
+    const rows = data.rows.map(row => {
+      const tr = document.createElement('tr');
+      row.forEach((value, index) => {
+        const td = document.createElement('td');
+        if (index === 0) {
+          const link = document.createElement('a');
+          link.className = 'preview-record-link';
+          link.textContent = value;
+          link.setAttribute('aria-label', value + ' — open ' + roleNames[role] + ' workspace');
+          link.addEventListener('click', event => {
+            if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            openWorkspace(role, 'agency', view, link);
+          });
+          snapshotLinks.push(link);
+          td.append(link);
+        } else td.textContent = value;
+        tr.append(td);
+      });
+      return tr;
+    });
+    document.getElementById('snapshot-rows').replaceChildren(...rows);
+  }
+  for (const link of snapshotLinks) link.href = DEMO_URL + `#studio/agency/${role}/${look}/${view}`;
+  expand.href = DEMO_URL + `#studio/agency/${role}/${look}/${previewView(role)}`;
+}
+
+let lastSiteLook = selectedLook();
+function syncWorkspaceAppearance() {
+  const siteLook = selectedLook();
+  if (workspaceRoute && siteLook !== lastSiteLook) workspaceRoute.look = siteLook;
+  lastSiteLook = siteLook;
+  const look = workspaceRoute?.look || siteLook;
+  document.getElementById('workspace-design-label').textContent = (designNames[look] || look) + ' workspace';
+  if (frame.getAttribute('src')) frame.contentWindow.postMessage({
+    type: 'data-saver-appearance', look, mode: document.documentElement.dataset.mode || 'light',
+    clarity: document.documentElement.dataset.glassClarity === 'true'
+  }, location.protocol === 'file:' ? '*' : location.origin);
+  renderSnapshot(currentRole);
+}
+function openWorkspace(role=currentRole,industry=workspaceRoute?.role===role?workspaceRoute.industry:'agency',view=workspaceRoute?.role===role?workspaceRoute.view:roleRoutes[role].view,trigger=document.activeElement,outcomeCase=null){
+  if (!workspaceDialog.open && trigger) {
+    const rect = trigger.getBoundingClientRect();
+    workspaceOrigin = rect.bottom > 0 && rect.top < innerHeight ? {trigger, top:rect.top} : null;
+  }
+  showRole(role);workspaceTrigger=trigger;const look=workspaceRoute?.look||selectedLook();const same=workspaceRoute&&workspaceRoute.role===role&&workspaceRoute.industry===industry&&workspaceRoute.view===view&&workspaceRoute.outcomeCase===outcomeCase;if(!same){workspaceRoute={role,industry,look,view,outcomeCase};if(!frame.getAttribute('src'))frame.src=DEMO_URL+`?embed=site&build=__WORKSPACE_BUILD__#studio/${industry}/${role}/${look}/${view}${outcomeCase?'/'+encodeURIComponent(outcomeCase):''}`;else navigateWorkspace();}if(!workspaceDialog.open){workspaceDialog.showModal();document.documentElement.classList.add('workspace-is-open');}document.getElementById('close-workspace').focus();syncWorkspaceAppearance();}
 function openRole(role){if(roleRoutes[role])openWorkspace(role);}
 function closeWorkspace(){workspaceDialog.close();}
-workspaceDialog.addEventListener('close',()=>{document.documentElement.classList.remove('workspace-is-open');document.getElementById('tour-coach').hidden=true;document.getElementById('training-panel').hidden=true;document.getElementById('resume-guide').hidden=true;workspaceTrigger?.focus({preventScroll:true});});
+workspaceDialog.addEventListener('close', () => {
+  document.documentElement.classList.remove('workspace-is-open');
+  document.getElementById('tour-coach').hidden = true;
+  document.getElementById('training-panel').hidden = true;
+  document.getElementById('resume-guide').hidden = true;
+  const target = workspaceTrigger?.isConnected === false ? expand : workspaceTrigger;
+  target?.focus({preventScroll:true});
+  if (target && workspaceOrigin?.trigger === workspaceTrigger) {
+    const rect = target.getBoundingClientRect();
+    const top = Math.max(0, Math.min(workspaceOrigin.top, innerHeight - rect.height));
+    window.scrollBy({top:rect.top - top, behavior:'instant'});
+  }
+  workspaceOrigin = null;
+});
 document.getElementById('close-workspace').addEventListener('click',closeWorkspace);
 document.getElementById('launch-workspace').addEventListener('click',event=>openWorkspace(currentRole,'agency',previewView(currentRole),event.currentTarget));
 expand.addEventListener('click',event=>{if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();openWorkspace(currentRole,'agency',previewView(currentRole),event.currentTarget);});

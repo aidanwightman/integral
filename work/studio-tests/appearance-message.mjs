@@ -105,6 +105,12 @@ for(const look of LOOKS){
   const html=vm.runInContext(`Object.assign(state,{look:${JSON.stringify(look.id)},gallery:false});render();root.innerHTML`,context);
   assert.equal((html.match(/data-do="open-alerts" aria-label="Alerts,/g)||[]).length,1,`Permanent Alerts control in ${look.id}`);
 }
+for (const role of ROLES) {
+  for (const view of role.views) {
+    const html = vm.runInContext(`Object.assign(state,{look:'bento',role:${JSON.stringify(role.id)},view:${JSON.stringify(view)}});render();root.innerHTML`, context);
+    assert(html.includes(`data-view="${view}" aria-current="page"`), `Bento should mark ${role.id}/${view} as current`);
+  }
+}
 console.log('PASS: Northstar picker and gallery preserve Studio state, return focus, and all seven Studio shells expose live Alerts.');
 
 const materialMessage={source:parentWindow,origin:'https://example.test',data:{type:'data-saver-appearance',look:'glass',mode:'dark',clarity:true}};

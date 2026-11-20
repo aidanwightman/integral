@@ -35,8 +35,8 @@
 .al-context .detail-grid>div,.al-evidence .detail-grid>div{display:grid;gap:5px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .al-context .detail-grid small,.al-evidence .detail-grid small{font-size:11px;color:var(--muted)}
 .al-context .detail-grid strong,.al-evidence .detail-grid strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
-.al-context>label,.al-evidence>label{display:block;margin:16px 0 8px;font-size:12px}
-.al-context>select,.al-evidence>select{width:100%;font-size:12px}
+:is(.al-context,.al-evidence) [data-workspace-record]>label{display:block;margin:16px 0 8px;font-size:12px}
+:is(.al-context,.al-evidence) [data-workspace-record]>select{width:100%;font-size:12px}
 .al-context .modal-actions,.al-evidence .modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
 .al-context #record-title,.al-evidence #record-title{font-size:21px;line-height:1.3;margin:18px 0;scroll-margin-top:125px}
 .scene.ledger .al-ledger button.primary,.scene.atlas .al-atlas button.primary{color:#fff;background:var(--accent);border-color:var(--accent)}

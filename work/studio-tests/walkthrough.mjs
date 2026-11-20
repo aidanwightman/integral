@@ -1,5 +1,7 @@
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
-const source='outputs/production-site/site-src/';const html=fs.readFileSync(source+'template.html','utf8');assert(html.indexOf('id="training-goal"')<html.indexOf('<script>'));
+const source='outputs/production-site/site-src/';const html=fs.readFileSync(source+'template.html','utf8');
+const trainingGoal = html.indexOf('id="training-goal"');
+assert(trainingGoal >= 0 && trainingGoal < html.indexOf('/* SITE_JS */'), 'Render training controls before installing walkthrough handlers');
 for(const removed of ['help-launcher','help-form','help-question','help-answer','help-resume','help-cheats'])assert(!html.includes('id="'+removed+'"'),removed+' removed from DOM');
 assert(!html.includes('Guide & AI help'));  
 function boot(){const elements={},listeners={},focusState={current:null};class E{constructor(){this.isConnected=true;this.value='';this.hidden=false;this.dataset={};this.children=[];this.attrs={};this.selectedOptions=[{textContent:'Sample selection'}]}append(...x){this.children.push(...x)}replaceChildren(...x){this.children=x}setAttribute(k,v){this.attrs[k]=v}focus(){focusState.current=this}scrollIntoView(){}reportValidity(){return !!this.value}click(){this.onclick?.()} }

@@ -104,13 +104,13 @@ html #workspace-dialog :is(#tour-coach,#training-panel) {
 #workspace-dialog .coach-top button {flex: 0 0 44px; min-height: 44px;}
 #workspace-dialog .tour-coach .actions {flex-wrap: wrap;}
 #workspace-dialog #training-panel :is(input,textarea,select) {display:block;}
-html[data-glass-clarity=true] #workspace-dialog :is(#tour-coach,#training-panel) button {
+html:is([data-design=glass],[data-design=forest])[data-glass-clarity=true] #workspace-dialog :is(#tour-coach,#training-panel) button {
   background: var(--surface);
   color: var(--ink);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
-html[data-glass-clarity=true] #workspace-dialog #coach-next {background: var(--action); color: var(--action-text);}
+html:is([data-design=glass],[data-design=forest])[data-glass-clarity=true] #workspace-dialog #coach-next {background: var(--action); color: var(--action-text);}
 @media(min-width: 1000px), (min-width: 700px) and (max-height: 510px) {
   html #workspace-dialog:has(#tour-coach:not([hidden]),#training-panel:not([hidden])) {
     grid-template: auto minmax(0,1fr) / minmax(0,1fr) clamp(310px,32vw,480px);

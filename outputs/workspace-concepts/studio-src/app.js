@@ -191,6 +191,28 @@ function render(){
   applyWorkspaceSize();
   syncURL();
 }
+function changeWorkspaceLook(look) {
+  const active = document.activeElement;
+  const page = root.querySelector('#studio-main');
+  const record = (modal.open ? modal : root).querySelector('[data-workspace-record]');
+  const keepRecord = record?.isConnected;
+  // These two views have look-specific markup. Other views can keep live forms and disclosures.
+  const keepPage = page?.isConnected && page.matches('.page') && !state.gallery && !['overview', 'graph'].includes(state.view);
+  state.look = look;
+  render();
+  if (keepPage) root.querySelector('#studio-main').replaceChildren(...page.childNodes);
+  if (keepRecord) {
+    const inspector = root.querySelector('[data-workspace-record]');
+    if (inspector) {
+      inspector.replaceWith(record);
+      if (modal.open) modal.close();
+    } else if (!modal.open) {
+      modal.replaceChildren(record);
+      modal.showModal();
+    }
+  }
+  if (active?.isConnected && active !== document.body) active.focus({preventScroll:true});
+}
 function studioHash(){return state.gallery?'#gallery':`#studio/${state.industry}/${state.role}/${state.look}/${state.view}${state.view==='outcomes'&&state.outcomeCase?'/'+state.outcomeCase:''}`;}
 function syncURL(){if((location.search||'').includes('embed=site')&&window.parent!==window)window.parent.postMessage({type:'data-saver-studio-state',industry:state.industry,role:state.role,look:state.look,view:state.view,outcomeCase:state.outcomeCase},'*');const hash=studioHash();if(location.hash!==hash){try{history.replaceState(null,'',hash);}catch{ /* Embedded srcdoc has no independent share URL. */ }}}
 function readURL(){const parts=location.hash.slice(1).split('/');if(parts[0]!=='studio')return;if(INDUSTRIES.some(i=>i.id===parts[1])&&ROLES.some(r=>r.id===parts[2])&&LOOKS.some(l=>l.id===parts[3])){state.industry=parts[1];state.role=parts[2];state.look=parts[3];state.view=R().views.includes(parts[4])?parts[4]:R().defaultView;state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===parts[5])?parts[5]:null;state.outcomeFeedback='';state.gallery=false;}}
@@ -223,9 +245,18 @@ function recordDetails(id){const found=findRecord(id);if(!found)return '';const 
   if(type==='work')body+=dependencyPanel(D(),r,state.role);
   body+=financeExceptionRecordPanel(D(),state.role,type,r.id);
   body+=approvalRecordPanel(D(),state.role,type,r.id);
-  return `<div class="row between"><p class="eyebrow">${e(type==='domain'?D().config.singular:type)} · synthetic record</p>${b('close',glyph('close'),'icon-button','aria-label="Close record"')}</div><h2 id="record-title" tabindex="-1">${e(r.name||r.title||r.number)}</h2><div class="detail-grid">${fields.map(([k,v])=>field(k,v)).join('')}</div>${body}<div class="modal-actions">${b('close','Close')}${actions}</div>`;}
+  return `<div data-workspace-record><div class="row between"><p class="eyebrow">${e(type==='domain'?D().config.singular:type)} · synthetic record</p>${b('close',glyph('close'),'icon-button','aria-label="Close record"')}</div><h2 id="record-title" tabindex="-1">${e(r.name||r.title||r.number)}</h2><div class="detail-grid">${fields.map(([k,v])=>field(k,v)).join('')}</div>${body}<div class="modal-actions">${b('close','Close')}${actions}</div></div>`;}
 function showRecord(id){if(!findRecord(id))return;lastTrigger=document.activeElement;if(lastTrigger?.dataset?.do==='record')lastRecordTrigger={id:lastTrigger.dataset.id};state.graphSelected=id;if(['atlas','ledger'].includes(state.look)){if(modal.open)modal.close();render();document.querySelector('#record-title')?.focus();flash('Selected '+(findRecord(id).record.name||findRecord(id).record.title||findRecord(id).record.number));return;}if(modal.open)modal.close();modal.innerHTML=recordDetails(id);modal.showModal();}
-function closeRecord(){if(['atlas','ledger'].includes(state.look)){state.graphSelected=null;render();const restored=[...root.querySelectorAll('[data-do="record"]')].find(el=>el.dataset.id===lastRecordTrigger?.id);(restored||document.querySelector('#studio-main'))?.focus();}else{modal.close();lastTrigger?.focus?.();}}
+function closeRecord() {
+  const attached = ['atlas', 'ledger'].includes(state.look);
+  state.graphSelected = null;
+  if (attached) render();
+  else modal.close();
+  const previous = lastTrigger?.isConnected && !modal.contains(lastTrigger) ? lastTrigger : null;
+  const launcher = previous || [...root.querySelectorAll('[data-do="record"]')].find(el => el.dataset.id === lastRecordTrigger?.id);
+  (launcher || root.querySelector('#studio-main'))?.focus();
+}
+modal.addEventListener('cancel', event => {event.preventDefault();closeRecord();});
 function exportData(){const file=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'}),url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=`integral-${state.industry}-dataset.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);flash('Synthetic dataset exported.');}
 function openFinanceCase(id){
   if(!R().views.includes('financeexceptions'))return;
@@ -564,7 +595,15 @@ root.addEventListener('change',event=>{const el=event.target;
     state[key]=el.value;state.commissionForecastOpen=true;render();root.querySelector('#'+el.id)?.focus();return;
   }
   if(el.id==='alert-kind'){state.alertKind=el.value;render();root.querySelector('#alert-kind')?.focus();return;}
-  if(el.id==='call-outcome'){const call=D().calls.find(c=>c.status==='Wrap-up');if(call)call.draftOutcome=el.value;}if(el.dataset.roleFilter){state[el.dataset.roleFilter]=el.value;state.inspectPerson=null;render();document.querySelector(`[data-role-filter="${el.dataset.roleFilter}"]`)?.focus();return;}if(el.dataset.select){const key=el.dataset.select;if(key==='look'&&el.value==='northstar'){el.value=state.look;openNorthstar(el);return;}state[key]=el.value;state.gallery=false;if(key!=='look'){state.query='';state.graphSelected=null;state.alertKind='';state.commissionFocus=null;state.commissionEdit=null;state.financeException=null;state.approvalFocus=null;state.approvalType=null;state.approvalTarget=null;}if(key==='industry'){state.account=null;state.callContact=null;state.activeCall=null;state.inspectPerson=null;state.automationId=null;state.companyTeam='All';state.delay=0;state.costChange=0;state.pipeline=false;}if(key==='role'){state.view=state.view==='outcomes'?'outcomes':R().defaultView;state.outcomeCase=null;state.outcomeFeedback='';}render();const replacement=document.querySelector(`[data-select="${key}"]`);replacement?.focus();}if(el.dataset.control)changeForecastControl(el);});
+  if(el.id==='call-outcome'){const call=D().calls.find(c=>c.status==='Wrap-up');if(call)call.draftOutcome=el.value;}if(el.dataset.roleFilter){state[el.dataset.roleFilter]=el.value;state.inspectPerson=null;render();document.querySelector(`[data-role-filter="${el.dataset.roleFilter}"]`)?.focus();return;}if(el.dataset.select){const key=el.dataset.select;
+    if(key==='look'){
+      if(el.value==='northstar'){el.value=state.look;openNorthstar(el);return;}
+      state.gallery=false;
+      changeWorkspaceLook(el.value);
+      root.querySelector('#choose-look')?.focus({preventScroll:true});
+      return;
+    }
+    state[key]=el.value;state.gallery=false;state.query='';state.graphSelected=null;state.alertKind='';state.commissionFocus=null;state.commissionEdit=null;state.financeException=null;state.approvalFocus=null;state.approvalType=null;state.approvalTarget=null;if(key==='industry'){state.account=null;state.callContact=null;state.activeCall=null;state.inspectPerson=null;state.automationId=null;state.companyTeam='All';state.delay=0;state.costChange=0;state.pipeline=false;}if(key==='role'){state.view=state.view==='outcomes'?'outcomes':R().defaultView;state.outcomeCase=null;state.outcomeFeedback='';}render();const replacement=document.querySelector(`[data-select="${key}"]`);replacement?.focus();}if(el.dataset.control)changeForecastControl(el);});
 root.addEventListener('input',event=>{const el=event.target;
   if(el.dataset?.emailEntry !== undefined) updateContactEmailField(el.closest('[data-email-field]'));
   if(['firstName','lastName','accountId','title'].includes(el.name) && el.form?.dataset.crmForm==='save'){
@@ -608,8 +647,10 @@ window.addEventListener('message',event=>{
   state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===payload.outcomeCase)?payload.outcomeCase:null;state.outcomeFeedback='';
   Object.assign(state,{industry:payload.industry,role:payload.role,view:role.views.includes(payload.view)?payload.view:role.defaultView,gallery:false});
  }
- if(state.look!==payload.look||payload.type==='data-saver-navigate'){
+ if(payload.type==='data-saver-navigate'){
   state.look=payload.look;render();
+ }else if(state.look!==payload.look){
+  changeWorkspaceLook(payload.look);
  }
  if(payload.look==='glass')setGlassPreferences(root,payload);
 });

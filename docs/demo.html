@@ -209,7 +209,7 @@
 .bento .frame{grid-template-columns:62px minmax(0,1fr);border-radius:17px;box-shadow:0 6px 18px #6f4e890b}.bento .bento-rail{padding:16px 8px}.bento .bento-rail button{width:38px;height:38px;border-radius:11px}.bento .bento-rail .workspace-mark{margin-bottom:16px;width:36px;height:36px}.bento .top-nav{padding:16px 20px 0}.bento .page{padding:18px 20px}.bento .panel{border-radius:16px}.bento .stat{border-radius:15px}
 .site-embed [data-do="close-embed"]{display:none}.site-embed .demo-bar{min-height:54px;padding:8px 12px;justify-content:flex-end}.site-embed .selectors{margin-right:auto;margin-left:0}.site-embed .scene{padding:10px}.site-embed .studio-footer{font-size:calc(9px * var(--workspace-text-scale, 1))}.site-embed .desktop-menubar{display:none}.site-embed .glass .frame{box-shadow:none}.site-embed .dock{display:none}
 @media(max-width:1050px){.scene .depth-layout{grid-template-columns:1fr}}
-@media(max-width:900px){.scene{padding:12px}.scene .page,.glass .page,.bento .page{padding:17px}.glass .window-body{display:block}.glass .side-nav{padding:9px 12px}.scene .two-col{grid-template-columns:1fr}.editorial .page,.signal .page,.atlas .page{padding:17px 0}.site-embed .selectors{order:0;border:0;padding:0}.site-embed .demo-bar{gap:8px}.site-embed .demo-bar>[data-do="gallery"]{display:none}}
+@media(max-width:900px){.scene{padding:12px}.scene .page,.glass .page,.bento .page{padding:17px}.glass .window-body{display:block}.glass .side-nav{padding:9px 12px}.scene .two-col{grid-template-columns:1fr}.editorial .page,.signal .page,.atlas .page{padding:17px 0}.site-embed .selectors{order:0;border:0;padding:0}.site-embed .demo-bar{gap:8px}}
 @media(max-width:600px){.demo-bar{padding:10px 12px}.scene{padding:10px 8px}.scene .page,.glass .page,.bento .page{padding:14px 12px}.scene .page-heading h1{font-size:calc(26px * var(--workspace-text-scale, 1))}.editorial .page-heading h1,.signal .page-heading h1{font-size:calc(29px * var(--workspace-text-scale, 1))}.editorial .page,.signal .page,.atlas .page{padding:15px 0}.scene .stat-grid{gap:9px}.scene .stat,.editorial .stat,.editorial .stat:last-child,.editorial .stat:nth-child(2){padding:12px}.scene .stat-value{font-size:calc(26px * var(--workspace-text-scale, 1))}.scene .panel-head{padding:12px;margin-bottom:10px}.scene .panel-body{padding:0 12px 14px}.scene .depth-form{grid-template-columns:1fr}.scene .role-callout{padding:9px 11px}.scene .scene-label{gap:8px}.scene .scene-label .sample{max-width:100%}.scene .scene-label button{font-size:calc(10px * var(--workspace-text-scale, 1))}.bento .frame{grid-template-columns:46px minmax(0,1fr);border-radius:12px}.bento .bento-rail{padding:13px 4px}.bento .bento-rail button{width:33px;height:33px}.bento .bento-rail .workspace-mark{width:30px;height:30px}.bento .top-nav{padding:14px 12px 0}.site-embed .scene{padding:8px 6px}}
 
 /* Keep financial axes readable on narrow workspaces. */
@@ -374,8 +374,8 @@
 .al-context .detail-grid>div,.al-evidence .detail-grid>div{display:grid;gap:5px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .al-context .detail-grid small,.al-evidence .detail-grid small{font-size:calc(11px * var(--workspace-text-scale, 1));color:var(--muted)}
 .al-context .detail-grid strong,.al-evidence .detail-grid strong{font-size:calc(13px * var(--workspace-text-scale, 1));line-height:1.5;overflow-wrap:anywhere}
-.al-context>label,.al-evidence>label{display:block;margin:16px 0 8px;font-size:calc(12px * var(--workspace-text-scale, 1))}
-.al-context>select,.al-evidence>select{width:100%;font-size:calc(12px * var(--workspace-text-scale, 1))}
+:is(.al-context,.al-evidence) [data-workspace-record]>label{display:block;margin:16px 0 8px;font-size:calc(12px * var(--workspace-text-scale, 1))}
+:is(.al-context,.al-evidence) [data-workspace-record]>select{width:100%;font-size:calc(12px * var(--workspace-text-scale, 1))}
 .al-context .modal-actions,.al-evidence .modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
 .al-context #record-title,.al-evidence #record-title{font-size:calc(21px * var(--workspace-text-scale, 1));line-height:1.3;margin:18px 0;scroll-margin-top:125px}
 .scene.ledger .al-ledger button.primary,.scene.atlas .al-atlas button.primary{color:#fff;background:var(--accent);border-color:var(--accent)}
@@ -3638,13 +3638,15 @@ function roleView(d,s){if(s.view==='workbench')return depthView(d,s);if(s.view==
 /* Content-led mosaic: grouped task launchers and a deliberately asymmetric overview. */
 function bentoShell({page,data,role,state,viewLabels,e,b,glyph,brand,alertControl=''}){
  const groups=[['Start here','home',['overview','company','salesdesk','pipelinehealth']],['Tasks','workbench',['workbench','dialer','leave','collections','control','lifecycle','board','timeline']],['Automations','automations',['automations','callrules','outbox','workflows']],['Reports & data','graph',['forecast','capacity','performance','graph','records']]];
+ const viewButton = view => b('view', e(viewLabels[view]), state.view === view ? 'active' : '',
+   `data-view="${view}" ${state.view === view ? 'aria-current="page"' : ''}`);
  const used=new Set();
  const nav=groups.map(([name,icon,views],i)=>{
   const items=views.filter(v=>role.views.includes(v));items.forEach(v=>used.add(v));if(!items.length)return '';
-  return `<details class="bento-launcher bento-tone-${i}" ${items.includes(state.view)?'open':''}><summary>${glyph(icon)}<span>${name}</span><span class="bento-launch-count">${items.length}</span></summary><nav aria-label="${name}">${items.map(v=>b('view',e(viewLabels[v]),state.view===v?'active':'',`data-view="${v}" ${state.view===v?'aria-current="page"':''}`)).join('')}</nav></details>`;
+  return `<details class="bento-launcher bento-tone-${i}" ${items.includes(state.view)?'open':''}><summary>${glyph(icon)}<span>${name}</span><span class="bento-launch-count">${items.length}</span></summary><nav aria-label="${name}">${items.map(viewButton).join('')}</nav></details>`;
  }).join('');
  const rest=role.views.filter(v=>!used.has(v));
- return `<div class="frame bento-workspace"><header class="bento-top">${brand()}${alertControl}</header><div class="bento-launchpad" aria-label="Workspace sections">${nav}${rest.length?`<details class="bento-launcher"><summary>More tools</summary><nav>${rest.map(v=>b('view',e(viewLabels[v]),'',`data-view="${v}"`)).join('')}</nav></details>`:''}</div>${page}</div>`;
+ return `<div class="frame bento-workspace"><header class="bento-top">${brand()}${alertControl}</header><div class="bento-launchpad" aria-label="Workspace sections">${nav}${rest.length?`<details class="bento-launcher" ${rest.includes(state.view)?'open':''}><summary>More tools</summary><nav>${rest.map(viewButton).join('')}</nav></details>`:''}</div>${page}</div>`;
 }
 function bentoOverview({statGrid,chart,agenda,details,e,role}){
  return `<div class="bento-overview">${statGrid}<div class="bento-feature-grid"><section class="bento-next"><p class="eyebrow">Priorities</p><h2>Next actions</h2><div class="bento-next-list">${agenda}</div></section><div class="bento-evidence">${chart}</div><div class="bento-detail">${details}</div></div></div>`;
@@ -3683,10 +3685,31 @@ function installGlassNavigation(root){
  root.addEventListener('click',event=>{if(event.target?.closest?.('.glass-nav-mobile'))return;root.querySelectorAll('.glass-nav-mobile details[open]').forEach(menu=>{menu.open=false;});});
 }
 
+const glassClarityKey = 'data-saver-glass-clarity';
+const glassMaterialKey = 'data-saver-glass-material-v1';
+
+function readGlassPreferences() {
+  let shared, material;
+  try { shared = localStorage.getItem(glassClarityKey); } catch {}
+  try { material = JSON.parse(localStorage.getItem(glassMaterialKey)); } catch {}
+
+  let clarity = true;
+  if (shared === 'true' || shared === 'false') clarity = shared === 'true';
+  else if (typeof material?.clarity === 'boolean') clarity = material.clarity;
+  return { mode: material?.mode === 'dark' ? 'dark' : 'light', clarity };
+}
+
+function observeGlassClarity(update) {
+  window.addEventListener('storage', event => {
+    if (event.key === glassClarityKey || event.key === glassMaterialKey || event.key === null)
+      update(readGlassPreferences().clarity);
+  });
+}
+
 /* Glass-only shell. Integrate by rendering this instead of the legacy fake desktop. */
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function glassIdentityShell({content,views,currentView,labels,brandHTML,domainHTML,glyph,alertControl='',title='Your workspace'}){
- return `<div class="glass-identity" data-glass-mode="light"><header class="glass-command-bar"><div><span class="glass-command-kicker">YOUR CONNECTED WORKSPACE</span><strong>${escape(title)}</strong></div><div class="glass-command-tools">${alertControl}<div class="glass-command-actions"><button type="button" data-glass-action="clarity" aria-pressed="false" title="Use opaque surfaces for easier reading">Clarity</button><button type="button" data-glass-action="mode" aria-pressed="false" aria-label="Switch workspace to dark mode">Dark mode</button></div></div></header><div class="window-body">${glassNavigation({views,currentView,labels,brandHTML,domainHTML,glyph})}<main class="page" id="studio-main" tabindex="-1">${content}</main></div></div>`;
+ return `<div class="glass-identity" data-glass-mode="light"><header class="glass-command-bar"><div><span class="glass-command-kicker">YOUR CONNECTED WORKSPACE</span><strong>${escape(title)}</strong></div><div class="glass-command-tools">${alertControl}<div class="glass-command-actions"><button type="button" data-glass-action="clarity" aria-pressed="true" title="Use opaque surfaces for easier reading">Clarity</button><button type="button" data-glass-action="mode" aria-pressed="false" aria-label="Switch workspace to dark mode">Dark mode</button></div></div></header><div class="window-body">${glassNavigation({views,currentView,labels,brandHTML,domainHTML,glyph})}<main class="page" id="studio-main" tabindex="-1">${content}</main></div></div>`;
 }
 const installed=new WeakMap();
 function setGlassPreferences(root,preferences){
@@ -3694,19 +3717,20 @@ function setGlassPreferences(root,preferences){
 }
 function installGlassIdentity(root,onClarityChange){
  if(installed.has(root))return;installGlassNavigation(root);
- let mode='light',clarity=false;
- try{const value=JSON.parse(localStorage.getItem('data-saver-glass-material-v1')||'null');mode=value?.mode==='dark'?'dark':'light';const shared=localStorage.getItem('data-saver-glass-clarity');clarity=shared===null?value?.clarity===true:shared==='true';}catch{}
+ let {mode,clarity}=readGlassPreferences();
  const apply=()=>{root.querySelectorAll('.glass-identity').forEach(shell=>{shell.dataset.glassMode=mode;shell.dataset.glassClarity=String(clarity);shell.style.colorScheme=mode;shell.querySelectorAll('.glass-navigation').forEach(nav=>nav.dataset.glassTone=mode);shell.querySelectorAll('[data-glass-action="mode"]').forEach(button=>{button.textContent=mode==='dark'?'Light mode':'Dark mode';button.setAttribute('aria-pressed',String(mode==='dark'));button.setAttribute('aria-label',`Switch workspace to ${mode==='dark'?'light':'dark'} mode`);});shell.querySelectorAll('[data-glass-action="clarity"]').forEach(button=>button.setAttribute('aria-pressed',String(clarity)));});};
- const setPreferences=({mode:nextMode,clarity:nextClarity})=>{
+ const setPreferences=({mode:nextMode,clarity:nextClarity},persist=true)=>{
   const effectiveMode=['light','dark'].includes(nextMode)?nextMode:mode;
   const effectiveClarity=typeof nextClarity==='boolean'?nextClarity:clarity;
   if(mode===effectiveMode&&clarity===effectiveClarity)return;
   mode=effectiveMode;clarity=effectiveClarity;apply();
+  if(!persist)return;
   try{
-   localStorage.setItem('data-saver-glass-material-v1',JSON.stringify({mode,clarity}));
-   localStorage.setItem('data-saver-glass-clarity',String(clarity));
+   localStorage.setItem(glassMaterialKey,JSON.stringify({mode,clarity}));
+   localStorage.setItem(glassClarityKey,String(clarity));
   }catch{}
  };
+ observeGlassClarity(value=>setPreferences({clarity:value},false));
  installed.set(root,setPreferences);
  root.addEventListener('click',event=>{
   const button=event.target.closest?.('[data-glass-action]');
@@ -4829,16 +4853,19 @@ function installNorthstarPreview({dialog,url,fallbackHash,onReturn,onHome}){
   const hash='#northstar-events';
   let trigger=null;
   let goingBack=false;
+  let frameStarted=false;
   let homeAfterClose=false;
   function show(){
     if(dialog.open)return;
-    if(!frame.hasAttribute('src')){
+    if(!frameStarted){
       const target=new URL(url,document.baseURI);
       target.searchParams.set('embed','northstar');
-      frame.src=target.href;
+      // A new iframe history entry would consume Back before the preview hash in Safari.
+      frame.contentWindow.location.replace(target.href);
+      frameStarted=true;
     }
     dialog.showModal();
-    back.focus();
+    back.focus({preventScroll:true});
   }
   function finish(){
     if(!dialog.open)return;
@@ -5055,6 +5082,28 @@ function render(){
   applyWorkspaceSize();
   syncURL();
 }
+function changeWorkspaceLook(look) {
+  const active = document.activeElement;
+  const page = root.querySelector('#studio-main');
+  const record = (modal.open ? modal : root).querySelector('[data-workspace-record]');
+  const keepRecord = record?.isConnected;
+  // These two views have look-specific markup. Other views can keep live forms and disclosures.
+  const keepPage = page?.isConnected && page.matches('.page') && !state.gallery && !['overview', 'graph'].includes(state.view);
+  state.look = look;
+  render();
+  if (keepPage) root.querySelector('#studio-main').replaceChildren(...page.childNodes);
+  if (keepRecord) {
+    const inspector = root.querySelector('[data-workspace-record]');
+    if (inspector) {
+      inspector.replaceWith(record);
+      if (modal.open) modal.close();
+    } else if (!modal.open) {
+      modal.replaceChildren(record);
+      modal.showModal();
+    }
+  }
+  if (active?.isConnected && active !== document.body) active.focus({preventScroll:true});
+}
 function studioHash(){return state.gallery?'#gallery':`#studio/${state.industry}/${state.role}/${state.look}/${state.view}${state.view==='outcomes'&&state.outcomeCase?'/'+state.outcomeCase:''}`;}
 function syncURL(){if((location.search||'').includes('embed=site')&&window.parent!==window)window.parent.postMessage({type:'data-saver-studio-state',industry:state.industry,role:state.role,look:state.look,view:state.view,outcomeCase:state.outcomeCase},'*');const hash=studioHash();if(location.hash!==hash){try{history.replaceState(null,'',hash);}catch{ /* Embedded srcdoc has no independent share URL. */ }}}
 function readURL(){const parts=location.hash.slice(1).split('/');if(parts[0]!=='studio')return;if(INDUSTRIES.some(i=>i.id===parts[1])&&ROLES.some(r=>r.id===parts[2])&&LOOKS.some(l=>l.id===parts[3])){state.industry=parts[1];state.role=parts[2];state.look=parts[3];state.view=R().views.includes(parts[4])?parts[4]:R().defaultView;state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===parts[5])?parts[5]:null;state.outcomeFeedback='';state.gallery=false;}}
@@ -5087,9 +5136,18 @@ function recordDetails(id){const found=findRecord(id);if(!found)return '';const 
   if(type==='work')body+=dependencyPanel(D(),r,state.role);
   body+=financeExceptionRecordPanel(D(),state.role,type,r.id);
   body+=approvalRecordPanel(D(),state.role,type,r.id);
-  return `<div class="row between"><p class="eyebrow">${e(type==='domain'?D().config.singular:type)} · synthetic record</p>${b('close',glyph('close'),'icon-button','aria-label="Close record"')}</div><h2 id="record-title" tabindex="-1">${e(r.name||r.title||r.number)}</h2><div class="detail-grid">${fields.map(([k,v])=>field(k,v)).join('')}</div>${body}<div class="modal-actions">${b('close','Close')}${actions}</div>`;}
+  return `<div data-workspace-record><div class="row between"><p class="eyebrow">${e(type==='domain'?D().config.singular:type)} · synthetic record</p>${b('close',glyph('close'),'icon-button','aria-label="Close record"')}</div><h2 id="record-title" tabindex="-1">${e(r.name||r.title||r.number)}</h2><div class="detail-grid">${fields.map(([k,v])=>field(k,v)).join('')}</div>${body}<div class="modal-actions">${b('close','Close')}${actions}</div></div>`;}
 function showRecord(id){if(!findRecord(id))return;lastTrigger=document.activeElement;if(lastTrigger?.dataset?.do==='record')lastRecordTrigger={id:lastTrigger.dataset.id};state.graphSelected=id;if(['atlas','ledger'].includes(state.look)){if(modal.open)modal.close();render();document.querySelector('#record-title')?.focus();flash('Selected '+(findRecord(id).record.name||findRecord(id).record.title||findRecord(id).record.number));return;}if(modal.open)modal.close();modal.innerHTML=recordDetails(id);modal.showModal();}
-function closeRecord(){if(['atlas','ledger'].includes(state.look)){state.graphSelected=null;render();const restored=[...root.querySelectorAll('[data-do="record"]')].find(el=>el.dataset.id===lastRecordTrigger?.id);(restored||document.querySelector('#studio-main'))?.focus();}else{modal.close();lastTrigger?.focus?.();}}
+function closeRecord() {
+  const attached = ['atlas', 'ledger'].includes(state.look);
+  state.graphSelected = null;
+  if (attached) render();
+  else modal.close();
+  const previous = lastTrigger?.isConnected && !modal.contains(lastTrigger) ? lastTrigger : null;
+  const launcher = previous || [...root.querySelectorAll('[data-do="record"]')].find(el => el.dataset.id === lastRecordTrigger?.id);
+  (launcher || root.querySelector('#studio-main'))?.focus();
+}
+modal.addEventListener('cancel', event => {event.preventDefault();closeRecord();});
 function exportData(){const file=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'}),url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=`integral-${state.industry}-dataset.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);flash('Synthetic dataset exported.');}
 function openFinanceCase(id){
   if(!R().views.includes('financeexceptions'))return;
@@ -5428,7 +5486,15 @@ root.addEventListener('change',event=>{const el=event.target;
     state[key]=el.value;state.commissionForecastOpen=true;render();root.querySelector('#'+el.id)?.focus();return;
   }
   if(el.id==='alert-kind'){state.alertKind=el.value;render();root.querySelector('#alert-kind')?.focus();return;}
-  if(el.id==='call-outcome'){const call=D().calls.find(c=>c.status==='Wrap-up');if(call)call.draftOutcome=el.value;}if(el.dataset.roleFilter){state[el.dataset.roleFilter]=el.value;state.inspectPerson=null;render();document.querySelector(`[data-role-filter="${el.dataset.roleFilter}"]`)?.focus();return;}if(el.dataset.select){const key=el.dataset.select;if(key==='look'&&el.value==='northstar'){el.value=state.look;openNorthstar(el);return;}state[key]=el.value;state.gallery=false;if(key!=='look'){state.query='';state.graphSelected=null;state.alertKind='';state.commissionFocus=null;state.commissionEdit=null;state.financeException=null;state.approvalFocus=null;state.approvalType=null;state.approvalTarget=null;}if(key==='industry'){state.account=null;state.callContact=null;state.activeCall=null;state.inspectPerson=null;state.automationId=null;state.companyTeam='All';state.delay=0;state.costChange=0;state.pipeline=false;}if(key==='role'){state.view=state.view==='outcomes'?'outcomes':R().defaultView;state.outcomeCase=null;state.outcomeFeedback='';}render();const replacement=document.querySelector(`[data-select="${key}"]`);replacement?.focus();}if(el.dataset.control)changeForecastControl(el);});
+  if(el.id==='call-outcome'){const call=D().calls.find(c=>c.status==='Wrap-up');if(call)call.draftOutcome=el.value;}if(el.dataset.roleFilter){state[el.dataset.roleFilter]=el.value;state.inspectPerson=null;render();document.querySelector(`[data-role-filter="${el.dataset.roleFilter}"]`)?.focus();return;}if(el.dataset.select){const key=el.dataset.select;
+    if(key==='look'){
+      if(el.value==='northstar'){el.value=state.look;openNorthstar(el);return;}
+      state.gallery=false;
+      changeWorkspaceLook(el.value);
+      root.querySelector('#choose-look')?.focus({preventScroll:true});
+      return;
+    }
+    state[key]=el.value;state.gallery=false;state.query='';state.graphSelected=null;state.alertKind='';state.commissionFocus=null;state.commissionEdit=null;state.financeException=null;state.approvalFocus=null;state.approvalType=null;state.approvalTarget=null;if(key==='industry'){state.account=null;state.callContact=null;state.activeCall=null;state.inspectPerson=null;state.automationId=null;state.companyTeam='All';state.delay=0;state.costChange=0;state.pipeline=false;}if(key==='role'){state.view=state.view==='outcomes'?'outcomes':R().defaultView;state.outcomeCase=null;state.outcomeFeedback='';}render();const replacement=document.querySelector(`[data-select="${key}"]`);replacement?.focus();}if(el.dataset.control)changeForecastControl(el);});
 root.addEventListener('input',event=>{const el=event.target;
   if(el.dataset?.emailEntry !== undefined) updateContactEmailField(el.closest('[data-email-field]'));
   if(['firstName','lastName','accountId','title'].includes(el.name) && el.form?.dataset.crmForm==='save'){
@@ -5472,8 +5538,10 @@ window.addEventListener('message',event=>{
   state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===payload.outcomeCase)?payload.outcomeCase:null;state.outcomeFeedback='';
   Object.assign(state,{industry:payload.industry,role:payload.role,view:role.views.includes(payload.view)?payload.view:role.defaultView,gallery:false});
  }
- if(state.look!==payload.look||payload.type==='data-saver-navigate'){
+ if(payload.type==='data-saver-navigate'){
   state.look=payload.look;render();
+ }else if(state.look!==payload.look){
+  changeWorkspaceLook(payload.look);
  }
  if(payload.look==='glass')setGlassPreferences(root,payload);
 });

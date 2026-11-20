@@ -71,3 +71,18 @@ html[data-design=glass][data-mode] .site-header .appearance-controls{background:
   html[data-design][data-mode] .site-header > .button span[aria-hidden="true"] { display: none; }
   html[data-design][data-mode] .site-header .control-chevron { width: .7rem; height: .7rem; }
 }
+
+
+/* Top-layer coordinates stay independent of each identity's header geometry. */
+html[data-design][data-mode][data-glass-tools=true] .site-header .appearance-controls {
+  inset:calc(var(--studio-top) - var(--studio-origin-y,0px)) auto auto calc(var(--studio-left) - var(--studio-origin-x,0px))!important;
+  width:min(340px,calc(100vw - 16px));
+  max-width:calc(100vw - 16px);
+  max-height:calc(100dvh - var(--studio-top) - 8px);
+  margin:0;
+  transform:none;
+  animation:none;
+}
+html[data-design][data-mode][data-glass-tools=true] .site-header .appearance-controls[popover] {position:fixed}
+/* Compensate for the heavier top rule on these two surfaces. */
+html:is([data-design=editorial],[data-design=signal])[data-mode] .site-header .appearance-controls {padding-top:14px}
