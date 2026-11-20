@@ -57,4 +57,44 @@ get('close-workspace').click();
 brief.click();assert(get('brief-dialog').open);get('brief-dialog').close();assert(brief.focused);get('privacy-open').click();assert(get('privacy-dialog').open);
 for(const name of ['outputs/production-site/index.html','work/publish/site-dist/index.html']){const html=fs.readFileSync(name,'utf8');assert(!html.includes('__DEMO_URL__'));assert(!html.includes('__SITE_CONFIG__'));assert(!html.includes('/* SITE_JS */'));const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);assert.equal(ids.length,new Set(ids).size);for(const m of html.matchAll(/href="#([^"]+)"/g))assert(ids.includes(m[1]),'Missing anchor '+m[1]);for(const script of html.matchAll(/<script>([\s\S]*?)<\/script>/g))new vm.Script(script[1]);}
 assert(template.includes('Our fee is a share of'));assert(!/decades|£21m|gmxeppy|07886|shadow-labs/.test(template));
+// A single case stays expanded, and its ordinary link and embedded launch always agree.
+class GalleryNode extends Element {
+  removeAttribute(name){ delete this.attrs[name]; }
+  getBoundingClientRect(){ return {top:100,bottom:120}; }
+}
+const gallery = new GalleryNode();
+const changes = [];
+const launches = [];
+let galleryLook = 'glass';
+vm.runInNewContext(fs.readFileSync('outputs/production-site/site-src/outcome-stories.js','utf8'), {
+  document:{
+    createElement:()=>new GalleryNode(),
+    querySelector:selector=>selector==='#outcome-stories .outcome-story-grid'?gallery:null
+  },
+  window:{addEventListener:(name,fn)=>{ if(name==='data-saver-design-change') changes.push(fn); }},
+  DEMO_URL:'demo.html', selectedLook:()=>galleryLook, openWorkspace:(...args)=>launches.push(args)
+});
+const galleryItems = gallery.children.flatMap(group=>group.children);
+const panels = galleryItems.filter(item=>item.className==='outcome-case');
+const selectors = galleryItems.filter(item=>item.className==='outcome-toggle');
+assert.equal(panels.length,6);
+assert.equal(panels.filter(panel=>!panel.hidden).length,1);
+galleryLook='editorial';
+changes.forEach(update=>update());
+for (const selector of selectors) {
+  selector.click();
+  const open=panels.filter(panel=>!panel.hidden);
+  assert.equal(open.length,1);
+  const [panel]=open;
+  assert.equal(panel.id,selector.getAttribute('aria-controls'));
+  assert.equal(selectors.filter(button=>button.getAttribute('aria-expanded')==='true').length,1);
+  const link=panel.children.at(-1);
+  const previous=launches.length;
+  link.handlers.click({metaKey:true});
+  assert.equal(launches.length,previous);
+  link.handlers.click({preventDefault(){}});
+  const [role,industry,view,trigger,caseId]=launches.at(-1);
+  assert.equal(trigger,link);
+  assert.equal(link.href,`demo.html#studio/${industry}/${role}/editorial/${view}/${caseId}`);
+}
 console.log('PASS: six snapshot roles, lazy fullscreen open/reopen, appearance without reload, receiving-frame messages, rejected invalid routes, three guided tours, local brief/privacy dialogs, built script syntax, unique IDs and anchor targets. Appearance checks are recorded separately.');

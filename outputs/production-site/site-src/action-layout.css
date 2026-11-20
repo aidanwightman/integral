@@ -1,0 +1,122 @@
+/* Keep standalone links and buttons on the same baseline and give the ink a usable target. */
+html[data-design] :is(#expand-demo, #founder-link, .savings-band .light-link, .closing .actions > .text-link, .ps-hero figcaption a) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  gap: .55em;
+  white-space: normal;
+  line-height: 1.35;
+}
+html[data-design] #expand-demo {
+  justify-content: center;
+  padding: .35rem .75rem;
+  text-align: center;
+}
+html[data-design] :is(.savings-band .light-link, #founder-link, .closing .actions > .text-link) {
+  padding-block: .35rem;
+  border-bottom: 0;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+  text-underline-offset: .25em;
+}
+html[data-design] :is(.savings-band .light-link, #founder-link, .closing .actions > .text-link):is(:hover,:focus-visible) {
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 2px;
+}
+html[data-design] .ps-hero figcaption {
+  padding-block: .2rem;
+  gap: .2rem 1rem;
+}
+html[data-design] .ps-hero figcaption a { font-size: .8125rem; }
+html[data-design] .closing .actions {
+  align-items: center;
+  gap: .35rem 1.1rem;
+}
+html[data-design] :is(.hero, .closing) .actions > :is(a, button) {
+  max-width: 100%;
+  white-space: normal;
+}
+html[data-design] .actions > :is(a, button) > span[aria-hidden] { flex-shrink: 0; }
+html[data-design] .actions > :is(a, button) svg { display: block; }
+
+/* The selected role carries the solid surface. Keep the other labels in one quiet group. */
+html[data-design][data-mode] :is(.demo-tools .role-tabs, .hero .ps-role-bar) button {
+  min-height: 44px;
+}
+html:is([data-design=editorial],[data-design=signal],[data-design=bento]) #demo .role-tabs button[aria-pressed=false] {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+  color: var(--ink);
+}
+@media (hover: hover) {
+  html:is([data-design=editorial],[data-design=signal],[data-design=bento]) #demo .role-tabs button[aria-pressed=false]:hover {
+    background: color-mix(in srgb, var(--ink) 9%, transparent);
+  }
+}
+
+/* The last link row provides its own touch space; no reservation for a floating launcher. */
+html[data-design] .site-footer {
+  padding-block: clamp(1rem, 2vw, 1.75rem);
+  padding-block-end: max(clamp(1rem, 2vw, 1.75rem), env(safe-area-inset-bottom));
+  gap: .5rem clamp(1rem, 2vw, 2rem);
+}
+html[data-design] .site-footer > div {
+  align-items: center;
+  gap: .2rem 1.15rem;
+}
+html[data-design] .site-footer :is(.footer-link, a:not(.wordmark)) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .25rem 0;
+  font: inherit;
+  font-size: .8125rem;
+  line-height: 1.35;
+  text-align: start;
+}
+
+@media (max-width: 760px) {
+  html[data-design] #expand-demo { align-self: center; }
+  html:is([data-design=glass],[data-design=forest]) #expand-demo { display: flex; }
+  html[data-design] .ps-hero figcaption { padding-block: .4rem; }
+}
+@media (max-width: 430px) {
+  html:is([data-design=glass],[data-design=forest]) .hero .actions > a {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  html[data-design] .site-footer > div { flex-wrap: wrap; }
+  html[data-design] #demo .role-tabs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.3rem), 1fr));
+    width: 100%;
+  }
+  html[data-design] #demo .role-tabs button {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+/* Keyboard rings follow the surface under the button, including inverse hero and pricing panels. */
+html:is([data-design=glass],[data-design=forest])[data-mode] main :is(.actions > a,.actions > button,.text-link,#launch-workspace):focus-visible,
+html[data-design=forest][data-mode] .site-header > :is(a.button,.glass-design-launcher,.glass-mobile-menu):focus-visible {
+  outline-color: var(--control-focus);
+}
+html[data-design][data-mode] #savings .light-link:focus-visible { outline-color: currentColor; }
+html[data-design=bento][data-mode] :is(.hero,.closing) .actions > :focus-visible,
+html:is([data-design=bento],[data-design=signal])[data-mode] .site-header > :is(.glass-design-launcher,.glass-mobile-menu):focus-visible {
+  outline-color: #e6f3d3;
+}
+@media (forced-colors: active) {
+  html[data-design] .role-tabs button[aria-pressed=true] {
+    outline: 2px solid SelectedItem;
+    outline-offset: -3px;
+  }
+  html[data-design] .role-tabs button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

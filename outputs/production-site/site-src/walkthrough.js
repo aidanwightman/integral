@@ -20,12 +20,58 @@
    $('tour-section-title').textContent=ready?'Your walkthroughs':'Find your walkthrough';
    $('tour-section-intro').textContent=ready?'Choose a guided practice or explore the workspace.':'Answer three questions to choose a walkthrough.';
  }
- function recommend(){tourHeading(true);profile={industry:$('tour-industry').value,level:$('tour-level').value,role:$('tour-function').value};$('tour-profile').hidden=true;document.querySelector('.tour-onboarding').hidden=true;$('tour-progress').textContent='Your walkthroughs are ready';$('tour-results').hidden=false;$('tour-match-title').textContent=$('tour-function').selectedOptions[0].textContent+' · '+$('tour-level').selectedOptions[0].textContent;$('tour-match-note').textContent=(profile.industry==='other'?'We’ll use the consulting sample business as a starting point. ':$('tour-industry').selectedOptions[0].textContent+'. ')+(senior()?'Start with team outcomes, then see how a colleague learns the workflow.':'Start with your daily workflow, then practise the exceptions with a coach.');
- const ids=[profile.role,'training',...(senior()?['workforce']:[])];const container=$('tour-recommendations');container.replaceChildren();ids.forEach((id,i)=>{const b=document.createElement('button');b.type='button';const n=document.createElement('span');n.className='tour-number';n.textContent=`0${i+1} / ${id==='workforce'?'Leadership':id==='training'?'Employee enablement':'Your daily work'}`;const h=document.createElement('h3');h.textContent=TOUR_DATA[id].name;const p=document.createElement('p');p.textContent=id==='training'?'Practise a good example, recover from an exception and build a reusable team playbook.':id==='workforce'?'Find friction, establish a baseline, improve the handoff and train the team.':TOUR_DATA[id].steps[0][1];const a=document.createElement('span');a.className='tour-action';a.textContent='Start guided practice →';b.append(n,h,p,a);b.onclick=()=>start(id,b);container.append(b)});$('tour-results').scrollIntoView({block:'start'});$('tour-edit').focus({preventScroll:true});}
+ function recommend() {
+   tourHeading(true);
+   profile = {industry:$('tour-industry').value, level:$('tour-level').value, role:$('tour-function').value};
+   $('tour-profile').hidden = true;
+   document.querySelector('.tour-onboarding').hidden = true;
+   $('tour-progress').textContent = 'Your walkthroughs are ready';
+   $('tour-results').hidden = false;
+   $('tour-match-title').textContent = $('tour-function').selectedOptions[0].textContent;
+   const business = profile.industry === 'other' ? 'Consulting sample business' : $('tour-industry').selectedOptions[0].textContent;
+   $('tour-match-note').textContent = business + ' · ' + $('tour-level').selectedOptions[0].textContent;
+
+   const recommendations = [
+     [profile.role, 'Daily work'],
+     ['training', 'Team training']
+   ];
+   if (senior()) recommendations.push(['workforce', 'Leadership']);
+
+   const list = $('tour-recommendations');
+   list.replaceChildren();
+   for (const [id,category] of recommendations) {
+     const guide = TOUR_DATA[id];
+     const button = document.createElement('button');
+     button.type = 'button';
+     button.className = 'tour-route';
+     button.ariaLabel = 'Start guide: ' + guide.name;
+     const label = document.createElement('span');
+     label.className = 'tour-route-label';
+     const categoryLabel = document.createElement('span');
+     categoryLabel.className = 'tour-category';
+     categoryLabel.textContent = category + ' · ' + guide.steps.length + ' steps';
+     const name = document.createElement('strong');
+     name.textContent = guide.name;
+     label.append(categoryLabel, name);
+
+     const summary = document.createElement('span');
+     summary.className = 'tour-route-summary';
+     summary.id = 'tour-summary-' + id;
+     summary.textContent = guide.summary;
+     button.setAttribute('aria-describedby',summary.id);
+     const action = document.createElement('span');
+     action.className = 'tour-action';
+     action.textContent = 'Start guide';
+     button.append(label, summary, action);
+     button.onclick = () => start(id, button);
+     list.append(button);
+   }
+   $('tour-results').scrollIntoView({block:'start'});
+   $('tour-match-title').focus({preventScroll:true});
+ }
  $('tour-edit').onclick=()=>{tourHeading(false);$('tour-results').hidden=true;document.querySelector('.tour-onboarding').hidden=false;$('tour-profile').hidden=false;question=0;questionView();$(fields[question]).focus()};
  function route(id){const d=TOUR_DATA[id],role=id==='workforce'?'operations':id==='training'?profile.role:id;openWorkspace(role,profile.industry==='other'?'agency':profile.industry,d.view,walkthroughTrigger||document.activeElement);}
  $('tour-explore').onclick=()=>{active=null;$('resume-guide').hidden=true;walkthroughTrigger=$('tour-explore');route(profile.role);$('tour-coach').hidden=true;};
- $('tour-video').onclick=()=>{$('tour-video-note').hidden=!$('tour-video-note').hidden};
  function guideToggle(open){
    const button=$('resume-guide');button.hidden=false;button.textContent=open?'Hide guide':'Show guide';
    button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-controls',$('training-panel').hidden?'tour-coach':'training-panel');
