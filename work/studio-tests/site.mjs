@@ -4,10 +4,12 @@ import vm from 'node:vm';
 const template=fs.readFileSync('outputs/production-site/site-src/template.html','utf8');
 const app=fs.readFileSync('outputs/production-site/site-src/app.js','utf8').replace('__PRODUCT_SLICES__',JSON.stringify(Object.fromEntries(['sales','people','finance','operations'].map(role=>[role,{title:role,columns:['Record','Value'],rows:[['Example','100']]}]))));
 const scrollCorrections=[];
+const sizes=new Map();
+const frameMessages=[];
 class Element {getBoundingClientRect(){const top=this.top??200;return {top,bottom:top+44,height:44}}constructor(id='',data={}){this.id=id;this.dataset=data;this.attrs={};this.handlers={};this.textContent='';this.href='';this.src='';this.hidden=false;}setAttribute(k,v){this.attrs[k]=v}getAttribute(k){return this[k]||this.attrs[k]||null}addEventListener(k,f){this.handlers[k]=f}focus(){this.focused=true}scrollIntoView(){this.scrolled=true}showModal(){this.open=true}close(){this.open=false;this.handlers.close?.()}append(...children){this.children=[...(this.children||[]),...children]}replaceChildren(...children){this.children=children}click(){this.handlers.click?.({currentTarget:this})}}
 const elements=new Map();const get=id=>{if(!elements.has(id))elements.set(id,new Element(id));return elements.get(id)};
-const roles=['sales','people','finance','operations','saleslead','leadership'].map(role=>new Element('',{role}));const tours=['sales','people','finance'].map(tour=>new Element('',{tour}));const brief=new Element(),videoLink=new Element();const handlers={};const frame=get('workspace-demo');frame.contentWindow={postMessage:(data,origin)=>{frame.message={data,origin}}};
-const document={documentElement:{style:{setProperty(){}},dataset:{design:'bento',mode:'light'},classList:{add(){},remove(){}}},getElementById:get,querySelectorAll:q=>q==='[data-role]'?roles:q==='[data-tour]'?tours:q==='[data-brief]'?[brief]:q==='[data-video-link]'?[videoLink]:[],querySelector:q=>q==='.site-header .wordmark'?get('site-home'):roles.find(e=>q.includes('"'+e.dataset.role+'"')),createElement:()=>new Element()};
+const roles=['sales','people','finance','operations','saleslead','leadership'].map(role=>new Element('',{role}));const tours=['sales','people','finance'].map(tour=>new Element('',{tour}));const brief=new Element(),videoLink=new Element();const handlers={};const frame=get('workspace-demo');frame.contentWindow={postMessage:(data,origin)=>{frame.message={data,origin};frameMessages.push(data.type)}};
+const document={documentElement:{style:{setProperty(key,value){sizes.set(key,value)}},dataset:{design:'bento',mode:'light'},classList:{add(){},remove(){}}},getElementById:get,querySelectorAll:q=>q==='[data-role]'?roles:q==='[data-tour]'?tours:q==='[data-brief]'?[brief]:q==='[data-video-link]'?[videoLink]:[],querySelector:q=>q==='.site-header .wordmark'?get('site-home'):roles.find(e=>q.includes('"'+e.dataset.role+'"')),createElement:()=>new Element()};
 const context=vm.createContext({document,innerHeight:720,location:{origin:'http://localhost'},CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail}},window:{scrollBy({top}){scrollCorrections.push(top)},dispatchEvent(event){handlers[event.type]?.(event)},addEventListener:(k,f)=>handlers[k]=f,location:{assign(){throw new Error('No booking destination configured')}}},SITE_CONFIG:{loomUrl:'',bookingUrl:'',linkedinUrl:'https://www.linkedin.com/in/benwebster465/'},DEMO_URL:'demo.html',URL,Blob,FormData,Date,setTimeout,console});
 vm.runInContext(fs.readFileSync('outputs/workspace-concepts/studio-src/workspace-text-preference.js','utf8').replace(/\bexport /g,'')+'\n'+fs.readFileSync('outputs/production-site/site-src/preview-motion.js','utf8')+'\n'+app,context);
 for(const r of roles){r.click();assert.equal(roles.filter(x=>x.attrs['aria-pressed']==='true').length,1);assert.equal(frame.src,'','Choosing a preview role must not load the demo');assert(get('expand-demo').href.includes('/'+r.dataset.role+'/'));assert(get('role-title').textContent.length>10);}
@@ -15,6 +17,17 @@ const previewLink=get('snapshot-rows').children[0].children[0].children[0];asser
 assert.equal(get('snapshot-rows').children[0].children[0].children[0],previewLink,'Opening a workspace should preserve its preview link for the return trip');
 assert(previewLink.focused);
 get('launch-workspace').click();assert(get('workspace-dialog').open);assert(frame.src.includes('/leadership/bento/'));const retained=frame.src;get('close-workspace').click();get('launch-workspace').click();assert.equal(frame.src,retained,'Reopening retains iframe session');document.documentElement.dataset.design='signal';handlers['data-saver-design-change']();assert.equal(frame.src,retained,'Appearance must not reload edited demo');assert.equal(frame.message.data.look,'signal');assert.equal(frame.message.origin,'http://localhost');
+const sizeUpdate={origin:'http://localhost',source:frame.contentWindow,data:{type:'data-saver-text-size',size:145}};
+handlers.message(sizeUpdate);
+assert.equal(sizes.get('--guide-text-scale'),1.45);
+handlers.message({...sizeUpdate,source:{},data:{...sizeUpdate.data,size:85}});
+assert.equal(sizes.get('--guide-text-scale'),1.45);
+get('close-workspace').click();
+handlers.message(sizeUpdate);
+assert.equal(sizes.get('--guide-text-scale'),1,'Closed guides ignore delayed slider changes');
+frameMessages.length=0;
+get('launch-workspace').click();
+assert(frameMessages.includes('data-saver-reset-text-size'),'Reusing the same iframe starts a fresh text-size visit');
 // Only the embedded demo may update the outer selected role and full-screen link.
 const before=get('expand-demo').href;handlers.message({origin:'http://localhost',source:{},data:{type:'data-saver-studio-state',role:'sales',industry:'agency',look:'glass',view:'dialer'}});assert.equal(get('expand-demo').href,before);
 handlers.message({origin:'http://localhost',source:frame.contentWindow,data:{type:'data-saver-studio-state',role:'finance',industry:'agency',look:'editorial',view:'workbench'}});assert.equal(get('expand-demo').href,'demo.html#studio/agency/finance/editorial/workbench');assert.equal(roles.find(r=>r.dataset.role==='finance').attrs['aria-pressed'],'true');

@@ -1,12 +1,14 @@
 const roleRoutes={sales:{look:'glass',view:'dialer',title:'Calls & follow-up',description:'Make a demo call, log an outcome and inspect the automatic next step.'},people:{look:'bento',view:'leave',title:'Leave & coverage',description:'Arrange cover, approve leave and see capacity and balances change together.'},finance:{look:'ledger',view:'workbench',title:'Payments & reconciliation',description:'Allocate a partial receipt, review the remaining balance and reconcile the payment.'},operations:{look:'atlas',view:'workbench',title:'Delivery & handoffs',description:'Resolve a dependency, confirm acceptance and release the allocated hours.'},saleslead:{look:'signal',view:'performance',title:'Sales performance',description:'Inspect comparable activity, outcomes and the evidence behind a coaching decision.'},leadership:{look:'editorial',view:'company',title:'Company overview',description:'Explore teams, pipeline, commitments and the decisions that need an owner.'}};
-function syncGuideTextSize() {
-  document.documentElement.style.setProperty('--guide-text-scale', readWorkspaceTextSize() / 100);
+function syncGuideTextSize(value = defaultWorkspaceTextSize) {
+  document.documentElement.style.setProperty('--guide-text-scale', normalizeTextSize(value) / 100);
 }
-syncGuideTextSize();
-window.addEventListener('pageshow', syncGuideTextSize);
-window.addEventListener('storage', event => {
-  if (event.key === workspaceSizeKey || event.key === null) syncGuideTextSize();
-});
+function resetDemoTextSize() {
+  syncGuideTextSize();
+  if (frame.getAttribute('src')) frame.contentWindow.postMessage(
+    {type:'data-saver-reset-text-size'}, location.protocol==='file:'?'*':location.origin
+  );
+}
+window.addEventListener('pageshow', event => {if (event.persisted) resetDemoTextSize();});
 const frame=document.getElementById('workspace-demo'),expand=document.getElementById('expand-demo'),workspaceDialog=document.getElementById('workspace-dialog');
 const previewData=__PRODUCT_SLICES__;
 const roleNames={sales:'Sales',people:'People & HR',finance:'Finance',operations:'Operations',saleslead:'Sales leadership',leadership:'Company leadership'};
@@ -85,6 +87,7 @@ function syncWorkspaceAppearance() {
   renderSnapshot(currentRole);
 }
 function openWorkspace(role=currentRole,industry=workspaceRoute?.role===role?workspaceRoute.industry:'agency',view=workspaceRoute?.role===role?workspaceRoute.view:roleRoutes[role].view,trigger=document.activeElement,outcomeCase=null){
+  if (!workspaceDialog.open) resetDemoTextSize();
   if (!workspaceDialog.open && trigger) {
     const rect = trigger.getBoundingClientRect();
     workspaceOrigin = rect.bottom > 0 && rect.top < innerHeight ? {trigger, top:rect.top} : null;
@@ -93,6 +96,7 @@ function openWorkspace(role=currentRole,industry=workspaceRoute?.role===role?wor
 function openRole(role){if(roleRoutes[role])openWorkspace(role);}
 function closeWorkspace(){workspaceDialog.close();}
 workspaceDialog.addEventListener('close', () => {
+  syncGuideTextSize();
   document.documentElement.classList.remove('workspace-is-open');
   document.getElementById('tour-coach').hidden = true;
   document.getElementById('training-panel').hidden = true;
@@ -116,11 +120,14 @@ function showGuideWorkspace(){
   }
 }
 window.addEventListener('data-saver-guide-open',showGuideWorkspace);
-frame.addEventListener('load',()=>{navigateWorkspace();syncWorkspaceAppearance();showGuideWorkspace();});
+frame.addEventListener('load',()=>{syncGuideTextSize();navigateWorkspace();syncWorkspaceAppearance();showGuideWorkspace();});
 document.querySelectorAll('[data-role]').forEach(b=>b.addEventListener('click',()=>showRole(b.dataset.role,true)));
 document.querySelectorAll('[data-tour]').forEach(b=>b.addEventListener('click',()=>openRole(b.dataset.tour)));
 window.addEventListener('data-saver-design-change',syncWorkspaceAppearance);
-window.addEventListener('message',event=>{const localFile=location.protocol==='file:'&&event.origin==='null';if(event.source!==frame.contentWindow||(!localFile&&event.origin!==location.origin))return;if(event.data?.type==='data-saver-glass-clarity'){
+window.addEventListener('message',event=>{const localFile=location.protocol==='file:'&&event.origin==='null';if(event.source!==frame.contentWindow||(!localFile&&event.origin!==location.origin))return;if(event.data?.type==='data-saver-text-size'){
+ if(workspaceDialog.open && Number.isFinite(event.data.size))syncGuideTextSize(event.data.size);
+ return;
+}if(event.data?.type==='data-saver-glass-clarity'){
  if(workspaceDialog.open&&typeof event.data.clarity==='boolean')window.dispatchEvent(new CustomEvent('data-saver-workspace-clarity',{detail:event.data.clarity}));
  return;
 }if(event.data?.type==='data-saver-studio-home'){if(workspaceDialog.open){workspaceTrigger=document.querySelector('.site-header .wordmark');closeWorkspace();workspaceTrigger.click();}return;}if(event.data?.type==='data-saver-studio-close'||event.data?.type==='data-saver-studio-escape'){if(workspaceDialog.open)closeWorkspace();return;}if(event.data?.type!=='data-saver-studio-state'||!workspaceDialog.open)return;const {role,industry,look,view,outcomeCase}=event.data;if(!roleRoutes[role]||![industry,look,view].every(v=>typeof v==='string'&&/^[a-z-]+$/.test(v)))return;if(role==='finance'&&financePreviewViews.has(view))financeFocus.value=view;workspaceRoute={role,industry,look,view,outcomeCase:typeof outcomeCase==='string'&&/^[a-z-]+$/.test(outcomeCase)?outcomeCase:null};window.dispatchEvent(new CustomEvent('data-saver-workspace-design',{detail:{look}}));showRole(role);document.getElementById('workspace-design-label').textContent=(designNames[look]||look)+' workspace';expand.href=DEMO_URL+`#studio/${industry}/${role}/${look}/${view}${workspaceRoute.outcomeCase?'/'+workspaceRoute.outcomeCase:''}`;});

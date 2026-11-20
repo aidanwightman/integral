@@ -15,6 +15,8 @@ export function installNorthstarPreview({dialog,url,fallbackHash,onReturn,onHome
       // A new iframe history entry would consume Back before the preview hash in Safari.
       frame.contentWindow.location.replace(target.href);
       frameStarted=true;
+    }else{
+      frame.contentWindow.postMessage({type:'data-saver-reset-text-size'},location.protocol==='file:'?'*':location.origin);
     }
     dialog.showModal();
     back.focus({preventScroll:true});

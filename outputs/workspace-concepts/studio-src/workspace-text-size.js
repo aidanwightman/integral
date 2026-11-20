@@ -1,13 +1,10 @@
-import {workspaceSizeKey,minimumTextSize,maximumTextSize,textSizeStep,normalizeTextSize} from './workspace-text-preference.js';
+import {minimumTextSize,maximumTextSize,textSizeStep,normalizeTextSize} from './workspace-text-preference.js';
 
-export function setWorkspaceTextSize(value, persist = true) {
+export function setWorkspaceTextSize(value) {
   const size = normalizeTextSize(value);
   const style = document.documentElement.style;
   style.setProperty('--workspace-text-scale', size / 100);
   style.setProperty('--workspace-size-fill', workspaceRangeFill(size, minimumTextSize, maximumTextSize));
-  if (persist) {
-    try { localStorage.setItem(workspaceSizeKey, String(size)); } catch {}
-  }
   return size;
 }
 

@@ -1,4 +1,4 @@
-import {readWorkspaceTextSize} from './workspace-text-preference.js';
+import {defaultWorkspaceTextSize} from './workspace-text-preference.js';
 import {setWorkspaceTextSize,workspaceTextSizeControl,syncWorkspaceTextSize,workspaceRangeInput,workspaceRangeFill} from './workspace-text-size.js';
 import {collectionMoney,collectionRecordPanel,updateCollectionFields} from './collections-views.js';
 import {approveCollectionBill,recordCollectionAction,collectionOpenAmount} from './collections-model.js';
@@ -51,14 +51,14 @@ const personAvatar=name=>`<span class="avatar">${e(shortName(name))}</span>`;
 const link=(record,label)=>b('record',e(label||record.name||record.title||record.number),'text-button record-link',`data-id="${record.id}"`);
 const sumText=(value)=>`${value.toLocaleString('en-GB')}`;
 
-let workspaceSize = readWorkspaceTextSize();
-function applyWorkspaceSize(value = workspaceSize, persist = false) {
-  workspaceSize = setWorkspaceTextSize(value, persist);
+let workspaceSize = defaultWorkspaceTextSize;
+function applyWorkspaceSize(value = workspaceSize) {
+  workspaceSize = setWorkspaceTextSize(value);
   root.dataset.largeText = String(workspaceSize >= 135);
   syncWorkspaceTextSize(root, workspaceSize);
 }
-window.addEventListener('storage', event => {
-  if (event.key === null || event.key === 'data-saver-workspace-size') applyWorkspaceSize(readWorkspaceTextSize());
+window.addEventListener('pageshow', event => {
+  applyWorkspaceSize(event.persisted ? defaultWorkspaceTextSize : workspaceSize);
 });
 const NORTHSTAR_APPEARANCE={
   id:'northstar',name:'Northstar Events',
@@ -615,7 +615,13 @@ root.addEventListener('input',event=>{const el=event.target;
       marker.value='';updateContactEmailField(field);
     }
   }
-  if(el.id==='workspace-size'){applyWorkspaceSize(el.value,true);return;}
+  if(el.id==='workspace-size'){
+    applyWorkspaceSize(el.value);
+    if(window.parent!==window && new URLSearchParams(location.search).get('embed')==='site'){
+      window.parent.postMessage({type:'data-saver-text-size',size:workspaceSize},location.protocol==='file:'?'*':location.origin);
+    }
+    return;
+  }
   if(el.dataset.depthField||el.id==='depth-note'){const c=D().depth.cases.find(x=>x.id===state.depthCase&&x.role===state.role)||D().depth.cases.find(x=>x.role===state.role);if(el.id==='depth-note')c.draftNote=el.value;else depthFields(D(),c,{[el.dataset.depthField]:el.type==='checkbox'?el.checked:el.value});}if(['call-notes','call-next'].includes(el.id)){const call=D().calls.find(c=>c.status==='Wrap-up');if(call)call[el.id==='call-notes'?'notes':'nextStep']=el.value;}if(el.id==='record-search'){const position=el.selectionStart;state.query=el.value;render();const input=document.querySelector('#record-search');input.focus();input.setSelectionRange(position,position);}if(el.dataset.control&&el.type==='range')changeForecastControl(el);});
 window.addEventListener('hashchange',event=>{
   // Returning from the overlay leaves this workspace and its form inputs intact.
@@ -628,9 +634,12 @@ window.addEventListener('keydown',event=>{
 });
 // Only the embedding parent on this origin can change presentation. Business state stays intact.
 window.addEventListener('message',event=>{
- const trustedOrigin=event.origin===location.origin||(location.protocol==='file:'&&event.origin==='null');
+ // The Studio opened from the classic gallery uses srcdoc and inherits its parent's origin.
+ const pageOrigin=location.protocol==='about:'?new URL(document.baseURI).origin:location.origin;
+ const trustedOrigin=event.origin===pageOrigin||(location.protocol==='file:'&&event.origin==='null');
  if(window.parent===window||event.source!==window.parent||!trustedOrigin)return;
  const payload=event.data;
+ if(payload?.type==='data-saver-reset-text-size'){applyWorkspaceSize(defaultWorkspaceTextSize);return;}
  if(payload?.type==='data-saver-guide-open'){
   if(window.innerWidth<=850 || window.innerHeight<=600){
    requestAnimationFrame(()=>document.querySelector('#studio-main')?.scrollIntoView({block:'start',behavior:'instant'}));

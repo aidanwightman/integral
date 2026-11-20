@@ -1950,18 +1950,20 @@ let undoStack=[];
 
 /* --------------------------------- rendering -------------------------------- */
 const app=document.getElementById('app'),layer=document.getElementById('layer');
-let classicTextSize = 100;
-function applyClassicTextSize(value, persist = false) {
-  classicTextSize = setWorkspaceTextSize(value, persist);
+let classicTextSize = defaultWorkspaceTextSize;
+function applyClassicTextSize(value = defaultWorkspaceTextSize) {
+  classicTextSize = setWorkspaceTextSize(value);
   document.documentElement.toggleAttribute('data-classic-large-type', classicTextSize > 120);
   syncWorkspaceTextSize(app, classicTextSize);
 }
-function restoreClassicTextSize() {
-  applyClassicTextSize(readWorkspaceTextSize());
-}
-window.addEventListener('pageshow', restoreClassicTextSize);
-window.addEventListener('storage', event => {
-  if (event.key === 'data-saver-workspace-size' || event.key === null) restoreClassicTextSize();
+window.addEventListener('pageshow', event => {
+  if (event.persisted) applyClassicTextSize();
+});
+window.addEventListener('message', event => {
+  if (event.data?.type !== 'data-saver-reset-text-size' || !inNorthstarPreview() || event.source !== window.parent) return;
+  if (event.origin !== location.origin && !(location.protocol === 'file:' && event.origin === 'null')) return;
+  applyClassicTextSize();
+  window.DataSaverStudio?.resetTextSize();
 });
 const ROLE_HIDE={Sales:['tickets','approvals','dq'],Operations:['deals','approvals'],Finance:['events','tickets'],Leadership:[]};
 function visible(mod){if(mod==='finance')return S.biz==='events'&&['Leadership','Finance','Sales'].includes(roleOf(UI.me));if(mod==='alerts')return S.biz==='events';const B=BZ();if(!B.modules.includes(mod))return false;if(S.biz==='group'){const r=roleOf(UI.me);if(ROLE_HIDE[r].includes(mod))return false;if((S.config.hidden[r]||[]).includes(mod))return false}return true}
@@ -3107,7 +3109,7 @@ document.addEventListener('click',e=>{
   if(mobileNav && !UI.navopen && ['route','goto'].includes(act))focusClassicHeading();
 });
 document.addEventListener('input',e=>{const t=e.target;
-  if(t.id==='workspace-size'){applyClassicTextSize(t.value,true);return}
+  if(t.id==='workspace-size'){applyClassicTextSize(t.value);return}
   if(t.matches('[data-ns-discount] input[name="percent"]')){
     const form=t.form,d=D(form.dataset.nsDiscount),rate=t.valueAsNumber;
     form.querySelector('[data-net-preview]').textContent=t.value && t.validity.valid?'Proposed net price · '+nsMoney(northstarNetDealValue(d,Math.round(rate*100))):'Current net price · '+nsMoney(northstarNetDealValue(d));
@@ -3176,6 +3178,7 @@ document.addEventListener('click',event=>{
   notifyNorthstarHost('data-saver-northstar-home');
 });
 window.addEventListener('data-saver-show-northstar',()=>{
+  applyClassicTextSize();
   history.replaceState(history.state,'','#events-home');
   readHash();lastHash=null;render();
 });
@@ -3219,7 +3222,7 @@ function openPalette(){if(document.getElementById('pal'))return;
   document.getElementById('pal').onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();dismiss()}else if(e.key==='Tab'){e.preventDefault();(document.activeElement===q?close:q).focus()}};
   run();q.focus()}
 
-if (app) restoreClassicTextSize();
+if (app) applyClassicTextSize();
 readHash();render();
 </script>
 </body>

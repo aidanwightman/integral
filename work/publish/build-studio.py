@@ -41,15 +41,22 @@ embed = '''<!-- INDUSTRY_STUDIO_BEGIN -->
     document.body.style.overflow = previousOverflow;
     previousFocus?.focus();
   }
-  window.DataSaverStudio = {open() {
+  function resetTextSize() {
+    if (overlay && !overlay.hidden) overlay.querySelector('iframe').contentWindow.postMessage(
+      {type:'data-saver-reset-text-size'},location.protocol==='file:'?'*':location.origin
+    );
+  }
+  window.DataSaverStudio = {resetTextSize, open() {
     if (overlay) {
       if (overlay.hidden) {
         previousFocus = document.activeElement;
         previousOverflow = document.body.style.overflow;
         overlay.hidden = false;
         document.body.style.overflow = 'hidden';
-        overlay.querySelector('iframe').focus();
-        overlay.querySelector('iframe').contentWindow.postMessage({type:'data-saver-northstar-return'},location.protocol==='file:'?'*':location.origin);
+        const frame = overlay.querySelector('iframe');
+        frame.focus();
+        resetTextSize();
+        frame.contentWindow.postMessage({type:'data-saver-northstar-return'},location.protocol==='file:'?'*':location.origin);
       }
       return;
     }

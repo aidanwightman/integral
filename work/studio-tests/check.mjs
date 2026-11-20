@@ -21,23 +21,23 @@ for(const industry of INDUSTRIES){
 }
 const preferences=new Map([['data-saver-workspace-size','120']]);
 const elements=new Map();const element=()=>({innerHTML:'',handlers:{},dataset:{},style:{values:{},setProperty(k,v){this.values[k]=String(v)}},setAttribute(k,v){this[k]=v},querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s)},querySelectorAll(){return []},addEventListener(type,fn){this.handlers[type]=fn},classList:{add(){},remove(){}},focus(){}});
-const context=vm.createContext({document:{documentElement:element(),querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s);}},window:{addEventListener(){},scrollTo(){}},location:{search:'?identity=glass',hash:'#studio/agency/finance/bento/forecast'},history:{replaceState(){}},structuredClone,URLSearchParams,queueMicrotask,localStorage:{getItem:k=>preferences.get(k)??null,setItem:(k,v)=>preferences.set(k,String(v))},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},console});
+const context=vm.createContext({document:{documentElement:element(),querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s);}},window:{addEventListener(){},scrollTo(){}},location:{search:'?identity=glass',hash:'#studio/agency/finance/bento/forecast'},history:{replaceState(){}},structuredClone,URLSearchParams,queueMicrotask,localStorage:{getItem:k=>preferences.get(k)??null,setItem:(k,v)=>preferences.set(k,String(v)),removeItem:k=>preferences.delete(k)},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},console});
 const source=JSON.parse(fs.readFileSync('outputs/workspace-concepts/studio-src/package.json','utf8')).studioScripts.map(f=>fs.readFileSync('outputs/workspace-concepts/studio-src/'+f,'utf8').replace(/^import[^\n]+\n/gm,'').replace(/\bexport /g,'')).join('\n');
 vm.runInContext(source,context);
 assert.equal(vm.runInContext('state.look',context),'bento','Legacy identity query must not force Glass over the route');
-assert.equal(vm.runInContext('workspaceSize',context),120,'Saved display size restored');
+assert.equal(vm.runInContext('workspaceSize',context),100,'Every demo visit starts at the default, including with legacy storage');
 const sizeRoot=elements.get('#studio-root');
 sizeRoot.handlers.input({target:{id:'workspace-size',value:'130',dataset:{}}});
-assert.equal(preferences.get('data-saver-workspace-size'),'130');assert.equal(context.document.documentElement.style.values['--workspace-text-scale'],'1.3');assert.equal(elements.get('#workspace-size').getAttribute?.('aria-valuetext')||elements.get('#workspace-size')['aria-valuetext'],'130 percent');
+assert.equal(preferences.has('data-saver-workspace-size'),false);assert.equal(context.document.documentElement.style.values['--workspace-text-scale'],'1.3');assert.equal(elements.get('#workspace-size').getAttribute?.('aria-valuetext')||elements.get('#workspace-size')['aria-valuetext'],'130 percent');
 vm.runInContext('render()',context);assert.equal(vm.runInContext('workspaceSize',context),130,'Render must preserve display size');
-sizeRoot.handlers.input({target:{id:'workspace-size',value:'190',dataset:{}}});assert.equal(preferences.get('data-saver-workspace-size'),'175');
-sizeRoot.handlers.input({target:{id:'workspace-size',value:'bad',dataset:{}}});assert.equal(preferences.get('data-saver-workspace-size'),'100');
+sizeRoot.handlers.input({target:{id:'workspace-size',value:'190',dataset:{}}});assert.equal(vm.runInContext('workspaceSize',context),175);
+sizeRoot.handlers.input({target:{id:'workspace-size',value:'bad',dataset:{}}});assert.equal(vm.runInContext('workspaceSize',context),100);
 for(const [input, expectedFill] of [[80,'0%'],[100,'16.6667%'],[130,'50%'],[175,'100%']]) {
   sizeRoot.handlers.input({target:{id:'workspace-size',value:String(input),dataset:{}}});
   assert.equal(context.document.documentElement.style.values['--workspace-size-fill'],expectedFill);
 }
 sizeRoot.handlers.input({target:{id:'workspace-size',value:'100',dataset:{}}});
-console.log('PASS: legacy identity flag respects routed style; display size restores, persists, exposes accessible value and clamps inputs.');
+console.log('PASS: legacy identity flag respects routed style; display size lasts for the visit, announces changes and clamps inputs.');
 // Inspecting a scenario keeps the native controls and the user's calculation disclosure in place.
 const forecastHTML=()=>vm.runInContext('forecastView()',context);
 assert.match(forecastHTML(),/data-forecast-calculation open/);
