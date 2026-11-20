@@ -24,7 +24,7 @@ const elements=new Map();const element=()=>({innerHTML:'',handlers:{},dataset:{}
 const messageHandlers={};
 const posted=[];
 const parentWindow={postMessage:(message,origin)=>posted.push({message,origin})};
-const context=vm.createContext({document:{documentElement:element(),querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s);}},window:{parent:parentWindow,addEventListener(type,handler){const previous=messageHandlers[type];messageHandlers[type]=event=>{previous?.(event);handler(event)}},scrollTo(){}},location:{search:'?identity=glass',hash:'#studio/agency/finance/bento/forecast',origin:'https://example.test',protocol:'https:'},history:{replaceState(){}},structuredClone,URLSearchParams,queueMicrotask,localStorage:{getItem:k=>preferences.get(k)??null,setItem:(k,v)=>preferences.set(k,String(v)),removeItem:k=>preferences.delete(k)},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},console});
+const context=vm.createContext({document:{documentElement:element(),querySelector(s){if(!elements.has(s))elements.set(s,element());return elements.get(s);}},window:{parent:parentWindow,addEventListener(type,handler){const previous=messageHandlers[type];messageHandlers[type]=event=>{previous?.(event);handler(event)}},scrollTo(){}},location:{search:'?identity=glass',hash:'#studio/agency/finance/bento/forecast',origin:'https://example.test',protocol:'https:'},history:{replaceState(){}},structuredClone,URL,URLSearchParams,queueMicrotask,localStorage:{getItem:k=>preferences.get(k)??null,setItem:(k,v)=>preferences.set(k,String(v)),removeItem:k=>preferences.delete(k)},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},console});
 const source=JSON.parse(fs.readFileSync('outputs/workspace-concepts/studio-src/package.json','utf8')).studioScripts.map(f=>fs.readFileSync('outputs/workspace-concepts/studio-src/'+f,'utf8').replace(/^import[^\n]+\n/gm,'').replace(/\bexport /g,'')).join('\n');
 vm.runInContext(source,context);
 assert.equal(vm.runInContext('state.look',context),'bento','Legacy identity query must not force Glass over the route');
@@ -46,6 +46,17 @@ assert.equal(vm.runInContext('workspaceSize',context),100,'A reused iframe start
 sizeRoot.handlers.input({target:{id:'workspace-size',value:'155',dataset:{}}});
 messageHandlers.pageshow({persisted:true});
 assert.equal(vm.runInContext('workspaceSize',context),100,'Returning from another page resets text size even in the back/forward cache');
+// A Studio mounted with srcdoc inherits the Classic document's message origin.
+context.location.protocol='about:';
+for(const [baseURI,origin] of [['file:///preview/workspace.html','null'],['https://example.test/workspace.html','https://example.test']]){
+  context.document.baseURI=baseURI;
+  sizeRoot.handlers.input({target:{id:'workspace-size',value:'145',dataset:{}}});
+  messageHandlers.message({...sizeReset,origin:'https://untrusted.test'});
+  assert.equal(vm.runInContext('workspaceSize',context),145);
+  messageHandlers.message({...sizeReset,origin});
+  assert.equal(vm.runInContext('workspaceSize',context),100);
+}
+context.location.protocol='https:';
 let renders=0;
 for(const i of INDUSTRIES)for(const r of ROLES)for(const l of LOOKS)for(const view of r.views){vm.runInContext(`Object.assign(state,${JSON.stringify({industry:i.id,role:r.id,look:l.id,view,gallery:false,account:null})});render()`,context);const html=elements.get('#studio-root').innerHTML;assert(html.includes('studio-main'));assert(!/NaN|undefined/.test(html));for(const destination of r.views)assert(html.includes('data-view="'+destination+'"'),`${l.id}/${r.id} lost ${destination}`);renders++;}
 console.log(`PASS: eight dataset integrity and business calculation checks; ${renders} view combinations rendered.`);

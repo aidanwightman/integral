@@ -5523,8 +5523,8 @@ window.addEventListener('keydown',event=>{
 // Only the embedding parent on this origin can change presentation. Business state stays intact.
 window.addEventListener('message',event=>{
  // The Studio opened from the classic gallery uses srcdoc and inherits its parent's origin.
- const pageOrigin=location.protocol==='about:'?new URL(document.baseURI).origin:location.origin;
- const trustedOrigin=event.origin===pageOrigin||(location.protocol==='file:'&&event.origin==='null');
+ const pageLocation=location.protocol==='about:'?new URL(document.baseURI):location;
+ const trustedOrigin=event.origin===pageLocation.origin||(pageLocation.protocol==='file:'&&event.origin==='null');
  if(window.parent===window||event.source!==window.parent||!trustedOrigin)return;
  const payload=event.data;
  if(payload?.type==='data-saver-reset-text-size'){applyWorkspaceSize(defaultWorkspaceTextSize);return;}
