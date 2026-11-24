@@ -14,20 +14,37 @@ assert.deepEqual(read('integral-icon.png'), read('../outputs/production-site/sit
 assert.deepEqual(read('privacy/index.html'), read('../outputs/production-site/site-src/privacy.html'));
 assert.match(read('privacy/index.html').toString(), /Mailpool is our business mailbox provider/);
 assert.match(read('privacy/index.html').toString(), /Porkbun is our domain registrar/);
-for (const file of ['index.html', 'privacy/index.html']) assert.doesNotMatch(read(file).toString(), /hello@byintegral\.com/iu);
+for (const file of ['index.html', 'privacy/index.html']) {
+  const html = read(file).toString();
+  assert.doesNotMatch(html, /hello@byintegral\.com/iu);
+  // Cloudflare must preserve both the address and its mailto link for readers without JavaScript.
+  const protectedLinks = html.match(/<!--email_off--><a [^>]*href="mailto:ben@byintegral\.com[^"]*"[^>]*>ben@byintegral\.com<\/a><!--\/email_off-->/g);
+  assert.equal(protectedLinks?.length, file === 'index.html' ? 2 : 4);
+  assert.equal(protectedLinks.length, html.match(/href="mailto:/g).length);
+}
+
+async function serve(route) {
+  const url = new URL(route.request().url());
+  const file = url.origin === 'https://integral.test' && pages[url.pathname];
+  if (!file) return route.abort();
+  await route.fulfill({body:read(file), contentType:file.endsWith('.png') ? 'image/png' : 'text/html; charset=utf-8'});
+}
 
 const browser = await chromium.launch({channel:'chrome'});
 try {
+  const plain = await browser.newPage({javaScriptEnabled:false, viewport:{width:390, height:844}});
+  await plain.route('**/*', serve);
+  await plain.goto('https://integral.test/');
+  assert.deepEqual(await plain.locator('a[href^="mailto:"]').allInnerTexts(), ['ben@byintegral.com', 'ben@byintegral.com']);
+  await plain.getByRole('navigation', {name:'Footer'}).getByRole('link', {name:'Privacy notice'}).click();
+  assert.equal(await plain.locator('#opt-out a').innerText(), 'ben@byintegral.com');
+  assert.equal(await plain.locator('#opt-out a').getAttribute('href'), email + '?subject=Stop%20marketing');
+  await plain.close();
   for (const width of [320, 390, 1440]) {
     const page = await browser.newPage({viewport:{width, height:840}});
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.route('**/*', async route => {
-      const url = new URL(route.request().url());
-      const file = url.origin === 'https://integral.test' && pages[url.pathname];
-      if (!file) return route.abort();
-      await route.fulfill({body:read(file), contentType:file.endsWith('.png') ? 'image/png' : 'text/html; charset=utf-8'});
-    });
+    await page.route('**/*', serve);
     await page.goto('https://integral.test/');
     for (const design of ['glass', 'forest', 'editorial', 'signal', 'bento']) {
       await page.selectOption('#site-design', design, {force:true});
