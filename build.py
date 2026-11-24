@@ -1,4 +1,4 @@
-"""Build the Integral website and its two interactive demo pages."""
+"""Build the public Integral website and its static assets."""
 from pathlib import Path
 from shutil import copyfile
 import subprocess
@@ -13,5 +13,7 @@ for script in ('build-studio.py', 'build-site.py'):
 
 docs = root / 'docs'
 docs.mkdir(exist_ok=True)
-for page in ('index.html', 'demo.html', 'workspace.html'):
-    copyfile(publish / 'site-dist' / page, docs / page)
+for asset in ('index.html', 'demo.html', 'workspace.html', 'privacy/index.html', 'integral-icon.png'):
+    destination = docs / asset
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    copyfile(publish / 'site-dist' / asset, destination)

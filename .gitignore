@@ -4,6 +4,8 @@ __pycache__/
 .env.*
 node_modules/
 /outputs/production-site/index.html
+/outputs/production-site/privacy/
+/outputs/production-site/integral-icon.png
 /outputs/workspace-concepts/index.html
 /outputs/workspace-concepts/industry-studio.html
 /outputs/workspace-concepts/datasets/*.sqlite

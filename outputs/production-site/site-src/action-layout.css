@@ -73,6 +73,61 @@ html[data-design] .site-footer :is(.footer-link, a:not(.wordmark)) {
   text-align: start;
 }
 
+html[data-design] #about .founder-contact {
+  display: grid;
+  justify-items: start;
+  margin-top: .6rem;
+  font: inherit;
+}
+html[data-design] #about .founder-contact a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-weight: 550;
+  text-decoration: underline;
+  text-underline-offset: .22em;
+}
+html[data-design] footer.site-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .6rem 2rem;
+}
+html[data-design] .site-footer .footer-brand {
+  display: flex;
+  flex-wrap: wrap;
+  width: auto;
+  gap: .3rem 1rem;
+  align-items: baseline;
+}
+html[data-design] .site-footer .footer-brand p { margin: 0; }
+html[data-design] .site-footer .footer-email {
+  justify-self: end;
+  max-width: 100%;
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: .22em;
+  overflow-wrap: anywhere;
+}
+html[data-design] .site-footer .footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 0 1.35rem;
+  border-top: 1px solid var(--line);
+  padding-top: .4rem;
+  align-items: center;
+}
+.intake-privacy { display: inline-block; padding-block: .55rem; font-size: .85rem; }
+@media (max-width: 600px) {
+  html[data-design] footer.site-footer { grid-template-columns: minmax(0, 1fr); }
+  html[data-design] .site-footer .footer-email { justify-self: start; }
+}
+
 @media (max-width: 760px) {
   html[data-design] .ps-hero figcaption { padding-block: .4rem; }
 }

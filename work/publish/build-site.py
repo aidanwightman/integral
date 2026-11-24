@@ -1,5 +1,6 @@
 """Build the customer-facing local preview and a portable static hosting bundle."""
 from pathlib import Path
+from shutil import copyfile
 import base64, hashlib, json, re
 from html import escape
 from urllib.parse import urlparse
@@ -61,4 +62,8 @@ for workspace, filename in [(workspace_html, 'demo.html'), (root/'outputs/worksp
     bundled = workspace.read_text().replace('../production-site/index.html', 'index.html')
     bundled = bundled.replace('./index.html#events-home', 'workspace.html#events-home')
     (dist/filename).write_text(bundled)
-print('Built customer-facing preview and static bundle: index.html, demo.html, workspace.html')
+for destination in (source.parent, dist):
+    (destination/'privacy').mkdir(exist_ok=True)
+    copyfile(source/'privacy.html', destination/'privacy/index.html')
+    copyfile(source/'integral-icon.png', destination/'integral-icon.png')
+print('Built landing page, privacy notice, signature icon and both demo pages.')
