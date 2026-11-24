@@ -20,6 +20,71 @@ for(const {id} of INDUSTRIES){
 console.log('PASS: eight industries — full call lifecycle, known/missing email, invalid email, once-per-call delivery, paused/resumed jobs, template version snapshots, opt-out, unanswered calls, reply stop, task-only branch and quote lifecycle.');
 
 {
+ const {logCompletedCall,scheduleSalesCall}=await import('../../outputs/workspace-concepts/studio-src/calling.js');
+ const {callingView,callHistory}=await import('../../outputs/workspace-concepts/studio-src/calling-views.js');
+ const d=dataset('agency'), person=d.contacts[0], owner=d.team[1], opp=d.opportunities.find(o=>o.accountId===person.accountId);
+ const s={view:'dialer',role:'sales',callContact:person.id};
+ const setup={contactId:person.id,ownerId:person.ownerId,purpose:'Setup call',direction:'Outbound',endedAt:'2025-11-05T11:02:00Z',durationSeconds:90,
+   opportunityId:opp.id,outcome:'Callback requested',nextStep:'Show proposal to the buying team',runFollowUp:true,scheduledPurpose:'Pitch call',scheduledAt:'2099-03-10T11:15',scheduledOwnerId:owner.id};
+ const before=JSON.stringify(d);
+ for(const invalid of [{purpose:'other'},{scheduledAt:'2020-03-10T11:15'},{scheduledAt:'2099-02-30T10:00'},{scheduledOwnerId:'missing'},{scheduledPurpose:''},{outcome:'Do not contact'}]){
+   assert.throws(()=>logCompletedCall(d,{...setup,...invalid}));
+   assert.equal(JSON.stringify(d),before);
+ }
+ const {call}=logCompletedCall(d,setup);
+ const task=d.salesTasks.find(t=>t.id===call.nextCallTaskId);
+ assert.equal(task.purpose,'Pitch call');
+ assert.equal(task.scheduledAt,new Date(setup.scheduledAt).toISOString());
+ assert.equal(task.ownerId,owner.id);
+ assert.equal(task.opportunityId,opp.id);
+ assert.equal(task.accountId,person.accountId);
+ assert.equal(task.agenda,setup.nextStep);
+ assert.equal(task.source,call.id);
+ assert.equal(d.salesTasks.filter(t=>t.source===call.id).length,1);
+ assert.ok(logCompletedCall(d,setup).duplicate);
+ assert.match(callHistory(d,person),/Setup call · Callback requested/);
+ assert.match(callingView(d,s),/data-do="dial-scheduled"/);
+ assert.throws(()=>salesWorkbenchAction(d,s,'sales-task-done',{id:task.id}));
+ salesWorkbenchAction(d,s,'dial-scheduled',{id:task.id});
+ assert.equal(d.calls[0].scheduledTaskId,task.id);
+ assert.equal(d.calls[0].ownerId,owner.id);
+ assert.equal(d.calls[0].purpose,'Pitch call');
+ assert.throws(()=>salesWorkbenchAction(d,s,'cancel-scheduled',{id:task.id}));
+ salesWorkbenchAction(d,s,'dial-connect');
+ salesWorkbenchAction(d,s,'dial-end');
+ const beforePitch=JSON.stringify(d), pipeline=JSON.stringify(d.opportunities);
+ assert.throws(()=>salesWorkbenchAction(d,s,'dial-log',{outcome:'Positive conversation',nextStep:'Send proposal',pitchResult:'Undefined choice'}));
+ assert.equal(JSON.stringify(d),beforePitch);
+ assert.match(callingView(d,s),/data-pitch-fields ><legend>Pitch details/);
+ salesWorkbenchAction(d,s,'dial-log',{outcome:'Positive conversation',nextStep:'Send proposal',pitchResult:'Revised proposal requested',buyerFeedback:'  Needs a shorter rollout.  '});
+ assert.equal(d.calls[0].opportunityId,opp.id);
+ assert.equal(d.calls[0].pitchResult,'Revised proposal requested');
+ assert.equal(d.calls[0].buyerFeedback,'Needs a shorter rollout.');
+ assert.match(callHistory(d,person),/Revised proposal requested/);
+ assert.match(callHistory(d,person),/Needs a shorter rollout/);
+ assert.equal(JSON.stringify(d.opportunities),pipeline);
+ const manual={...setup,endedAt:'2025-11-07T14:00:00Z',purpose:'Pitch call',outcome:'Positive conversation',nextStep:'Confirm timetable',pitchResult:'Ready to proceed',buyerFeedback:'Funds approved.',scheduledAt:'',runFollowUp:false};
+ const recorded=logCompletedCall(d,manual).call;
+ assert.equal(recorded.pitchResult,'Ready to proceed');
+ assert.equal(recorded.buyerFeedback,'Funds approved.');
+ assert.equal(JSON.stringify(d.opportunities),pipeline);
+ assert.throws(()=>logCompletedCall(d,{...manual,endedAt:'2025-11-08T14:00:00Z',purpose:'Setup call'}));
+ assert.equal(task.status,'Complete');
+ assert.equal(task.completedCallId,d.calls.find(c=>c.scheduledTaskId===task.id).id);
+ assert.throws(()=>salesWorkbenchAction(d,s,'dial-scheduled',{id:task.id}));
+ const next={purpose:'Follow-up call',scheduledAt:'2099-03-11T10:00',ownerId:owner.id,opportunityId:opp.id};
+ const pending=scheduleSalesCall(d,person.id,next);
+ assert.equal(scheduleSalesCall(d,person.id,next).id,pending.id);
+ const snapshot=JSON.stringify(d);
+ assert.throws(()=>scheduleSalesCall(d,person.id,{...next,purpose:'Pitch call'}));
+ assert.equal(JSON.stringify(d),snapshot);
+ salesWorkbenchAction(d,s,'cancel-scheduled',{id:pending.id});
+ assert.equal(pending.status,'Cancelled');
+ assert.throws(()=>salesWorkbenchAction(d,s,'dial-scheduled',{id:pending.id}));
+ console.log('PASS: setup to assigned pitch, future-time validation, manual replay, linked outcomes, standalone scheduling and cancellation.');
+}
+
+{
  const {logCompletedCall}=await import('../../outputs/workspace-concepts/studio-src/calling.js');
  const {callingView}=await import('../../outputs/workspace-concepts/studio-src/calling-views.js');
  const d=dataset('agency'), contact=d.contacts[0];

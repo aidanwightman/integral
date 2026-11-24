@@ -3,3 +3,6 @@ html[data-design] .site-header{transition:transform 320ms cubic-bezier(.22,.8,.2
 html[data-design] .site-header.scroll-hidden{transform:translateY(calc(-100% - 32px));opacity:0;pointer-events:none}
 html[data-design] .site-header:focus-within{pointer-events:auto}
 @media(prefers-reduced-motion:reduce){html[data-design] .site-header{transition:none}html{scroll-behavior:auto}}
+@media (min-width: 36rem) and (max-height: 28rem) {
+  html[data-design] { scroll-padding-block-start: 5.75rem; }
+}

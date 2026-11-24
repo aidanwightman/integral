@@ -35,12 +35,16 @@ export function recordConfirmedAddress(d, contactId, fields) {
   }
 
   // Use the ordinary saved-address path, including duplicate checks and waiting follow-ups.
-  const evidence = {address, sourceId: fields.sourceId, source, detail, at: new Date().toISOString(), actor: 'Demo operator'};
+  const at = new Date().toISOString();
+  const sourceCall = d.calls.find(call=>call.id===fields.sourceId);
+  const evidence = {address, sourceId: fields.sourceId, source, detail, at, verifiedAt:sourceCall?.endedAt || at, actor: 'Demo operator'};
   saveContactEmail(d, contactId, address, evidence);
   const description = address + ' · ' + source + ' · ' + detail;
   d.activity.unshift({action: 'Email address confirmed', recordId: contactId, accountId: contact.accountId,
     at: evidence.at, actor: evidence.actor, detail: description});
   salesEvent(d, 'Email address confirmed', contactId, description);
+  d.salesActivity[0].contactMethod='email';
+  Object.assign(d.activity[0],{contactMethod:'email',id:d.salesActivity[0].id});
   return evidence;
 }
 

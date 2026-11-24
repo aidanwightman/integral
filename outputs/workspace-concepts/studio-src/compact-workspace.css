@@ -156,3 +156,72 @@
 #studio-root[data-large-text=true] .capacity-grid {
   grid-template-columns: repeat(auto-fit,minmax(min(100%,11em),1fr));
 }
+
+#studio-main .overview-row {
+  display:flex; align-items:center; gap:.7rem; width:100%; height:auto; min-height:44px;
+  margin:0; padding:.7rem .35rem; text-align:start; white-space:normal; line-height:1.4;
+  border:0; border-block-end:1px solid var(--border); border-radius:0;
+  background:transparent; color:inherit; box-shadow:none; text-decoration:none;
+}
+#studio-main .overview-row:last-child { border-block-end:0; }
+#studio-main .overview-row-copy { display:grid; gap:.2rem; flex:1; min-width:0; }
+#studio-main .overview-row-copy strong { font-size:.875rem; font-weight:650; color:inherit; }
+#studio-main .overview-row-copy > span, #studio-main .overview-row-role { font-size:.75rem; color:var(--muted); }
+#studio-main .overview-row-value { font-size:.8125rem; font-weight:650; font-variant-numeric:tabular-nums; }
+#studio-main .overview-row-arrow { font-size:1.15rem; font-weight:600; line-height:1; color:var(--accent); }
+#studio-main .overview-account { display:grid; grid-template-columns:minmax(7em,1.15fr) minmax(1.5em,1fr) max-content auto; }
+#studio-main button.overview-row:is(:hover,:focus-visible) { background:color-mix(in srgb,currentColor 6%,transparent); }
+#studio-main button.overview-row:focus-visible, #studio-main .workspace-records .record-link:focus-visible {
+  outline:2px solid currentColor; outline-offset:-2px;
+}
+#studio-main .bento-next .overview-row { padding:.8rem .2rem; color:#f7fcf5; border-block-end-color:#ffffff35; }
+#studio-main .bento-next .overview-row-copy > span, #studio-main .bento-next .overview-row-role { color:#d8e5d6; }
+#studio-main .bento-next .overview-row-arrow { color:#d9ef93; }
+.editorial .es-reading .workspace-records .record-link {
+  display:inline-flex; align-items:center; gap:.55em; text-align:start; white-space:normal;
+  min-height:28px; padding:.35em .5em .35em 0; text-decoration:none;
+}
+.editorial .es-reading .workspace-records .record-link::after {
+  content:''; width:.4em; height:.4em; flex:none;
+  border-block-start:1.5px solid; border-inline-end:1.5px solid; transform:rotate(45deg);
+}
+.editorial .es-reading .workspace-records .record-link:is(:hover,:focus-visible) { text-decoration:underline; }
+@media (max-width:760px) {
+  .editorial .es-reading .workspace-records .record-link { min-height:44px; }
+}
+
+/* Native disclosures keep their keyboard semantics and can reverse mid-transition. */
+@supports (interpolate-size: allow-keywords) and selector(details::details-content) and (transition-behavior: allow-discrete) {
+  @media (prefers-reduced-motion: no-preference) {
+    :is(.glass-nav-section,.workspace-navigation,.bento-launcher,.es-program-group,.outcome-picker)::details-content {
+      interpolate-size: allow-keywords;
+      block-size: 0;
+      opacity: 0;
+      overflow: clip;
+      pointer-events: none;
+      transition: block-size 190ms cubic-bezier(.22,.76,.28,1), opacity 135ms ease-out,
+                  content-visibility 190ms allow-discrete;
+    }
+    :is(.glass-nav-section,.workspace-navigation,.bento-launcher,.es-program-group,.outcome-picker)[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .glass .glass-nav-desktop .glass-nav-section:not([open]) > .glass-nav-links { display: block; }
+    .glass-nav-chevron { transition: transform 190ms cubic-bezier(.22,.76,.28,1); }
+  }
+  @media (max-width:760px) and (prefers-reduced-motion: no-preference) {
+    .glass-nav-mobile .glass-nav-section::details-content {
+      position: absolute;
+      inset: calc(100% + 8px) 0 auto;
+      z-index: 15;
+      block-size: auto;
+      overflow: visible;
+      transform: translateY(-5px);
+      transition: transform 160ms cubic-bezier(.2,.75,.25,1), opacity 145ms ease-out,
+                  content-visibility 160ms allow-discrete;
+    }
+    .glass-nav-mobile .glass-nav-section[open]::details-content { z-index: 16; transform: none; }
+    .glass .glass-nav-mobile .glass-nav-section > .glass-nav-links { display: grid; position: static; }
+  }
+}

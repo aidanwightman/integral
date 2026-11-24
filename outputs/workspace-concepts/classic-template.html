@@ -1400,6 +1400,7 @@ body:has(.shell.ai) #toast{left:auto!important;right:20px!important;transform:no
 .ns-alert-notice{position:fixed;z-index:12;top:66px;right:14px;display:flex;align-items:flex-start;gap:12px;max-width:min(23rem,calc(100vw - 28px));padding:12px 14px;border:1px solid var(--line);border-radius:var(--r,12px);background:var(--panel);color:var(--text);box-shadow:0 6px 20px #18231d25}
 .ns-alert-notice strong{display:block;font-size:calc(13px * var(--workspace-text-scale, 1));line-height:1.4;overflow-wrap:anywhere}
 .ns-alert-notice .link{margin-top:5px}
+.detail .ns-alert-notice{position:static;max-width:100%;justify-content:space-between;box-shadow:none}
 @media(max-width:1100px){.ns-alert-trigger .ns-alert-label{display:none}}
 @media(max-width:600px){.top .ns-alert-trigger{width:38px;min-width:38px;min-height:40px;padding:6px;justify-content:flex-start}.ns-alert-trigger .ns-alert-count{position:absolute;top:1px;right:0;min-width:1.4em;font-size:calc(9px * var(--workspace-text-scale, 1));padding:0 3px}.ns-alert-section li{display:grid;grid-template-columns:auto minmax(0,1fr)}.ns-alert-section li>button{grid-column:2;justify-self:start}}
 
@@ -1755,6 +1756,11 @@ function build(bizKey){
     th(o4,P(o4.personId),'Badges for our team',`Our team badges haven't arrived and the event is close. Can you check?`,60*21);
     th(O(o=>o.stage!=='Draft',30),P(O(o=>o.stage!=='Draft',30).personId),'Card charged twice',`We were charged twice for the same booking on our corporate card. Please refund the duplicate.`,60*55);
   }
+  if(bizKey==='events'){
+    const pass=packages.find(p=>p.eventId===o3.eventId&&p.status==='Active'&&p.seats===1&&p.capacity-sold(p)>=2&&!o3.items.some(l=>l.packageId===p.id));
+    if(pass)th(o3,P(o3.personId),'Two more passes for order #'+o3.number,
+      'Please add two more '+pass.name+' passes ('+pass.code+') to our order for '+E(o3.eventId).name+'. Our team approves the additional cost. Please send the revised total.',90);
+  }
   const mon=new Date('2026-11-16T00:00:00');const at=(d,h,m=0)=>new Date(mon.getTime()+d*DAY+h*36e5+m*6e4).toISOString();
   const meetings=[];const cal=B.connectors.find(c=>/Calendar|365/.test(c[1]))?.[1]||'Calendar';
   const mt=(d,h,m,dur,title,o,opts={})=>meetings.push({id:'m'+meetings.length,start:at(d,h,m),end:new Date(new Date(at(d,h,m)).getTime()+dur*6e4).toISOString(),title,orderId:o?.id||null,dealId:opts.dealId||null,personId:o?.personId||opts.personId||null,eventId:o?.eventId||opts.eventId||null,source:cal,where:opts.where||(o||opts.personId?'Video call':'Office'),internal:!!opts.internal});
@@ -1977,6 +1983,15 @@ function nsAlertNotice(){
   if(!nsNotice)return '';
   return `<aside class="ns-alert-notice" aria-label="Workspace notification"><div><strong role="status">${esc(nsNotice.title)}</strong><button class="link" data-act="nsalerts">View alerts ${ic('arrow','s')}</button></div><button class="ghost" data-act="nsdismiss" aria-label="Dismiss notification">${ic('x','s')}</button></aside>`;
 }
+const mobileDetailWidth=window.matchMedia?.('(max-width:980px)');
+function placeDetailNotice(){
+  const notice=app.querySelector('.ns-alert-notice');
+  if(!notice)return;
+  const detail=mobileDetailWidth?.matches && app.querySelector('.detail .db');
+  if(detail)detail.prepend(notice);
+  else app.querySelector('main.content')?.before(notice);
+}
+mobileDetailWidth?.addEventListener('change',placeDetailNotice);
 function vNorthstarAlerts(att){
   const items=northstarAlerts(att),counts=new Map();
   for(const a of items){const g=northstarAlertGroup(a);counts.set(g,(counts.get(g)||0)+1)}
@@ -2124,6 +2139,7 @@ function render(){
     <main class="content" data-sc="content">${UI.from?.origin==='alerts'&&UI.from.route===UI.route?taskBanner(att,UI.route,UI.from.id,true):''}${VIEWS[UI.route](att)}</main>
   </div></div>`;
   layer.innerHTML=UI.drawer?drawerHtml(att):'';
+  placeDetailNotice();
   document.querySelectorAll('[data-sc]').forEach(el=>{if(scrolls[el.dataset.sc]!=null)el.scrollTop=scrolls[el.dataset.sc]});
   document.querySelectorAll('[data-act]').forEach(el=>{const d=el.dataset;if(!d.fk)d.fk=`${d.act}:${d.id||d.v||d.r||d.k||''}`;if(!/^(BUTTON|INPUT|A|LABEL|TH|SELECT|TEXTAREA)$/.test(el.tagName)&&!el.classList.contains('scrim')){el.tabIndex=0;el.setAttribute('role','button')}});
   document.querySelectorAll('th[data-act]').forEach(el=>{el.tabIndex=0;el.setAttribute('role','button')});
@@ -2132,6 +2148,7 @@ function render(){
   if(UI.drawer&&UI._dfocus!==UI.drawer&&UI.route!=='home')layer.querySelector('.drawer [data-act=closedrawer]')?.focus();UI._dfocus=UI.drawer;
   const th=document.querySelector('.aithread');if(th&&UI.ai.scroll){th.scrollTop=th.scrollHeight;UI.ai.scroll=false}
   document.querySelectorAll('form[data-ns-finance]').forEach(nsFinancePreview);
+  document.querySelectorAll('form[data-order-line]').forEach(updateOrderLinePreview);
   syncHash();
 }
 
@@ -2319,9 +2336,113 @@ function pkDetail(p,att){const e=E(p.eventId),sold=soldOf(p),pend=pendingOf(p),o
   ${sec(`${L('orders')} using it`,os.length,os.length?`<div class="list">${os.slice(0,8).map(o=>{const l=o.items.find(l=>l.packageId===p.id);return `<div class="li click" data-act="goto" data-r="orders" data-id="${o.id}"><span class="num muted">#${o.number}</span><span class="grow ell">${esc(P(o.personId)?.company)}</span><span class="num muted">${l.quantity}×</span>${stagePill(o.stage)}</div>`}).join('')}${os.length>8?`<div class="li"><button class="link" data-act="goto" data-r="orders" data-q="${p.code}">View all ${os.length}</button></div>`:''}</div><div class="muted" style="font-size:calc(12px * var(--workspace-text-scale, 1));margin-top:6px">Price changes apply to new ${L('orders').toLowerCase()} only.</div>`:'')}
   ${sec(`Other ${L('packages').toLowerCase()} for this ${L('event').toLowerCase()}`,siblings.length,siblings.length?`<div class="list">${siblings.slice(0,8).map(x=>`<div class="li click" data-act="pksel" data-id="${x.id}"><span class="grow ell">${esc(x.name)}</span><span class="num muted">${soldOf(x)}/${x.capacity}</span>${x.status==='Active'&&avail(x)==='Available'?'':availPill(x)}</div>`).join('')}</div>`:'',false)}
   ${sec('Details',null,`<dl class="kv"><dt>Includes</dt><dd>${esc(p.includes)}</dd><dt>Version</dt><dd>v${p.version}</dd><dt>Updated</dt><dd>${fDateY(p.updated)}</dd></dl>`,false)}
-  <div class="acts">${p.status==='Active'?`<button class="ghost" data-act="pkstatus" data-id="${p.id}" data-v="Retired">Stop selling</button>`:`<button class="ghost" data-act="pkstatus" data-id="${p.id}" data-v="Active">Put on sale</button>`}<button class="ghost" data-act="pkdup" data-id="${p.id}">${ic('copy','s')} Duplicate</button><button class="ghost" data-act="neworder" data-id="${p.id}">${ic('plus','s')} Add to ${L('order').toLowerCase()}</button></div>`,'closedetail',['package',p.id,p.name])}
+  <div class="acts">${p.status==='Active'?`<button class="ghost" data-act="pkstatus" data-id="${p.id}" data-v="Retired">Stop selling</button>`:`<button class="ghost" data-act="pkstatus" data-id="${p.id}" data-v="Active">Put on sale</button>`}<button class="ghost" data-act="pkdup" data-id="${p.id}">${ic('copy','s')} Duplicate</button></div>${packageOrderPicker(p)}`,'closedetail',['package',p.id,p.name])}
 
 /* --------------------------------- ORDERS ---------------------------------- */
+function orderLineQuote(o,packageId,quantity){
+  if(!o||!inScope(o)||!visible('orders'))throw new Error('Select an order in this territory.');
+  if(!['Draft','Confirmed','In delivery'].includes(o.stage))throw new Error('This order is complete. Its items are closed.');
+  const p=K(packageId);
+  if(!p||p.status!=='Active'||p.eventId!==o.eventId)throw new Error('Choose an active item from this order’s '+L('event').toLowerCase()+'.');
+  if(!Number.isSafeInteger(quantity)||quantity<1)throw new Error('Enter a positive whole quantity.');
+  const existing=o.items.find(l=>l.packageId===p.id);
+  const before=existing?.quantity||0,unitPrice=existing?.unitPrice??p.price;
+  const remaining=p.capacity-soldOf(p)-(o.stage==='Draft'?before:0);
+  if(quantity>remaining)throw new Error('Only '+Math.max(0,remaining)+' more available for this item. Reduce the quantity or choose another item.');
+  const beforeTotal=total(o),amount=unitPrice*quantity;
+  if(!Number.isSafeInteger(amount)||!Number.isSafeInteger(beforeTotal+amount))throw new Error('Quantity exceeds the supported order value.');
+  return {packageId:p.id,name:p.name,quantity,before,unitPrice,amount,beforeTotal,afterTotal:beforeTotal+amount};
+}
+function applyOrderLine(o,change,actor,requestId){
+  const line=o.items.find(l=>l.packageId===change.packageId);
+  if(line)line.quantity+=change.quantity;
+  else o.items.push({packageId:change.packageId,name:change.name,unitPrice:change.unitPrice,quantity:change.quantity});
+  (o.lineChanges??=[]).push({...change,actor,requestId,at:NOW.toISOString()});
+  if(o.stage!=='Draft'&&change.amount){
+    const financeOwner=S.team.find(member=>member[2]==='Finance')?.[0]||o.owner;
+    S.tasks.push({id:'order-change-'+o.id+'-'+o.lineChanges.length,orderId:o.id,personId:o.personId,
+      title:'Review '+nsMoney(change.amount)+' invoice adjustment for #'+o.number,owner:financeOwner,
+      due:new Date(NOW.getTime()+DAY).toISOString(),done:false});
+  }
+  if(K(change.packageId).seats)o.namesRequested=false;
+  const signoff=recordReview('order',o.id);
+  if(o.stage==='Draft'&&signoff&&['Approved','Pending'].includes(signoff.status)){
+    Object.assign(signoff,{status:'Superseded',reason:'The order items changed. Review the revised total.',decidedBy:actor,decidedAt:NOW.toISOString()});
+  }
+  _ix=null;_att=null;
+}
+function submitOrderLine(o,packageId,quantity,reason,threadId){
+  const quote=orderLineQuote(o,packageId,quantity);
+  reason=String(reason||'').trim();
+  if(!reason||reason.length>300)throw new Error('Add a reason of up to 300 characters.');
+  if(threadId&&!S.threads.some(t=>t.id===threadId&&t.orderId===o.id))throw new Error('Choose email evidence linked to this order.');
+  if(S.approvals.some(a=>a.subject==='order-line'&&a.orderId===o.id&&a.status==='Pending'))throw new Error('An item change is already awaiting review for this order.');
+  const change={...quote,reason,threadId:threadId||null};
+  snap();
+  if(S.biz==='events'&&o.stage!=='Draft'){
+    const approver=reviewLead(o);
+    S.approvals.push({id:'ar'+(S.approvals.length+1),subject:'order-line',type:'Order item change',recordId:o.id,orderId:o.id,
+      personId:o.personId,territory:terrOf(o),approver,requestedBy:UI.me,role:'Group lead',status:'Pending',
+      desc:'Add '+quantity+' × '+quote.name+' to #'+o.number+' · '+reason,amount:quote.amount,at:NOW.toISOString(),change});
+    toast('Item change sent to '+approver+' for sign-off.',true);
+  }else{
+    applyOrderLine(o,change,UI.me,null);
+    toast('Item added to order #'+o.number+'.',true);
+  }
+}
+function orderItemEditor(o){
+  const pending=S.approvals.find(a=>a.subject==='order-line'&&a.orderId===o.id&&a.status==='Pending');
+  if(pending)return '<p>Item change awaiting '+esc(pending.approver)+' · '+recLink('approvals',pending.id,'Open request')+'</p>';
+  if(o.stage==='Completed')return '<p class="muted">Completed orders are closed to item changes.</p>';
+  const candidates=S.packages.filter(p=>p.eventId===o.eventId&&p.status==='Active');
+  if(!candidates.length)return '<p class="muted">No active items for this '+esc(L('event').toLowerCase())+'.</p>';
+  const preset=UI.od.linePreset?.orderId===o.id?UI.od.linePreset.packageId:'';
+  const options=candidates.map(p=>{
+    const line=o.items.find(l=>l.packageId===p.id);
+    const left=Math.max(0,p.capacity-soldOf(p)-(o.stage==='Draft'?(line?.quantity||0):0));
+    return '<option value="'+esc(p.id)+'" '+(preset===p.id?'selected ':'')+(left?'':'disabled')+'>'+esc(p.name)+' · '+nsMoney(line?.unitPrice??p.price)+' · '+left+' available</option>';
+  }).join('');
+  const threads=S.threads.filter(t=>t.orderId===o.id);
+  return '<details class="dsec" '+(preset?'open':'')+'><summary>Add item</summary><form class="ns-form" data-order-line="'+esc(o.id)+'">'+
+    '<label>Item <select name="packageId" required><option value="">Choose an item</option>'+options+'</select></label>'+
+    '<label>Quantity to add <input type="number" name="quantity" min="1" step="1" value="1" required></label>'+
+    '<label>Reason <input name="reason" maxlength="300" required></label>'+
+    (threads.length?'<label>Linked email <select name="threadId"><option value="">Optional</option>'+threads.map(t=>'<option value="'+esc(t.id)+'">'+esc(t.subject)+'</option>').join('')+'</select></label>':'')+
+    '<output aria-live="polite" data-order-line-preview></output><button class="pri" type="submit">'+(S.biz==='events'&&o.stage!=='Draft'?'Request item change':'Add item')+'</button></form></details>';
+}
+function updateOrderLinePreview(form){
+  const output=form.querySelector('[data-order-line-preview]');
+  if(!form.elements.packageId.value){output.textContent='';return}
+  try{
+    const quote=orderLineQuote(O(form.dataset.orderLine),form.elements.packageId.value,form.elements.quantity.valueAsNumber);
+    output.textContent='Line quantity '+quote.before+' → '+(quote.before+quote.quantity)+'. Order total '+nsMoney(quote.beforeTotal)+' → '+nsMoney(quote.afterTotal)+' excl. VAT.';
+  }catch(error){output.textContent=error.message}
+}
+function orderLineHistory(o){
+  const edits=o.lineChanges||[];
+  const rejected=S.approvals.filter(a=>a.subject==='order-line'&&a.orderId===o.id&&a.status==='Rejected');
+  return edits.length||rejected.length?sec('Item changes',edits.length+rejected.length,edits.slice().reverse().map(c=>{
+    const request=c.requestId&&AP(c.requestId);
+    const attribution=c.requestId?'Requested by '+esc(request?.requestedBy||c.actor)+' · Approved by '+esc(request?.decidedBy||'Unknown'):'Added by '+esc(c.actor);
+    return '<article><strong>'+esc(c.name)+' · '+c.before+' → '+(c.before+c.quantity)+'</strong><p>'+nsMoney(c.beforeTotal)+' → '+nsMoney(c.afterTotal)+' · '+esc(fDateY(c.at))+'</p><p>'+attribution+'</p><p>'+esc(c.reason)+'</p>'+
+      (c.threadId?recLink('inbox',c.threadId,'Source email'):'')+(request?recLink('approvals',c.requestId,'Approved request'):'')+'</article>';
+  }).join('')+
+    rejected.map(a=>'<p>'+recLink('approvals',a.id,'Rejected · '+a.change.name)+' '+esc(a.reason)+'</p>').join('')):'';
+}
+function orderLineRequestEvidence(a){
+  if(a.subject!=='order-line')return '';
+  const c=a.change;
+  return '<dl class="kv sum"><dt>Item</dt><dd>'+recLink('packages',c.packageId,c.name)+'</dd><dt>Quantity</dt><dd>'+c.before+' → '+(c.before+c.quantity)+'</dd><dt>Unit price</dt><dd>'+nsMoney(c.unitPrice)+'</dd><dt>Order total</dt><dd>'+nsMoney(c.beforeTotal)+' → '+nsMoney(c.afterTotal)+'</dd><dt>Reason</dt><dd>'+esc(c.reason)+'</dd>'+
+    (c.threadId?'<dt>Evidence</dt><dd>'+recLink('inbox',c.threadId,'Open source email')+'</dd>':'')+'</dl>';
+}
+function packageOrderPicker(p){
+  if(!visible('orders')||p.status!=='Active')return '';
+  const options=S.orders.filter(o=>inScope(o)&&o.stage!=='Completed'&&o.eventId===p.eventId);
+  if(!options.length)return '<p class="muted">No open orders for this '+esc(L('event').toLowerCase())+'.</p>';
+  return '<details class="dsec"><summary>Add to existing order</summary><form class="ns-form" data-order-picker="'+esc(p.id)+'"><label>Order <select required name="orderId"><option value="">Choose an order</option>'+
+    options.map(o=>'<option value="'+esc(o.id)+'">#'+o.number+' · '+esc(P(o.personId)?.company)+' · '+esc(o.stage)+'</option>').join('')+
+    '</select></label><button type="submit">Choose quantity</button></form></details>';
+}
 function vOrders(att){
   const f=UI.od;const q=f.q.toLowerCase().trim();const stF=f.stageF||'';
   const attnIds=new Set(att.flatMap(a=>[a.orderId,...(a.orderIds||[])]).filter(Boolean));
@@ -2348,6 +2469,7 @@ function odDetail(o,att){const p=P(o.personId),e=E(o.eventId),st=seats(o),i=STAG
   ${next||needNames?`<div class="acts">${next?`<button class="pri" data-act="advance" data-id="${o.id}">Move to ${next}</button>`:''}${needNames&&!o.namesRequested?`<button class="ghost" data-act="names" data-id="${o.id}">Request ${L('seat')} names</button>`:''}</div>`:''}
   <dl class="kv sum"><dt>Customer</dt><dd>${recLink('people',p.id,p.name)} <span class="muted">${esc(p.role)}</span></dd><dt>${L('event')}</dt><dd>${recLink('events',e.id,e.name)}</dd><dt>Value</dt><dd class="num">${money(total(o))} <span class="muted">excl. VAT</span></dd><dt>Owner</dt><dd>${esc(o.owner)}</dd>${S.config.fields.orders.map(f=>`<dt>${esc(f)}</dt><dd><input type="text" id="of-${o.id}-${esc(f)}" data-input="ofield" data-id="${o.id}" data-f="${esc(f)}" value="${esc(o.fields[f]||'')}" placeholder="Add ${esc(f.toLowerCase())}" style="width:100%"></dd>`).join('')}</dl>
   ${sec('Lines',o.items.length,`<table class="tbl flat"><tbody>${o.items.map(l=>`<tr data-act="goto" data-r="packages" data-id="${l.packageId}"><td>${esc(l.name)}<div class="code">${K(l.packageId)?.code}</div></td><td class="r num muted">${l.quantity} × ${money(l.unitPrice)}</td><td class="r num">${money(l.quantity*l.unitPrice)}</td></tr>`).join('')}</tbody></table>`)}
+  ${orderItemEditor(o)}${orderLineHistory(o)}
   ${st&&o.stage!=='Draft'?sec(Lc('seats'),`${o.named}/${st}`,`<div class="row"><div class="bar grow ${o.named<st?'warn':''}"><i style="width:${o.named/st*100}%"></i></div><span class="num">${o.named} of ${st} named</span></div>${o.namesRequested?'<div class="muted">Names requested from the customer.</div>':''}`,needNames):''}
   ${tk.length?sec('Follow-ups',tk.length,`<div class="list">${tk.map(t=>`<label class="li"><input type="checkbox" data-act="task" data-id="${t.id}"><span class="grow">${esc(t.title)}</span><span class="muted">${fDay(t.due)} · ${t.owner}</span></label>`).join('')}</div>`):''}
   ${mails.length||mt.length?sec('Email & meetings',mails.length+mt.length,`<div class="list">${mails.map(t=>`<div class="li click" data-act="goto" data-r="inbox" data-id="${t.id}">${ic('mail','s')}<span class="grow ell">${esc(t.subject)}</span><span class="muted">${ago(t.msgs.at(-1).at)}</span></div>`).join('')}${mt.map(m=>`<div class="li click" data-act="goto" data-r="calendar" data-id="${m.id}">${ic('cal','s')}<span class="grow ell">${esc(m.title)}</span><span class="muted">${fDay(m.start)} ${fTime(m.start)}</span></div>`).join('')}</div>`,false):''}
@@ -2479,7 +2601,7 @@ function vApprovals(att){const all=S.approvals.filter(inScope);const f=UI.apf||'
   ${tabsHtml([['pending','Waiting',all.filter(a=>a.status==='Pending').length],['done','Decided',all.filter(a=>a.status!=='Pending').length]],f,'apf')}
   <div class="split ${sel?'open':''}"><div class="tablewrap"><table class="tbl"><thead><tr><th>Request</th><th class="c-opt">Record</th><th class="r">Amount</th><th>Policy</th><th class="c-opt">Requested by</th><th>${f==='pending'?'Waiting':'Decision'}</th><th class="sk"></th></tr></thead><tbody>${rows.map(a=>`<tr class="${sel&&sel.id===a.id?'sel':''}" data-act="apsel" data-id="${a.id}"><td><div class="name">${esc(a.type)}</div><div class="muted ell" style="font-size:calc(12px * var(--workspace-text-scale, 1));max-width:320px">${esc(a.desc)}</div></td><td class="muted c-opt"><div>${a.orderId?'#'+O(a.orderId)?.number:a.dealId?'Sponsorship':'Customer'}</div><div class="ell" style="font-size:calc(12px * var(--workspace-text-scale, 1));max-width:200px">${esc(P(a.personId)?.company)}</div></td><td class="r num">${a.subject==='discount'?nsMoney(a.amount):a.amount?money(a.amount):''}</td><td>${policyOk(a)?'<span class="muted">Routine</span>':'<span class="pill warn">Review</span>'}</td><td class="c-opt"><span class="own" title="${esc(a.requestedBy)}">${esc(initials(a.requestedBy))}</span></td><td class="num muted">${a.status==='Pending'?ago(a.at):esc(a.status)}</td><td class="sk">${spark('approval',a.id,a.desc,'row')}</td></tr>`).join('')}</tbody></table>${rows.length?'':`<div class="empty">${ic('check')} Nothing waiting.</div>`}</div>
   ${sel?(()=>{const o=O(sel.orderId);const pct=o&&/Discount|Refund/.test(sel.type)?Math.round(sel.amount/total(o)*100):null;return detailShell(esc(sel.type),`${esc(P(sel.personId)?.company)} ${outPill(sel)}`,`${taskBanner(att,'approvals',sel.id)}
-    ${nsDiscountSummary(sel)}
+    ${nsDiscountSummary(sel)}${orderLineRequestEvidence(sel)}
     ${sel.status==='Pending'?(sel.approver===UI.me?`${sel.subject?'<label class="ns-reason">Decision note '+(sel.subject==='discount'?'(required)':'(required for a rejection)')+'<input id="ns-reason" maxlength="500"></label>':''}<div class="acts"><button class="pri" data-act="approve" data-id="${sel.id}">Approve</button>${sel.subject==='discount'?`<button class="ghost" data-act="nsdiscountreturn" data-id="${esc(sel.id)}">Return for changes</button>`:''}<button class="ghost" data-act="reject" data-id="${sel.id}">Reject</button></div>`:`<div class="muted">Waiting for ${esc(sel.approver)}. View as them to approve.</div>`):`<div>${esc(sel.status)}${sel.decidedBy?' · '+esc(sel.decidedBy)+' · '+esc(fDateY(sel.decidedAt)):''}${sel.reason?'<p>'+esc(sel.reason)+'</p>':''}</div>`}
     <dl class="kv sum"><dt>Request</dt><dd>${esc(sel.desc)}</dd><dt>Record</dt><dd>${reviewRecord(sel)}</dd><dt>Reviewer</dt><dd>${esc(sel.approver)}</dd><dt>${sel.subject==='discount'?'Discount from list price':'Amount'}</dt><dd class="num">${sel.subject==='discount'?nsMoney(sel.amount):sel.amount?money(sel.amount):'n/a'}${pct!=null?` <span class="muted">· ${pct}% of ${L('order').toLowerCase()}</span>`:''}</dd><dt>Policy</dt><dd>${sel.subject==='discount'?'Independent pricing approval':sel.subject?'Group lead sign-off':policyOk(sel)?'Routine':'Needs review: check margin and history'}</dd><dt>Requested by</dt><dd>${esc(sel.requestedBy)} <span class="muted">· ${ago(sel.at)} ago</span></dd></dl>
     ${sel.subject==='discount' && (sel.status==='Rejected' && !sel.acknowledged && D(sel.dealId)?.owner===UI.me || sel.status==='Approved' && [sel.requestedBy,D(sel.dealId)?.owner].includes(UI.me) && !(sel.seenBy||[]).includes(UI.me) && UI.me!==sel.decidedBy)?`<button data-act="nsdiscountack" data-id="${esc(sel.id)}">Acknowledge decision</button>`:''}
@@ -3023,7 +3145,14 @@ function reviewDecision(id,status,reason=''){
     if(!d||['Won','Lost'].includes(d.stage)||d.value!==a.grossPence||(d.approvedDiscountBps||0)!==a.fromBps){toast('Deal terms changed. Return the request for a fresh review.');return}
   }
   if((a.subject==='discount'||a.subject&&['Rejected','Returned'].includes(status))&&!reason.trim()){toast('Enter the reason for this decision');return}
+  if(a.subject==='order-line'&&status==='Approved'){
+    try{
+      const o=O(a.orderId),c=a.change,current=orderLineQuote(o,c.packageId,c.quantity);
+      if(current.before!==c.before||current.unitPrice!==c.unitPrice||current.beforeTotal!==c.beforeTotal)throw new Error('Order or price changed. Reject this request and submit the revised amount.');
+    }catch(error){toast(error.message);return}
+  }
   snap();Object.assign(a,{status,reason:reason.trim(),decidedBy:UI.me,decidedAt:NOW.toISOString()});
+  if(a.subject==='order-line'&&status==='Approved')applyOrderLine(O(a.orderId),a.change,a.requestedBy,a.id);
   if(a.subject==='discount'&&status==='Approved'){
     const d=D(a.dealId),sale=recordReview('sale',d.id);
     d.approvedDiscountBps=a.toBps;d.pricingRevision=(d.pricingRevision||0)+1;
@@ -3052,6 +3181,27 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('submit',e=>{
   const form=e.target;
+  if(form.matches('[data-order-picker]')){
+    e.preventDefault();
+    const o=O(form.elements.orderId.value),p=K(form.dataset.orderPicker);
+    if(!o||!p||!inScope(o)||o.eventId!==p.eventId||o.stage==='Completed')return;
+    UI.od.linePreset={orderId:o.id,packageId:p.id};
+    ACT.goto({r:'orders',id:o.id});render();
+    document.querySelector('[data-order-line] input[name="quantity"]')?.focus();
+    return;
+  }
+  if(form.matches('[data-order-line]')){
+    e.preventDefault();
+    if(!form.isConnected)return;
+    const fields=new FormData(form),order=O(form.dataset.orderLine);
+    try{
+      submitOrderLine(order,fields.get('packageId'),Number(fields.get('quantity')),fields.get('reason'),fields.get('threadId'));
+      delete UI.od.linePreset;
+      render();
+      document.querySelector('[data-order-line]')?.closest('details')?.querySelector('summary')?.focus();
+    }catch(error){form.querySelector('[data-order-line-preview]').textContent=error.message}
+    return;
+  }
   if(form.matches('[data-ns-discount], [data-ns-reassign]')){
     e.preventDefault();
     const fields=new FormData(form);
@@ -3078,7 +3228,7 @@ document.addEventListener('submit',e=>{
 const ACT={
   nsfinancepkg:d=>{if(nsCanManageFinance()&&K(d.id)){nsFinanceFilters().pkg=d.id;ACT.route({r:'finance'});requestAnimationFrame(()=>document.querySelector('[data-ns-finance="package"] select')?.focus())}},
   nsalerts:()=>{if(S.biz!=='events')return;UI.route='alerts';UI.from=null;UI.menu=null;UI.drawer=null;UI.navopen=false;UI.nsAlertGroup='';setTimeout(()=>document.getElementById('ns-alert-heading')?.focus(),0)},
-  nsdismiss:()=>{nsNotice=null;setTimeout(()=>document.querySelector('.ns-alert-trigger')?.focus(),0)},
+  nsdismiss:()=>{const inDetail=Boolean(app.querySelector('.detail .ns-alert-notice'));nsNotice=null;setTimeout(()=>(inDetail && app.querySelector('.detail .dh button.ghost') || app.querySelector('.ns-alert-trigger'))?.focus(),0)},
   nsalertopen:d=>{const a=northstarAlerts(attentionCached()).find(item=>item.id===d.id);if(!a)return;
     ACT.goto({r:a.go.route,id:a.go.id,from:a.id});UI.from.origin='alerts';setTimeout(()=>document.querySelector('.taskbar .lbl')?.focus(),0)},
   industryStudio:()=>window.DataSaverStudio?.open(),
@@ -3260,9 +3410,13 @@ document.addEventListener('click',e=>{
   }else if(act==='goto'&&UI.from?.origin==='inbox')document.querySelector('[data-act=ibreturn]')?.focus();
   if(act==='menu' && t.dataset.v==='look' && UI.menu==='look' && e.detail===0)document.getElementById('workspace-size')?.focus();
   if(act==='navtoggle')document.querySelector(UI.navopen?'.rail-close':'.menu-btn')?.focus();
-  if(mobileNav && !UI.navopen && ['route','goto'].includes(act))focusClassicHeading();
+  if((mobileNav && !UI.navopen && ['route','goto'].includes(act)) || (act==='route' && e.detail===0 && t.closest('#classic-navigation')))focusClassicHeading();
 });
 document.addEventListener('input',e=>{const t=e.target;
+  if(t.form?.hasAttribute('data-order-line')&&['packageId','quantity'].includes(t.name)){
+    updateOrderLinePreview(t.form);
+    return;
+  }
   if(t.id==='workspace-size'){applyClassicTextSize(t.value);return}
   if(t.matches('[data-ns-discount] input[name="percent"]')){
     const form=t.form,d=D(form.dataset.nsDiscount),rate=t.valueAsNumber;

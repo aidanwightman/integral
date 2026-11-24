@@ -24,7 +24,12 @@ export function addFinanceLine(d,role,input) {
   if(!payer || !reference || !finDate(date) || !['Bank statement','Processor settlement'].includes(origin))throw new Error('Enter a valid statement date, source transaction ID, payer and source.');
   const amountPence=input.amountPence;
   if(!Number.isSafeInteger(amountPence) || amountPence<=0) throw new Error('Enter a positive GBP amount with up to two decimal places.');
-  if(d.financeExceptions.some(c=>c.source.origin===origin && finKey(c.source.reference)===finKey(reference)))throw new Error('This source transaction ID is already in the queue.');
+  const existing=d.financeExceptions.find(c=>c.source.origin===origin && finKey(c.source.reference)===finKey(reference));
+  if(existing){
+    const error=new Error(existing.source.reference+' is already recorded for '+existing.source.payer+' on '+existing.source.date+'. No new statement line or receipt was created.');
+    error.financeExceptionId=existing.id;
+    throw error;
+  }
   const risk=finClean(input.risk);
   const c={id:d.id+'-finance-exception-'+(d.financeExceptions.length+1),
     source:{origin,reference,payer,date,amountPence,memo:finClean(input.memo),risk},status:risk?'Risk hold':'Needs match',history:[]};

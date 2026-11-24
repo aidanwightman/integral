@@ -1,4 +1,4 @@
-/* The starting records and actions correspond to the six synthetic workspace cases. */
+/* Each story opens the workspace that owns its starting record. */
 (() => {
   const grid = document.querySelector('#outcome-stories .outcome-story-grid');
   if (!grid) return;
@@ -8,10 +8,22 @@
       name: 'Sales & delivery',
       stories: [
         {
+          id: 'scheduled-pitch', view: 'dialer', role: 'sales', title: 'Setup call to pitch', record: 'Contact activity',
+          heading: 'A customer agrees to a pitch next week',
+          situation: 'Log the completed setup call, then book the pitch for the colleague who will deliver it.',
+          steps: ['Record who spoke, the outcome and the agreed next step', 'Choose the pitch date, time and owner', 'Open the scheduled call and log how the pitch went']
+        },
+        {
+          id: 'order-change', eventsRoute: 'events-orders', role: 'operations', title: 'Add to an order', record: 'Northstar event order',
+          heading: 'A customer asks for another package',
+          situation: 'Open an event order and check what the extra units will cost. A confirmed order needs a lead to review the change.',
+          steps: ['Choose the package and quantity', 'Record the request and check capacity', 'Review the order total and its change history']
+        },
+        {
           id: 'followup', role: 'sales', title: 'Sales follow-up', record: 'Call record', reference: 'CALL-104',
-          heading: 'A follow-up with no email address',
-          situation: 'Sam Carter asked for a walkthrough. The call is logged, but the follow-up is waiting for a valid email.',
-          steps: ['Check the contact email', 'Send the agreed follow-up', 'Reconcile the receipt after a timeout']
+          heading: 'Sam asked for a product overview',
+          situation: 'You promised Sam Carter a product overview. Send the email, then use his record to confirm receipt and arrange your next conversation.',
+          steps: ['Review and send Sam’s overview', 'Open his record and check delivery or save his reply', 'Book a call or log the conversation you just had']
         },
         {
           id: 'delivery', role: 'operations', title: 'Delivery handoff', record: 'Delivery record', reference: 'DEL-104',
@@ -25,6 +37,12 @@
       name: 'Finance',
       stories: [
         {
+          id: 'commission-source', view: 'commissions', role: 'finance', title: 'Trace a commission', record: 'Commission statement', reference: 'CM-101',
+          heading: 'Which sale earned this commission?',
+          situation: 'The statement names a customer. Finance needs the supporting deal and a reference before it can explain the calculation.',
+          steps: ['Open the source and calculation for CM-101', 'Link the deal and record the supporting reference', 'Inspect the credit split, approval status and decision history']
+        },
+        {
           id: 'receivable', role: 'finance', title: 'Partial payment', record: 'Customer invoice', reference: 'INV-104',
           heading: 'A £12,000 invoice, a £10,000 receipt',
           situation: 'Alder & Co has paid part of its invoice. The balance is disputed and the bank reference can only be allocated once.',
@@ -34,7 +52,7 @@
           id: 'payable', role: 'finance', title: 'Payment approval', record: 'Supplier invoice', reference: 'BILL-104',
           heading: 'Only 80 of 100 billed units arrived',
           situation: 'The supplier also changed its bank details. The bill is on hold until someone verifies the change and matches the delivery.',
-          steps: ['Verify the bank details independently', 'Approve the 80 received units', 'Get a second person to authorise payment']
+          steps: ['Record the supplier callback', 'Approve the 80 received units and hold the other 20', 'Send the approved amount to a separate payment authoriser']
         }
       ]
     },
@@ -116,15 +134,22 @@
       link.className = 'outcome-launch';
       link.textContent = 'Try workflow';
       link.setAttribute('aria-label', 'Try workflow: ' + story.title);
+      const view = story.view || 'outcomes';
+      const caseId = view === 'outcomes' ? story.id : null;
       const updateLink = () => {
-        link.href = DEMO_URL + '#studio/agency/' + story.role + '/' + selectedLook() + '/outcomes/' + story.id;
+        if (story.eventsRoute) {
+          const base = document.getElementById('northstar-preview').dataset.url.split('#')[0];
+          link.href = base + '#' + story.eventsRoute;
+        } else {
+          link.href = DEMO_URL + '#studio/agency/' + story.role + '/' + selectedLook() + '/' + view + (caseId ? '/' + caseId : '');
+        }
       };
       updateLink();
       window.addEventListener('data-saver-design-change', updateLink);
       link.addEventListener('click', event => {
-        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if (story.eventsRoute || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
-        openWorkspace(story.role, 'agency', 'outcomes', link, story.id);
+        openWorkspace(story.role, 'agency', view, link, caseId);
       });
       panel.append(record, heading, situation, path, link);
       section.append(toggle, panel);

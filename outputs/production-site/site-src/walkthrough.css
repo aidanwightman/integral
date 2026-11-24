@@ -23,29 +23,29 @@
 #tour-meter::-moz-progress-bar { background: var(--accent); border-radius: inherit; }
 
 /* The workspace setting changes type while the artwork keeps its own dimensions. */
-#walkthrough {
+#crm-guides {
   --tour-scale: var(--guide-text-scale, 1);
   container: walkthrough / inline-size;
   font-size: calc(1rem * var(--tour-scale));
 }
-#walkthrough :is(h2,h3,p,button,.tour-choice-text) { overflow-wrap: anywhere; }
-#walkthrough #tour-section-title {
+#crm-guides :is(h2,h3,p,button,.tour-choice-text) { overflow-wrap: anywhere; }
+#crm-guides #tour-section-title {
   font-size: min(calc(clamp(2.125rem, 4.5vw, 3.625rem) * var(--tour-scale)), max(2rem, 16cqi));
 }
-#walkthrough .intro-copy { font-size: calc(15px * var(--tour-scale)); }
-#walkthrough .eyebrow { font-size: max(.75rem, .8125em); }
-#walkthrough .tour-question h3 { font-size: calc(clamp(24px, 3vw, 36px) * var(--tour-scale)); }
-#walkthrough .tour-question label { font-size: calc(14px * var(--tour-scale)); }
-#walkthrough .tour-result-heading h3 { font-size: calc(24px * var(--tour-scale)); }
-#walkthrough :is(#tour-next,#tour-back,#tour-edit,#tour-explore) { font-size: max(.8125rem, .9375em); }
-#walkthrough :is(.actions button, .tour-result-heading button) {
+#crm-guides .intro-copy { font-size: calc(15px * var(--tour-scale)); }
+#crm-guides .eyebrow { font-size: max(.75rem, .8125em); }
+#crm-guides .tour-question h3 { font-size: calc(clamp(24px, 3vw, 36px) * var(--tour-scale)); }
+#crm-guides .tour-question label { font-size: calc(14px * var(--tour-scale)); }
+#crm-guides .tour-result-heading h3 { font-size: calc(24px * var(--tour-scale)); }
+#crm-guides :is(#tour-next,#tour-back,#tour-edit,#tour-explore) { font-size: max(.8125rem, .9375em); }
+#crm-guides :is(.actions button, .tour-result-heading button) {
   max-width: 100%;
   height: auto;
   white-space: normal;
   line-height: 1.35;
 }
-#walkthrough .tour-choice { position: relative; min-width: 0; }
-#walkthrough .tour-choice:has(.tour-choice-text:not([hidden])) select {
+#crm-guides .tour-choice { position: relative; min-width: 0; }
+#crm-guides .tour-choice:has(.tour-choice-text:not([hidden])) select {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -54,7 +54,7 @@
   opacity: 0;
   cursor: pointer;
 }
-#walkthrough .tour-choice-text {
+#crm-guides .tour-choice-text {
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -66,7 +66,7 @@
   pointer-events: none;
   line-height: 1.4;
 }
-#walkthrough .tour-choice-text::after {
+#crm-guides .tour-choice-text::after {
   content: "";
   position: absolute;
   right: .75rem;
@@ -77,37 +77,37 @@
   border-width: 0 1.5px 1.5px 0;
   transform: translateY(-70%) rotate(45deg);
 }
-#walkthrough select:focus-visible + .tour-choice-text { outline: 2px solid currentColor; outline-offset: 3px; }
-#walkthrough .tour-progress-row { flex-wrap: wrap; }
-#walkthrough .tour-progress-row #tour-progress { flex: 1 1 auto; }
+#crm-guides select:focus-visible + .tour-choice-text { outline: 2px solid currentColor; outline-offset: 3px; }
+#crm-guides .tour-progress-row { flex-wrap: wrap; }
+#crm-guides .tour-progress-row #tour-progress { flex: 1 1 auto; }
 
 /* A recommendation reads as one action at any text size. */
-#walkthrough #tour-results {
+#crm-guides #tour-results {
   max-inline-size: 62rem;
   margin-inline: auto;
 }
-#walkthrough .tour-result-heading {
+#crm-guides .tour-result-heading {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: .7em 1.25em;
   margin: 0 0 1.15em;
 }
-#walkthrough .tour-result-heading > div { flex: 1 1 min(100%, 17em); }
-#walkthrough #tour-match-title { margin: 0; line-height: 1.22; }
-#walkthrough #tour-match-note {
+#crm-guides .tour-result-heading > div { flex: 1 1 min(100%, 17em); }
+#crm-guides #tour-match-title { margin: 0; line-height: 1.22; }
+#crm-guides #tour-match-note {
   margin: .3em 0 0;
   font-size: .95em;
   line-height: 1.5;
 }
-#walkthrough #tour-edit { margin: 0; min-height: 44px; }
-#walkthrough #tour-recommendations {
+#crm-guides #tour-edit { margin: 0; min-height: 44px; }
+#crm-guides #tour-recommendations {
   display: flex;
   flex-direction: column;
   gap: 0;
   border: 0;
 }
-#walkthrough #tour-recommendations > .tour-route {
+#crm-guides #tour-recommendations > .tour-route {
   display: grid;
   grid-template-columns: minmax(0, .95fr) minmax(0, 1.15fr) auto;
   align-items: center;
@@ -128,20 +128,20 @@
   text-align: start;
   white-space: normal;
 }
-#walkthrough #tour-recommendations > .tour-route:last-child { border-block-end: 1px solid var(--line); }
-#walkthrough .tour-route-label { display: grid; gap: .18em; }
-#walkthrough .tour-category {
+#crm-guides #tour-recommendations > .tour-route:last-child { border-block-end: 1px solid var(--line); }
+#crm-guides .tour-route-label { display: grid; gap: .18em; }
+#crm-guides .tour-category {
   color: var(--muted);
   font-size: .8125em;
   font-weight: 550;
 }
-#walkthrough .tour-route-label strong {
+#crm-guides .tour-route-label strong {
   font-size: 1.2em;
   line-height: 1.23;
   letter-spacing: -.02em;
 }
-#walkthrough .tour-route-summary { color: var(--muted); font-size: 1em; line-height: 1.48; }
-#walkthrough .tour-action {
+#crm-guides .tour-route-summary { color: var(--muted); font-size: 1em; line-height: 1.48; }
+#crm-guides .tour-action {
   display: inline-flex;
   align-items: center;
   justify-self: start;
@@ -150,7 +150,7 @@
   font-size: .9em;
   font-weight: 650;
 }
-#walkthrough .tour-action::after {
+#crm-guides .tour-action::after {
   content: '';
   width: .42em;
   height: .42em;
@@ -158,22 +158,22 @@
   border-right: 1.5px solid;
   transform: rotate(45deg);
 }
-#walkthrough #tour-recommendations > .tour-route:focus-visible {
+#crm-guides #tour-recommendations > .tour-route:focus-visible {
   position: relative;
   z-index: 1;
   outline: 2px solid currentColor;
   outline-offset: -2px;
 }
 @media (hover: hover) {
-  #walkthrough #tour-recommendations > .tour-route:hover {
+  #crm-guides #tour-recommendations > .tour-route:hover {
     background: color-mix(in srgb, var(--accent) 8%, var(--surface));
   }
 }
-#walkthrough #tour-results > .actions { margin: 1em 0 0; }
-#walkthrough #tour-explore { min-height: 44px; }
-#walkthrough #tour-results { container-type: inline-size; }
+#crm-guides #tour-results > .actions { margin: 1em 0 0; }
+#crm-guides #tour-explore { min-height: 44px; }
+#crm-guides #tour-results { container-type: inline-size; }
 @container (max-width: 42em) {
-  #walkthrough #tour-recommendations > .tour-route {
+  #crm-guides #tour-recommendations > .tour-route {
     grid-template-columns: minmax(0,1fr);
     gap: .48em;
     padding: .9em .45em;

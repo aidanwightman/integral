@@ -1,0 +1,32 @@
+@media (hover: hover) {
+  :is(#studio-root nav [data-do="view"],
+      #studio-root .workbench-tabs [data-do="call-view"],
+      #studio-root :is(nav, .workspace-navigation) summary,
+      #classic-navigation .nav):hover {
+    text-decoration: underline;
+    text-underline-offset: .18em;
+  }
+}
+
+:is(#studio-root nav [data-do="view"],
+    #studio-root .workbench-tabs [data-do="call-view"],
+    #classic-navigation .nav)[aria-current="page"] {
+  box-shadow: inset 3px 0 currentColor !important;
+  font-weight: 700;
+}
+
+:is(#studio-root nav [data-do="view"],
+    #studio-root .workbench-tabs [data-do="call-view"],
+    #studio-root :is(nav, .workspace-navigation) summary,
+    #classic-navigation .nav):focus-visible {
+  outline: 2px solid currentColor !important;
+  outline-offset: -3px !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #classic-navigation .nav { transition: background-color 180ms ease-out, box-shadow 180ms ease-out, color 180ms ease-out; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #classic-navigation .nav { transition: none !important; animation: none !important; }
+}

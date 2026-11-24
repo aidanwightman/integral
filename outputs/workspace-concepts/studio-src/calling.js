@@ -1,6 +1,9 @@
 import {addEmailExamples} from './email-research.js';
+import {normalizedContactMethod, writeContactMethodCheck} from './contact-evidence.js';
 import {contactHasAddress, emailCanBeUsed, matchesAddressSuggestion, setContactAddress, validContactAddress} from './email-address.js';
 export const CALL_OUTCOMES=['Positive conversation','Meeting requested','Callback requested','Not interested','No answer','Wrong number','Do not contact'];
+export const CALL_PURPOSES=['Setup call','Pitch call','Follow-up call','Other call'];
+export const PITCH_RESULTS=['Budget approval pending','Revised proposal requested','Ready to proceed','Declined'];
 export function extendCallingData(d){
  const p=d.id+'-';
  d.contacts=['Sam Carter','Morgan Quinn','Jordan Lee','Charlie Hayes','Alex Taylor','Rory Brooks'].map((name,i)=>({id:p+'contact'+i,name,accountId:d.accounts[i].id,ownerId:d.team[i%4].id,title:['Operations director','Managing director','Commercial lead'][i%3],phone:'+44 7700 90000'+i,email:i===1?'':name.toLowerCase().replace(' ','.')+'@customer.example',emailAllowed:i!==4,callAllowed:i!==5,timezone:'Europe/London',need:['Replace disconnected spreadsheets','Connect sales to delivery','Improve renewal visibility'][i%3],lastTouch:i?'No recent conversation':'Requested a product walkthrough',queueStatus:'Ready'}));
@@ -11,14 +14,17 @@ export function extendCallingData(d){
  return d;
 }
 const salesId=(d,kind)=>d.id+'-'+kind+'-'+d.nextSalesId++;
-export function salesEvent(d,type,recordId,detail){d.salesActivity.unshift({id:salesId(d,'event'),at:new Date().toISOString(),type,recordId,detail});}
-export function startCall(d, contactId) {
+export function salesEvent(d,type,recordId,detail,relatedId){d.salesActivity.unshift({id:salesId(d,'event'),at:new Date().toISOString(),type,recordId,detail,...(relatedId?{relatedId}:{})});}
+export function startCall(d, contactId, scheduledTaskId='') {
   if (d.calls.some(c => ['Ringing', 'Connected', 'Wrap-up'].includes(c.status))) throw new Error('Finish and log the current call first.');
   const contact = d.contacts.find(c => c.id === contactId);
   if (!contact?.callAllowed) throw new Error('This contact is excluded from calling.');
+  const task=scheduledTaskId && d.salesTasks.find(t=>t.id===scheduledTaskId && t.kind==='Scheduled call' && t.contactId===contactId && t.status==='Open');
+  if(scheduledTaskId && !task) throw new Error('Choose an open scheduled call for this contact.');
   const account = d.accounts.find(a => a.id === contact.accountId);
   const call = {
-    id: salesId(d, 'call'), contactId, accountId: account.id, ownerId: contact.ownerId,
+    id: salesId(d, 'call'), contactId, accountId: account.id, ownerId: task?.ownerId || contact.ownerId, dialedPhone:contact.phone,
+    purpose:task?.purpose || '', opportunityId:task?.opportunityId || '', scheduledTaskId,
     week: '2026-11-16', source: 'Outbound', segment: account.segment === 'Enterprise' ? 'Enterprise' : 'Growth',
     startedAt: new Date().toISOString(), connectedAt: null, endedAt: null, durationSeconds: 0,
     status: 'Ringing', connected: false, outcome: null, notes: '', nextStep: '', recorded: false
@@ -46,6 +52,32 @@ export function nextCallDate() {
   date.setDate(date.getDate() + 1);
   return [date.getFullYear(), String(date.getMonth()+1).padStart(2,'0'), String(date.getDate()).padStart(2,'0')].join('-');
 }
+function scheduledCallValues(d,contact,{purpose,scheduledAt,ownerId,opportunityId='',agenda=''}){
+ if(!contact?.callAllowed) throw new Error('This contact is excluded from calling.');
+ if(!CALL_PURPOSES.includes(purpose)) throw new Error('Choose the purpose of the scheduled call.');
+ if(!d.team.some(person=>person.id===ownerId)) throw new Error('Choose an owner for the scheduled call.');
+ if(opportunityId && !d.opportunities.some(o=>o.id===opportunityId && o.accountId===contact.accountId)) throw new Error('Choose an opportunity for this company.');
+ const parts=String(scheduledAt||'').match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+ const date=new Date(scheduledAt);
+ if(!parts || !Number.isFinite(date.getTime()) || [date.getFullYear(),date.getMonth()+1,date.getDate(),date.getHours(),date.getMinutes()].some((v,i)=>v!==Number(parts[i+1])) || date.getTime()<=Date.now()) throw new Error('Choose a valid future date and time for the call.');
+ return {kind:'Scheduled call',title:purpose,purpose,scheduledAt:date.toISOString(),due:scheduledAt.slice(0,10),ownerId,contactId:contact.id,accountId:contact.accountId,opportunityId,agenda:String(agenda||'').trim()};
+}
+function saveScheduledCall(d,values,source){
+ const existing=d.salesTasks.find(t=>t.kind==='Scheduled call' && t.status==='Open' && t.contactId===values.contactId && t.scheduledAt===values.scheduledAt && t.ownerId===values.ownerId);
+ if(existing) {
+   if(existing.purpose===values.purpose && existing.opportunityId===values.opportunityId && existing.agenda===values.agenda && existing.source===source)return existing;
+   throw new Error('A call for this contact and owner is already scheduled at that time.');
+ }
+ const task={...values,id:salesId(d,'task'),source,status:'Open'};
+ d.salesTasks.unshift(task);
+ salesEvent(d,'Call scheduled',task.contactId,task.purpose+' · '+new Date(task.scheduledAt).toLocaleString()+' · '+d.team.find(t=>t.id===task.ownerId).name,task.id);
+ return task;
+}
+export function scheduleSalesCall(d,contactId,values,sourceCallId=''){
+ const contact=d.contacts.find(c=>c.id===contactId);
+ if(sourceCallId && !d.calls.some(c=>c.id===sourceCallId && c.contactId===contactId && c.status==='Logged')) throw new Error('Choose a completed call for this contact.');
+ return saveScheduledCall(d,scheduledCallValues(d,contact,values),sourceCallId||'Manual');
+}
 export function processCallJobs(d){let sent=0;const auto=d.automations.find(a=>a.id===d.callRule.automationId);
  for(const job of d.callJobs){if(['Sent','Suppressed','Cancelled','Replied'].includes(job.status))continue;const contact=d.contacts.find(c=>c.id===job.contactId),call=d.calls.find(c=>c.id===job.callId);
   if(!contact.emailAllowed){job.status='Suppressed';job.reason='Contact preference prevents follow-up';salesEvent(d,'Follow-up suppressed',job.id,job.reason);continue;}
@@ -59,26 +91,45 @@ export function processCallJobs(d){let sent=0;const auto=d.automations.find(a=>a
   salesEvent(d,'Follow-up sent (demo)',email.id,`Call ${call.id} · rule v${job.version} · ${contact.email}`);
  }return sent;
 }
-function commitCallOutcome(d,call,{outcome,notes='',nextStep='',callbackDate=nextCallDate(),opportunityId=''}={},runFollowUp=true) {
+function commitCallOutcome(d,call,{outcome,purpose=call.purpose||'Other call',pitchResult='',buyerFeedback='',notes='',nextStep='',callbackDate=nextCallDate(),opportunityId=call.opportunityId||'',scheduledAt='',scheduledPurpose='',scheduledOwnerId=''}={},runFollowUp=true) {
  const needsNextStep=['Positive conversation','Meeting requested','Callback requested'].includes(outcome);
  if(!CALL_OUTCOMES.includes(outcome)) throw new Error('Choose a call outcome.');
+ if(!CALL_PURPOSES.includes(purpose)) throw new Error('Choose the purpose of this call.');
+ buyerFeedback=String(buyerFeedback||'').trim();
+ if(pitchResult || buyerFeedback){
+   if(purpose!=='Pitch call' || !call.connected) throw new Error('Record buyer feedback and pitch results on a connected pitch call.');
+   if(pitchResult && !PITCH_RESULTS.includes(pitchResult)) throw new Error('Choose a listed pitch result.');
+ }
  if(!call.connected && (needsNextStep || outcome==='Not interested')) throw new Error('An unanswered call cannot have a conversation outcome.');
  if(needsNextStep && !nextStep.trim()) throw new Error('Record the agreed next step.');
  if(runFollowUp && (!/^\d{4}-\d{2}-\d{2}$/.test(callbackDate) || !Number.isFinite(Date.parse(callbackDate)) || new Date(callbackDate).toISOString().slice(0,10)!==callbackDate)) throw new Error('Choose a valid follow-up date.');
  if(opportunityId && !d.opportunities.some(o=>o.id===opportunityId && o.accountId===call.accountId)) throw new Error('Choose an opportunity for this company.');
  const contact=d.contacts.find(c=>c.id===call.contactId);
+ let schedule;
+ if(scheduledAt){
+   if(['Do not contact','Wrong number'].includes(outcome)) throw new Error('This outcome prevents scheduling another call.');
+   schedule=scheduledCallValues(d,contact,{purpose:scheduledPurpose,scheduledAt,ownerId:scheduledOwnerId,opportunityId,agenda:nextStep});
+   if(d.salesTasks.some(t=>t.kind==='Scheduled call' && t.status==='Open' && t.id!==call.scheduledTaskId && t.contactId===contact.id && t.scheduledAt===schedule.scheduledAt && t.ownerId===schedule.ownerId)) throw new Error('A call for this contact and owner is already scheduled at that time.');
+ }
  const newerCall=d.calls.some(c=>c.contactId===contact.id && c.status==='Logged' && c.endedAt>call.endedAt);
  if(!call.id){
    call.id=salesId(d,'call');
    d.calls.unshift(call);
  }
- Object.assign(call,{status:'Logged',loggedAt:new Date().toISOString(),opportunityId,followUpDate:runFollowUp?callbackDate:'',outcome,notes:notes.trim(),nextStep:nextStep.trim()});
+ Object.assign(call,{status:'Logged',loggedAt:new Date().toISOString(),purpose,pitchResult,buyerFeedback,opportunityId,followUpDate:runFollowUp?callbackDate:'',outcome,notes:notes.trim(),nextStep:nextStep.trim()});
+ const booked=call.scheduledTaskId && d.salesTasks.find(t=>t.id===call.scheduledTaskId);
+ if(booked) Object.assign(booked,{status:'Complete',completedCallId:call.id});
+ if(schedule) call.nextCallTaskId=saveScheduledCall(d,schedule,call.id).id;
  if(!newerCall){
    if(contact.callAllowed) contact.queueStatus='Attempted';
    contact.lastTouch=outcome;
  }
  if(outcome==='Do not contact'){contact.callAllowed=false;contact.emailAllowed=false;contact.queueStatus='Excluded';}
  if(outcome==='Wrong number' && contact.queueStatus!=='Excluded'){contact.callAllowed=false;contact.queueStatus='Needs phone correction';}
+ if(outcome==='Wrong number' && call.dialedPhone && normalizedContactMethod('phone',call.dialedPhone)===normalizedContactMethod('phone',contact.phone)){
+   writeContactMethodCheck(contact,'phone',{at:call.endedAt,result:'unconfirmed',source:'Outbound call',evidence:'Wrong number reported on call '+call.id+'.'});
+ }
+ if(!contact.callAllowed)d.salesTasks.filter(t=>t.kind==='Scheduled call' && t.contactId===contact.id && t.status==='Open').forEach(t=>t.status='Cancelled');
  if(runFollowUp) queueCallFollowUp(d,call,contact);
  d.activity.unshift({action:'Call logged',recordId:call.id,accountId:call.accountId,contactId:call.contactId,opportunityId,at:call.loggedAt,ownerId:call.ownerId,detail:outcome});
  salesEvent(d,call.entryMethod==='Manual'?'Completed call logged':'Call outcome saved',call.id,outcome+' · '+(call.nextStep||'No next step'));
@@ -87,7 +138,7 @@ function commitCallOutcome(d,call,{outcome,notes='',nextStep='',callbackDate=nex
 }
 function queueCallFollowUp(d,call,contact) {
  const {outcome,followUpDate:callbackDate}=call;
- if(outcome==='Callback requested'||outcome==='No answer')d.salesTasks.unshift({id:salesId(d,'task'),contactId:contact.id,title:outcome==='Callback requested'?'Call back: '+call.nextStep:'Review unanswered call',due:callbackDate,status:'Open',source:call.id});
+ if(!call.nextCallTaskId && (outcome==='Callback requested'||outcome==='No answer'))d.salesTasks.unshift({id:salesId(d,'task'),contactId:contact.id,title:outcome==='Callback requested'?'Call back: '+call.nextStep:'Review unanswered call',due:callbackDate,status:'Open',source:call.id});
  if(outcome==='Meeting requested')d.salesTasks.unshift({id:salesId(d,'task'),contactId:contact.id,title:'Arrange meeting: '+call.nextStep,due:callbackDate,status:'Open',source:call.id});
  const auto=d.automations.find(a=>a.id===d.callRule.automationId);
  if(outcome===d.callRule.trigger){const job={id:salesId(d,'job'),callId:call.id,contactId:contact.id,status:'Queued',reason:'Qualifying outcome saved',version:auto.version,subject:d.callRule.template,body:d.callRule.body,createTask:d.callRule.createTask};if(!emailCanBeUsed(contact)&&d.callRule.missingEmail==='task'){job.status='Cancelled';job.reason='Rule creates a research task instead of waiting';d.salesTasks.unshift({id:salesId(d,'task'),contactId:contact.id,title:'Find an email and review follow-up',due:callbackDate,status:'Open',source:call.id});}d.callJobs.unshift(job);}
@@ -151,6 +202,9 @@ export function saveContactEmail(d,id,email,confirmation) {
   const contact=d.contacts.find(c=>c.id===id);
   const value=String(email || '').trim();
   if(!contact || !validContactAddress(value)) throw new Error('Enter a valid email address.');
+  if(confirmation && (normalizedContactMethod('email',confirmation.address)!==normalizedContactMethod('email',value) ||
+    !confirmation.source || !confirmation.detail || !Number.isFinite(Date.parse(confirmation.at))))
+    throw new Error('Provide dated source evidence for this email address.');
   if(d.contacts.some(c=>c.id!==id && contactHasAddress(c,value)))
     throw new Error('This email is already saved on another contact.');
   if(!confirmation && matchesAddressSuggestion(contact,value))
@@ -159,16 +213,33 @@ export function saveContactEmail(d,id,email,confirmation) {
   if(confirmation) {
     contact.emailStatus='confirmed';
     contact.emailEvidence=confirmation;
+    writeContactMethodCheck(contact,'email',{
+      at:confirmation.at,result:'verified',source:confirmation.source,evidence:confirmation.detail
+    },confirmation.verifiedAt || confirmation.at);
   }
   salesEvent(d,'Email updated',id,'Pending follow-ups re-evaluated');
   return processCallJobs(d);
 }
 export function saveCallRule(d,values){if(!['Positive conversation','Meeting requested'].includes(values.trigger))throw new Error('Choose a supported outcome trigger.');if(!values.template?.trim()||!values.body?.trim())throw new Error('A subject and message are required.');if(!['wait','task'].includes(values.missingEmail))throw new Error('Choose the missing-email action.');Object.assign(d.callRule,values);const auto=d.automations.find(a=>a.id===d.callRule.automationId);auto.version++;auto.trigger=values.trigger+' logged';auto.steps[0]='Wait for '+values.trigger.toLowerCase()+' to be logged';auto.steps[2]=values.missingEmail==='wait'?'Wait for a valid email if missing':'Create a research task if email is missing';salesEvent(d,'Call rule updated',auto.id,'Version '+auto.version+'; existing jobs retain their template snapshot.');}
-export function markEmailReplied(d,id){const email=d.emailOutbox.find(e=>e.id===id);if(!email||email.status==='Replied (demo)')return;email.status='Replied (demo)';const job=d.callJobs.find(j=>j.id===email.jobId);job.status='Replied';d.outreach.find(m=>m.id===id).replied=true;d.salesTasks.filter(t=>t.source===email.callId&&t.status==='Open').forEach(t=>t.status='Stopped on reply');salesEvent(d,'Reply received (demo)',id,'Open follow-up task stopped.');}
+export function markEmailReplied(d,id){const email=d.emailOutbox.find(e=>e.id===id);if(!email||email.status==='Replied (demo)')return;email.status='Replied (demo)';const job=d.callJobs.find(j=>j.id===email.jobId);job.status='Replied';d.outreach.find(m=>m.id===id).replied=true;d.salesTasks.filter(t=>t.source===email.callId&&t.status==='Open'&&t.kind!=='Scheduled call').forEach(t=>t.status='Stopped on reply');salesEvent(d,'Reply received (demo)',id,'Open follow-up task stopped.');}
 export function salesWorkbenchAction(d,s,action,v={}){
  const active=d.calls.find(c=>['Ringing','Connected','Wrap-up'].includes(c.status));s.activeCall=active?.id||null;const contact=d.contacts.find(c=>c.id===(active?.contactId||s.callContact))||d.contacts[0];
  if(action==='contact-select'){if(d.calls.some(c=>['Ringing','Connected','Wrap-up'].includes(c.status)))throw new Error('Finish the current call before switching contacts.');s.callContact=v.id;return 'Contact selected.';}
  if(action==='dial-start'){s.activeCall=startCall(d,contact.id).id;return 'Demo call ringing. No real call is placed.';}
+ if(action==='dial-scheduled'){
+   const task=d.salesTasks.find(t=>t.id===v.id && t.kind==='Scheduled call');
+   if(!task)throw new Error('Choose a scheduled call.');
+   const call=startCall(d,task.contactId,task.id);
+   s.activeCall=call.id;s.callContact=call.contactId;s.view='dialer';
+   return 'Scheduled demo call started.';
+ }
+ if(action==='cancel-scheduled'){
+   const task=d.salesTasks.find(t=>t.id===v.id && t.kind==='Scheduled call' && t.status==='Open');
+   if(!task || active?.scheduledTaskId===task.id) throw new Error('Only a pending call can be cancelled.');
+   task.status='Cancelled';
+   salesEvent(d,'Scheduled call cancelled',task.contactId,task.purpose+' · '+new Date(task.scheduledAt).toLocaleString());
+   return 'Scheduled call cancelled.';
+ }
  if(action==='dial-connect'){connectCall(d,s.activeCall);return 'Demo conversation connected.';}
  if(action==='dial-end'){endCall(d,s.activeCall);return 'Add the call outcome and next step.';}
  if(action==='dial-log'){const call=logCall(d,s.activeCall,v);if(d.callRule.advanceQueue){const next=d.contacts.find(c=>c.callAllowed&&c.queueStatus==='Ready'&&c.id!==call.contactId);if(next)s.callContact=next.id;}s.activeCall=null;return 'Call saved. Matching follow-up rules have run.';}
@@ -176,7 +247,7 @@ export function salesWorkbenchAction(d,s,action,v={}){
  if(action==='call-rule-save'){saveCallRule(d,v);return 'Rule saved for future qualifying calls.';}
  if(action==='call-rule-toggle'){const a=d.automations.find(a=>a.id===d.callRule.automationId);a.status=a.status==='Active'?'Paused':'Active';const sent=processCallJobs(d);return a.status==='Paused'?'Follow-up workflow paused.':`Workflow resumed; ${sent} pending follow-up(s) simulated.`;}
  if(action==='call-email-reply'){markEmailReplied(d,v.id);return 'Reply recorded; outstanding follow-up task stopped.';}
- if(action==='sales-task-done'){const t=d.salesTasks.find(t=>t.id===v.id);if(t.status==='Open')t.status='Complete';return 'Task completed.';}
+ if(action==='sales-task-done'){const t=d.salesTasks.find(t=>t.id===v.id);if(!t || t.kind==='Scheduled call')throw new Error('Start the scheduled call and log its outcome.');if(t.status==='Open')t.status='Complete';return 'Task completed.';}
  if(action==='sales-meeting'){if(!v.title?.trim()||!v.date)throw new Error('Enter a meeting title and date.');d.salesMeetings.unshift({id:salesId(d,'meeting'),contactId:contact.id,title:v.title.trim(),date:v.date,status:'Scheduled (demo)'});salesEvent(d,'Meeting scheduled',contact.id,v.title+' · '+v.date);return 'Meeting added locally. No invitation sent.';}
  if(action==='sales-quote'){const value=Number(v.amount);if(!Number.isFinite(value)||value<=0||value>10000000)throw new Error('Enter a quote value between £0 and £10m.');d.quotes.unshift({id:salesId(d,'quote'),contactId:contact.id,amountPence:Math.round(value*100),status:'Draft'});return 'Quote draft created for this contact.';}
  if(action==='sales-quote-review'){

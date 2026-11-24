@@ -2,6 +2,10 @@
 
 
 def insert_commissions(db, key, dataset):
+    for invoice in dataset["invoices"]:
+        if invoice.get("orderId"):
+            db.execute("INSERT INTO invoiced_order VALUES (?,?,?,?)",
+                       (key, invoice["id"], invoice["accountId"], invoice["orderId"]))
     commission = dataset.get("commissions")
     if not commission:
         return
@@ -25,7 +29,11 @@ def insert_commissions(db, key, dataset):
         insert("commission_line", (key, line["id"], account_id, line["owner"], line["package"], line["team"],
                                    line["grossPence"], line["discount"], line["cashPence"], line["refundPence"],
                                    line.get("repShareOverride"), line.get("reviewedRefundPence"),
-                                   line.get("approvedRevision"), line.get("approvedPence")))
+                                   line.get("approvedRevision"), line.get("approvedPence"), line.get("version", 0)))
+        source = line.get("source")
+        if source:
+            insert("commission_source", (key, line["id"], account_id, source["opportunityId"],
+                                         source["reference"], source["valuePence"]))
         for inquiry in line.get("inquiries", ()):
             insert("commission_inquiry", (key, line["id"], inquiry["number"], inquiry["reason"],
                     inquiry["reference"], inquiry["note"], inquiry["raisedBy"], inquiry["openedAt"],
@@ -33,4 +41,9 @@ def insert_commissions(db, key, dataset):
                     inquiry.get("decision"), inquiry.get("decisionReference"), inquiry.get("decisionNote"),
                     inquiry.get("resolvedBy"), inquiry.get("resolvedAt"), inquiry.get("reviewedRepPence")))
     for sequence, entry in enumerate(commission["history"]):
-        insert("commission_activity", (key, sequence, entry["action"], entry["revision"], entry["at"]))
+        insert("commission_activity", (key, sequence, entry["action"], entry["revision"], entry["at"],
+                                       entry.get("kind"), entry.get("actor"), entry.get("lineId"),
+                                       entry.get("repBefore"), entry.get("repAfter"), entry.get("totalPence"),
+                                       entry.get("status"), entry.get("reason"), entry.get("reference"), entry.get("note")))
+        for line_id in entry.get("clearedLines", ()):
+            insert("commission_approval_cleared", (key, sequence, line_id))

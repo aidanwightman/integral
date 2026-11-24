@@ -17,7 +17,7 @@ CREATE TABLE commission_line (
  refund_pence INTEGER NOT NULL CHECK(refund_pence BETWEEN 0 AND cash_pence),
  rep_share_override REAL CHECK(rep_share_override BETWEEN 0 AND 100),
  reviewed_refund_pence INTEGER CHECK(reviewed_refund_pence=refund_pence),
- approved_revision INTEGER, approved_pence INTEGER CHECK(approved_pence>=0),
+ approved_revision INTEGER, approved_pence INTEGER CHECK(approved_pence>=0), version INTEGER NOT NULL DEFAULT 0 CHECK(version>=0),
  CHECK((approved_revision IS NULL)=(approved_pence IS NULL)),
  PRIMARY KEY(workspace_id,id),
  FOREIGN KEY(workspace_id,account_id) REFERENCES account(workspace_id,id),
@@ -36,7 +36,32 @@ CREATE TABLE commission_inquiry (
 CREATE UNIQUE INDEX one_open_commission_inquiry ON commission_inquiry(workspace_id,line_id) WHERE status='Open';
 CREATE TABLE commission_activity (
  workspace_id TEXT NOT NULL REFERENCES workspace(id), sequence INTEGER NOT NULL, action TEXT NOT NULL, revision INTEGER NOT NULL, at TEXT NOT NULL,
- PRIMARY KEY(workspace_id,sequence)
+ kind TEXT, actor TEXT, line_id TEXT, rep_before_pence INTEGER, rep_after_pence INTEGER,
+ total_pence INTEGER, status TEXT, reason TEXT, evidence_reference TEXT, note TEXT,
+ PRIMARY KEY(workspace_id,sequence),
+ FOREIGN KEY(workspace_id,line_id) REFERENCES commission_line(workspace_id,id)
+);
+CREATE TABLE commission_approval_cleared (
+ workspace_id TEXT NOT NULL, sequence INTEGER NOT NULL, line_id TEXT NOT NULL,
+ PRIMARY KEY(workspace_id,sequence,line_id),
+ FOREIGN KEY(workspace_id,sequence) REFERENCES commission_activity(workspace_id,sequence),
+ FOREIGN KEY(workspace_id,line_id) REFERENCES commission_line(workspace_id,id)
+);
+CREATE UNIQUE INDEX commission_line_customer ON commission_line(workspace_id,id,account_id);
+CREATE UNIQUE INDEX opportunity_customer ON opportunity(workspace_id,id,account_id);
+CREATE UNIQUE INDEX invoice_customer ON invoice(workspace_id,id,account_id);
+CREATE TABLE invoiced_order (
+ workspace_id TEXT NOT NULL, invoice_id TEXT NOT NULL, account_id TEXT NOT NULL, order_id TEXT NOT NULL,
+ PRIMARY KEY(workspace_id,invoice_id),
+ FOREIGN KEY(workspace_id,invoice_id,account_id) REFERENCES invoice(workspace_id,id,account_id),
+ FOREIGN KEY(workspace_id,order_id,account_id) REFERENCES opportunity(workspace_id,id,account_id)
+);
+CREATE TABLE commission_source (
+ workspace_id TEXT NOT NULL, line_id TEXT NOT NULL, account_id TEXT NOT NULL, opportunity_id TEXT NOT NULL,
+ evidence_reference TEXT NOT NULL CHECK(length(trim(evidence_reference))>0), reviewed_value_pence INTEGER NOT NULL,
+ PRIMARY KEY(workspace_id,line_id),
+ FOREIGN KEY(workspace_id,line_id,account_id) REFERENCES commission_line(workspace_id,id,account_id),
+ FOREIGN KEY(workspace_id,opportunity_id,account_id) REFERENCES opportunity(workspace_id,id,account_id)
 );
 CREATE VIEW commission_statement AS
 WITH terms AS (

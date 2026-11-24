@@ -155,3 +155,9 @@ messageHandlers.message({...materialMessage,data:{...materialMessage.data,mode:n
 assert.deepEqual(JSON.parse(preferences.get('data-saver-glass-material-v1')),{mode:'dark',clarity:true});
 assert.equal(retainedRoot.innerHTML,'draft still being edited');
 console.log('PASS: trusted Glass preferences update in place and ignore invalid Clarity values.');
+
+const contactRoute={type:'data-saver-navigate',industry:'agency',role:'sales',look:'glass',view:'contacts'};
+for(const [example,expected] of [['incoming-signature',/Direct number for our next call/],['contact-checks',/Elena Ward/]]){
+  messageHandlers.message({source:parentWindow,origin:'https://example.test',data:{...contactRoute,example}});
+  assert.match(retainedRoot.innerHTML,expected);
+}

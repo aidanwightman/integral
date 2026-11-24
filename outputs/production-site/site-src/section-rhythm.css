@@ -54,6 +54,34 @@ html[data-design=forest] .about-heading{border-left:4px solid var(--accent);padd
 html[data-design=forest] .faq details[open]{background:var(--surface);padding:20px;border-left:3px solid var(--accent)}
 html[data-design=forest] .closing{background:var(--wash);border-top:3px solid var(--accent)}
 /* Alternate reading compositions at desktop without reordering interactive controls. */
+.customer-questions {
+  min-width: 0;
+  padding-block: clamp(2rem, 4.5vw, 4rem);
+  border-top: 1px solid var(--line);
+  scroll-margin-block-start: 6rem;
+}
+.customer-questions h2 { margin: 0 0 clamp(1.25rem, 2.5vw, 2rem); font-size: clamp(1.8rem, 3.8vw, 3.25rem); line-height: 1.1; }
+.customer-questions .question-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 1.75rem clamp(2rem, 5vw, 4.5rem); }
+.customer-questions h3 { margin: 0 0 .65rem; font-size: 1.125rem; line-height: 1.4; }
+.customer-questions details { min-width: 0; border-bottom: 1px solid var(--line); }
+.customer-questions details:first-of-type { border-top: 1px solid var(--line); }
+.customer-questions summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  min-height: 3rem; padding: .85rem .2rem; list-style: none; cursor: pointer;
+  font: inherit; font-weight: 650; line-height: 1.4; color: var(--ink);
+}
+.customer-questions summary::-webkit-details-marker { display: none; }
+.customer-questions summary::after { content: ''; flex: 0 0 .5rem; height: .5rem; margin-inline: .45rem; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.customer-questions details[open] summary::after { transform: rotate(225deg); }
+.customer-questions details p { margin: 0; padding: 0 .2rem 1rem; max-width: 62ch; line-height: 1.55; color: var(--muted); }
+.customer-questions p a, .savings-detail .pricing-intro a { color: var(--ink); text-decoration: underline; text-underline-offset: .18em; }
+.customer-questions summary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (hover: hover) {
+  .customer-questions summary:hover { text-decoration: underline; text-underline-offset: .2em; }
+}
+@media (max-width: 52rem) {
+  .customer-questions .question-groups { grid-template-columns: 1fr; }
+}
 @media(min-width:900px){
  html:is([data-design=glass],[data-design=forest]) .ownership-grid{grid-template-columns:1.15fr .85fr;gap:70px}
  html:is([data-design=glass],[data-design=forest]) .ownership-grid>div:first-child{grid-column:2;grid-row:1}

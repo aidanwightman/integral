@@ -1,3 +1,5 @@
+import {contactMethodChanged} from './contact-evidence.js';
+
 export function validContactAddress(value) {
   return /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(String(value || '').trim());
 }
@@ -25,6 +27,7 @@ export function matchesAddressSuggestion(contact, address, selectedSuggestion) {
 }
 
 export function setContactAddress(contact, address) {
+  contactMethodChanged(contact, 'email', address);
   if ((contact.email || '').trim().toLowerCase() !== address.toLowerCase()) {
     delete contact.emailEvidence;
     delete contact.emailStatus;

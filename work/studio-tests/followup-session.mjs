@@ -1,0 +1,62 @@
+import assert from 'node:assert/strict';
+import {dataset} from '../../outputs/workspace-concepts/studio-src/data.js';
+import {outcomeAction,followupRecord,scheduleFollowupCall,logFollowupCall,recordFollowupReceipt,resetOutcome} from '../../outputs/workspace-concepts/studio-src/outcomes-model.js';
+import {scheduleSalesCall} from '../../outputs/workspace-concepts/studio-src/calling.js';
+import {persistFollowupCase,restoreFollowupCase} from '../../outputs/workspace-concepts/studio-src/followup-session.js';
+
+const storage=new Map();
+globalThis.sessionStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,value)};
+const d=dataset('agency');
+outcomeAction(d,'followup','validate',{email:'sam@example.com'});
+outcomeAction(d,'followup','send');
+const ownerId=d.team[0].id;
+Date.now=()=>new Date('2026-11-17T10:00').getTime();
+const booking=scheduleFollowupCall(d,{ownerId,scheduledAt:'2026-11-18T10:00',agenda:'Check the overview'});
+Date.now=()=>new Date('2026-11-18T11:00').getTime();
+const call=logFollowupCall(d,{ownerId,bookingId:booking.id,endedAt:'2026-11-18T10:15',durationSeconds:600,outcome:'Not interested',notes:'Customer declined an extension.'});
+d.calls.push({id:'unrelated',contactId:booking.contactId,status:'Logged'});
+persistFollowupCase(d);
+const restored=restoreFollowupCase(dataset('agency')),record=followupRecord(restored);
+assert.equal(record.calls.length,1);
+assert.equal(record.calls[0].id,call.id);
+assert.equal(record.bookings[0].completedCallId,call.id);
+assert.equal(restored.outcomePractice.cases.followup.sentMessage.to,'sam@example.com');
+assert.equal(restored.contacts[0].email,d.contacts[0].email);
+assert.ok(!restored.calls.some(c=>c.id==='unrelated'));
+assert.ok(restored.nextSalesId>=d.nextSalesId);
+assert.equal(followupRecord(restoreFollowupCase(dataset('events'))).bookings.length,0);
+resetOutcome(restored,'followup');persistFollowupCase(restored);
+assert.equal(restoreFollowupCase(dataset('agency')).calls.length,0);
+console.log('PASS exact follow-up case, linked native call and booking survive refresh, isolated by record, industry and reset.');
+
+for(const [outcome,queue,emailAllowed] of [['Do not contact','Excluded',false],['Wrong number','Needs phone correction',true]]){
+ const sample=dataset('agency'),sam=sample.contacts[0],ownerId=sample.team[0].id;
+ outcomeAction(sample,'followup','validate',{email:'fixture-only@example.com'});
+ outcomeAction(sample,'followup','send');
+ recordFollowupReceipt(sample,{channel:'Email',evidence:'Sam acknowledged the document.'});
+ logFollowupCall(sample,{endedAt:'2026-11-18T10:55',durationSeconds:30,ownerId,outcome,notes:'Record the contact preference.'});
+ sample.salesActivity.push({id:'unrelated',recordId:sam.id,type:'Contact viewed',detail:'Different context.'});
+ persistFollowupCase(sample);
+ const current=restoreFollowupCase(dataset('agency'));
+ assert(current.salesActivity.some(event=>event.recordId===sam.id && event.type==='Customer confirmed receipt'));
+ assert(!current.salesActivity.some(event=>event.id==='unrelated'));
+ const assertSuppression=state=>{
+   const c=state.contacts[0];
+   assert.equal(c.callAllowed,false);assert.equal(c.emailAllowed,emailAllowed);
+   assert.equal(c.queueStatus,queue);assert.equal(c.lastTouch,outcome);
+   assert.throws(()=>scheduleSalesCall(state,c.id,{ownerId,scheduledAt:'2026-12-05T09:00',purpose:'Follow-up call',agenda:'Discuss next steps.'}),/excluded/);
+ };
+ assertSuppression(current);
+ const key='integral-followup-v1/agency',legacy=JSON.parse(storage.get(key));
+ delete legacy.contact;storage.set(key,JSON.stringify(legacy));
+ assertSuppression(restoreFollowupCase(dataset('agency')));
+ resetOutcome(sample,'followup');persistFollowupCase(sample);
+ assert(sample.salesActivity.some(event=>event.id==='unrelated'));
+ const reset=restoreFollowupCase(dataset('agency'));assertSuppression(reset);
+ assert.equal(reset.calls.length,0);
+ assert(!reset.salesActivity.some(event=>event.type==='Customer confirmed receipt'));
+ outcomeAction(reset,'followup','validate',{email:'sam@example.com'});
+ if(emailAllowed)outcomeAction(reset,'followup','send');
+ else assert.throws(()=>outcomeAction(reset,'followup','send'),/email is paused/i);
+}
+console.log('PASS contact suppression and call history survive refresh, older snapshots and confirmed case reset.');

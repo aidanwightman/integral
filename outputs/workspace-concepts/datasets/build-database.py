@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse
 import json
 import os
+import re
 import sqlite3
 import tempfile
 
@@ -21,6 +22,33 @@ for schema_file in ['schema.sql','commission-schema.sql','collections-pipeline-s
     db.executescript((root/schema_file).read_text())
 def insert(table,values):
     db.execute(f"INSERT INTO {table} VALUES ({','.join('?' for _ in values)})",values)
+
+def insert_contact_evidence(workspace, contact):
+    for method in ('email', 'phone'):
+        value = contact[method]
+        normalized = value.strip().lower()
+        if method == 'phone':
+            normalized = re.sub(r'(?:extension|ext\.?|x|#)\s*(\d+)$', r'x\1', normalized)
+            normalized = re.sub(r'[\s().-]', '', normalized)
+            normalized = re.sub(r'^00', '+', normalized)
+        record = (contact.get('methodEvidence') or {}).get(method) or {}
+        if record.get('value') != normalized:
+            record = {}
+        confirmed = record.get('verified') or {}
+        legacy = contact.get('emailEvidence') or {}
+        legacy_checked = {}
+        if method == 'email' and normalized and (legacy.get('address') or '').strip().lower() == normalized:
+            timestamp = legacy.get('verifiedAt') or legacy.get('at')
+            if timestamp and legacy.get('source') and legacy.get('detail'):
+                legacy_checked = dict(at=legacy.get('at') or timestamp, result='verified', source=legacy['source'], evidence=legacy['detail'])
+                confirmed = confirmed or dict(legacy_checked, at=timestamp, recordedAt=legacy.get('at'))
+        checked = record.get('checked') or legacy_checked or confirmed
+        if record.get('changedAt') or checked:
+            insert('contact_method_evidence', [workspace, contact['id'], method, value, record.get('changedAt'),
+                   checked.get('at'), checked.get('result'), checked.get('source'), checked.get('evidence'),
+                   checked.get('recordedAt') or checked.get('at'), checked.get('sourceMessageId') or None,
+                   confirmed.get('at'), confirmed.get('source'), confirmed.get('evidence'),
+                   confirmed.get('recordedAt') or confirmed.get('at'), confirmed.get('sourceMessageId') or None])
 subtables={'agency':'project','recruitment':'vacancy','field':'asset','wholesale':'stock_item','property':'property','membership':'membership','saas':'subscription','events':'experience'}
 for key,table in subtables.items():
     d=json.loads((args.data_dir/f'{key}.json').read_text())
@@ -46,10 +74,26 @@ for key,table in subtables.items():
     for r in d['risks']:insert('business_risk',[key,r['id'],r['team'],r['title'],r['impact'],r['owner'],r['status']])
     for o in d['opportunities']:insert('pipeline_context',[key,o['id'],o['daysInStage'],o['nextStepDue'],o['forecastCategory']])
     assert db.execute('SELECT SUM(sent) FROM sales_activity_summary WHERE workspace_id=?',[key]).fetchone()[0]==sum(m['status']=='Sent' for m in d['outreach'])
-    for c in d['contacts']:insert('sales_contact',[key,c['id'],c['accountId'],c['ownerId'],c['name'],c['title'],c['phone'],c['email'],int(c['emailAllowed']),int(c['callAllowed']),c['timezone'],c['need'],c['lastTouch'],c['queueStatus']])
+    for c in d['contacts']:
+        insert('sales_contact',[key,c['id'],c['accountId'],c['ownerId'],c['name'],c['title'],c['phone'],c['email'],int(c['emailAllowed']),int(c['callAllowed']),c['timezone'],c['need'],c['lastTouch'],c['queueStatus']])
+    for m in d.get('crmEmails', []):
+        insert('contact_email_message', [key, m['contactId'], m['id'], m['direction'], m['accountId'], m['address'],
+               m['subject'], m['body'], m['at'], m.get('status'), m.get('messageId') or None, m.get('replyToId') or None])
+    for c in d['contacts']:
+        insert_contact_evidence(key, c)
     r=d['callRule'];insert('after_call_rule',[key,r['automationId'],r['trigger'],r['missingEmail'],r['template'],r['body'],int(r['createTask']),int(r['advanceQueue'])])
     for t in d['salesTasks']:insert('sales_task',[key,t['id'],t['contactId'],t['title'],t['due'],t['status'],t['source']])
-    for c in d['calls']:insert('call_session',[key,c['id'],c['contactId'],c['ownerId'],c['status'],int(c['connected']),c['outcome'],c['notes'],c['nextStep']])
+    for c in d['calls']:
+        insert('call_session', [key,c['id'],c['contactId'],c['ownerId'],c['status'],int(c['connected']),
+                               c['outcome'],c['notes'],c['nextStep'],c.get('purpose') or None,c.get('opportunityId') or None,
+                               c.get('startedAt'),c.get('endedAt'),c.get('loggedAt'),c.get('durationSeconds'),c.get('scheduledTaskId') or None,
+                               c.get('pitchResult') or None,c.get('buyerFeedback') or None])
+        for note in c.get('addenda', []):
+            insert('call_note', [key,note['id'],c['id'],note['authorId'],note['kind'],note['body'],note['at']])
+    for t in d['salesTasks']:
+        if t.get('kind') == 'Scheduled call':
+            insert('scheduled_call', [key,t['id'],t['purpose'],t['scheduledAt'],t['ownerId'],t.get('opportunityId') or None,
+                                      None if t['source'] == 'Manual' else t['source'],t.get('completedCallId'),t.get('agenda','')])
     for j in d['callJobs']:insert('call_followup_job',[key,j['id'],j['callId'],j['contactId'],j['status'],j['reason'],j['version'],j['subject'],j['body']])
     for m in d['emailOutbox']:insert('call_email_outbox',[key,m['id'],m['callId'],m['jobId'],m['to'],m['subject'],m['body'],m['status']])
     for m in d['salesMeetings']:insert('sales_meeting',[key,m['id'],m['contactId'],m['title'],m['date'],m['status']])

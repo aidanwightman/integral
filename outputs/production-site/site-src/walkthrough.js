@@ -17,8 +17,8 @@
  $('tour-next').onclick=()=>{if(!$(fields[question]).reportValidity())return;if(question<2){question++;questionView();$(fields[question]).focus()}else recommend()};
  $('tour-profile').onsubmit=e=>{e.preventDefault();$('tour-next').click()};
  function tourHeading(ready){
-   $('tour-section-title').textContent=ready?'Your walkthroughs':'Find your walkthrough';
-   $('tour-section-intro').textContent=ready?'Choose a guided practice or explore the workspace.':'Answer three questions to choose a walkthrough.';
+   $('tour-section-title').textContent=ready?'Your walkthroughs':'Practise a CRM workflow';
+   $('tour-section-intro').textContent=ready?'Choose a guided practice or explore the workspace.':'Choose a business and role for a guided CRM demo.';
  }
  function recommend() {
    tourHeading(true);

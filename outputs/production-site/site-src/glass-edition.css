@@ -250,7 +250,7 @@ html[data-design=signal] .hero-art-turn {
 
 /* Keep the prints on the heading, outside the part of the walkthrough that grows. */
 .walkthrough-art { display: none; }
-html[data-design=glass] #walkthrough > .section-intro {
+html[data-design=glass] #crm-guides > .section-intro {
   --walkthrough-print: clamp(56px, 7.5vw, 108px);
   position: relative;
   padding-inline: calc(var(--walkthrough-print) + 1rem);
@@ -262,7 +262,7 @@ html[data-design=glass] .tour-label-row {
   gap: 12px;
   margin-bottom: 12px;
 }
-html[data-design=glass] #walkthrough .tour-label-row .eyebrow { margin: 0; }
+html[data-design=glass] #crm-guides .tour-label-row .eyebrow { margin: 0; }
 html[data-design=glass] .walkthrough-art {
   display: flex;
   position: absolute;
@@ -286,7 +286,7 @@ html[data-design=glass] .walkthrough-art {
     linear-gradient(90deg, transparent 50%, color-mix(in srgb, var(--print-accent) 46%, transparent) 50%);
 }
 @media (max-width: 800px) {
-  html[data-design=glass] #walkthrough > .section-intro {
+  html[data-design=glass] #crm-guides > .section-intro {
     --walkthrough-print: clamp(22px, 5vw, 34px);
     padding-inline: 0;
   }

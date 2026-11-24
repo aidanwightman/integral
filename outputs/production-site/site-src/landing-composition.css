@@ -1,4 +1,219 @@
-/* A short promise, a working product and a separate pricing rail. */
+.ownership-demo-actions {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .85rem;
+  grid-column: 1 / -1; margin-top: .8rem;
+}
+.ownership-grid > div { min-width: 0; }
+.ownership-demo-actions > :is(a, button) {
+  min-height: 44px; min-width: 0; max-width: 100%; white-space: normal;
+}
+#crm-preview-toggle {
+  display: inline-flex; align-items: center; gap: .65em; padding: .55em .3em;
+  border: 0; background: transparent; color: var(--ink); font: inherit;
+  font-size: .94rem; font-weight: 600; cursor: pointer;
+}
+#crm-preview-toggle i {
+  flex: none;
+  width: .5em; height: .5em; border: solid currentColor; border-width: 0 1.5px 1.5px 0;
+  transform: translateY(-.12em) rotate(45deg);
+}
+#crm-preview-toggle[aria-expanded=true] i { transform: translateY(.12em) rotate(225deg); }
+#crm-preview-toggle:hover span { text-decoration: underline; text-underline-offset: .2em; }
+#crm-preview-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+#crm-previews[hidden], #crm-preview-toggle[hidden] { display: none; }
+#crm-examples, #crm-previews :is(#demo,#crm-guides) { scroll-margin-top: var(--header-h, 100px); }
+
+@media (prefers-reduced-motion: no-preference) {
+  #crm-preview-toggle i { transition: transform 180ms ease-out; }
+  @supports (interpolate-size: allow-keywords) {
+    #crm-previews[data-animate] {
+      interpolate-size: allow-keywords; block-size: auto; overflow: clip;
+      transition: block-size 240ms cubic-bezier(.22,.75,.25,1), opacity 170ms ease-out, display 240ms allow-discrete;
+    }
+    #crm-previews[data-animate][hidden] { block-size: 0; opacity: 0; }
+    @starting-style { #crm-previews[data-animate]:not([hidden]) { block-size: 0; opacity: 0; } }
+    :is(.faq,.customer-questions) details::details-content, .sw-related::details-content {
+      interpolate-size: allow-keywords; block-size: 0; opacity: 0; overflow: clip;
+      transition: block-size 215ms cubic-bezier(.22,.75,.25,1), opacity 160ms ease-out, content-visibility 215ms allow-discrete;
+    }
+    :is(.faq,.customer-questions) details[open]::details-content, .sw-related[open]::details-content { block-size: auto; opacity: 1; }
+  }
+  @supports (transition-behavior: allow-discrete) {
+    :is(#savings-walkthrough .sw-example-dialog,#savings-call-dialog,#privacy-dialog) {
+      opacity: 0; translate: 0 5px;
+      transition: opacity 160ms ease-out, translate 180ms ease-out, display 180ms allow-discrete, overlay 180ms allow-discrete;
+    }
+    :is(#savings-walkthrough .sw-example-dialog,#savings-call-dialog,#privacy-dialog)[open] { opacity: 1; translate: 0; }
+    :is(#savings-walkthrough .sw-example-dialog,#savings-call-dialog,#privacy-dialog)::backdrop {
+      opacity: 0; transition: opacity 160ms ease-out, display 180ms allow-discrete, overlay 180ms allow-discrete;
+    }
+    :is(#savings-walkthrough .sw-example-dialog,#savings-call-dialog,#privacy-dialog)[open]::backdrop { opacity: 1; }
+    @starting-style {
+      :is(#savings-walkthrough .sw-example-dialog,#savings-call-dialog,#privacy-dialog)[open] { opacity: 0; translate: 0 5px; }
+      :is(#savings-walkthrough .sw-example-dialog,#savings-call-dialog,#privacy-dialog)[open]::backdrop { opacity: 0; }
+    }
+  }
+}
+@media (min-width: 70rem) {
+  html:is([data-design=glass],[data-design=forest]) .site-header { max-width: 90rem; width: calc(100% - 2rem); }
+}
+@media (max-width: 25rem) {
+  .ownership-demo-actions { gap: .25rem .55rem; }
+  .ownership-demo-actions .button { padding-inline: .8rem; }
+}
+#savings-call-dialog {
+  --booking-gutter: clamp(1rem,3vw,1.8rem);
+  container: booking / inline-size;
+  --booking-open-bg: color-mix(in srgb,var(--accent) 10%,var(--surface));
+  --booking-open-edge: color-mix(in srgb,var(--accent) 51%,var(--edge));
+  --booking-closed-bg: color-mix(in srgb,var(--ink) 4%,var(--surface));
+  width: min(39rem,calc(100% - 1.5rem)); max-width: none; max-height: calc(100vh - 1.5rem);
+  max-height: min(54rem,calc(100dvh - 1.5rem)); margin: auto; padding: 0 var(--booking-gutter) var(--booking-gutter);
+  overflow: auto; overscroll-behavior: contain; scroll-padding-block-start: 4.25rem; color: var(--ink); background: var(--surface);
+}
+#savings-call-dialog h2 {
+  position: sticky; top: 0; z-index: 1; display: flex; align-items: center; min-height: 3.5rem;
+  margin: 0 calc(0px - var(--booking-gutter)) .65rem; padding: .5rem calc(var(--booking-gutter) + 3.2rem) .5rem var(--booking-gutter);
+  border-bottom: 1px solid var(--line); background: var(--surface); font-size: clamp(1.5rem,4vw,2.15rem); line-height: 1.12;
+}
+#savings-call-dialog .dialog-close {
+  position: sticky; float: right; top: .35rem; right: auto; z-index: 2; display: grid; place-items: center;
+  width: 44px; height: 44px; margin: .35rem 0 calc(-44px - .35rem) auto; padding: 0; border: 0; border-radius: .5rem;
+  background: transparent; color: var(--ink); cursor: pointer;
+}
+#savings-call-dialog h3 { margin: 0; font-size: 1.05rem; font-weight: 650; line-height: 1.35; }
+#savings-call-dialog .booking-meta { margin: 0 0 1rem; color: var(--muted); font-size: .94rem; line-height: 1.45; }
+#savings-call-dialog .booking-schedule { min-width: 0; border-block: 1px solid var(--line); padding-block: .5rem 1rem; }
+#savings-call-dialog .booking-week-nav {
+  display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: .4rem;
+}
+#booking-week-label { text-align: center; color: var(--ink); font-size: 1.06rem; font-weight: 650; line-height: 1.35; }
+#savings-call-dialog :is(.booking-week-arrow,.booking-day) {
+  margin: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); box-shadow: none;
+  font-family: inherit; text-align: center; cursor: pointer;
+}
+#savings-call-dialog .booking-week-arrow {
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; font-size: 1.2rem;
+}
+#savings-call-dialog .booking-week-arrow:disabled { color: var(--muted); border-color: transparent; cursor: default; }
+#savings-call-dialog .booking-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: .32rem; margin: .45rem 0 1rem; }
+#savings-call-dialog .booking-day {
+  display: grid; align-content: center; justify-items: center; gap: .13rem; min-width: 0; min-height: 53px;
+  padding: .25rem .08rem; border-radius: .5rem; font-variant-numeric: tabular-nums;
+}
+#savings-call-dialog .booking-day > :first-child { font-size: .77rem; line-height: 1.25; font-weight: 550; }
+#savings-call-dialog .booking-day > :last-child { font-size: 1.12rem; line-height: 1.15; font-weight: 650; }
+#savings-call-dialog .booking-day[data-has-opening=true][aria-pressed=false] { background: var(--booking-open-bg); border-color: var(--booking-open-edge); }
+#savings-call-dialog .booking-day[aria-pressed=true] { background: var(--action); border-color: var(--action); color: var(--action-text); box-shadow: inset 0 -2px 0 currentColor; }
+#savings-call-dialog .booking-times-heading {
+  display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .3rem .9rem; margin-bottom: .55rem;
+}
+#savings-call-dialog .booking-key { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .7rem; color: var(--muted); font-size: .8rem; line-height: 1.4; }
+#savings-call-dialog .booking-key > span { display: inline-flex; align-items: center; gap: .35rem; }
+#savings-call-dialog .booking-key :is(.booking-key-open,.booking-key-closed)::before {
+  content: ""; display: inline-block; flex: none; width: .74rem; height: .74rem; box-sizing: border-box; border-radius: .18rem;
+}
+#savings-call-dialog .booking-key-open::before { border: 1px solid var(--booking-open-edge); background: var(--booking-open-bg); }
+#savings-call-dialog .booking-key-closed::before {
+  border: 1px solid var(--line); background: linear-gradient(135deg, transparent 44%,currentColor 46% 54%,transparent 56%),var(--booking-closed-bg);
+}
+#savings-call-dialog .booking-slots { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: .32rem; }
+#savings-call-dialog .booking-slot {
+  display: grid; align-content: center; justify-items: center; gap: .08rem; box-sizing: border-box; min-width: 0;
+  min-height: 2.05rem; padding: .28rem .12rem; border: 1px solid var(--line); border-radius: .35rem; box-shadow: none;
+  font-family: inherit; font-size: .94rem; font-weight: 520; line-height: 1.25; font-variant-numeric: tabular-nums; text-align: center;
+}
+#savings-call-dialog .booking-slot:is([data-state=blocked],[data-state=booked],[data-state=past]) {
+  background: var(--booking-closed-bg); color: var(--muted); opacity: 1; text-decoration: line-through; cursor: default;
+}
+#savings-call-dialog .booking-slot:is([data-state=planned],[data-state=candidate]) {
+  background: var(--booking-open-bg); border-color: var(--booking-open-edge); color: var(--ink); font-weight: 650;
+}
+#savings-call-dialog .booking-slot small { display: block; font-size: .72rem; font-weight: 500; line-height: 1.25; }
+#savings-call-dialog .booking-slot[data-state=booked]:has(small) { text-decoration: none; }
+#savings-call-dialog :is(a,button:not(:disabled)).booking-slot { min-height: 44px; cursor: pointer; }
+#savings-call-dialog .booking-status { margin: .8rem 0; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+#savings-call-dialog #booking-intake {
+  display: grid; gap: 1rem; min-width: 0; margin: 0; padding-block: 1rem .2rem; border-top: 1px solid var(--line);
+}
+#savings-call-dialog :is(#booking-intake,.booking-schedule,#booking-details-next)[hidden] { display: none; }
+#savings-call-dialog .booking-intake-intro { display: grid; gap: .3rem; }
+#savings-call-dialog .booking-intake-intro h3 { font-size: clamp(1.2rem,3.5vw,1.55rem); line-height: 1.2; letter-spacing: -.025em; }
+#savings-call-dialog .booking-intake-intro p { margin: 0; color: var(--muted); font-size: .94rem; line-height: 1.45; }
+#savings-call-dialog .booking-contact-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .85rem; }
+#savings-call-dialog .booking-field,
+#savings-call-dialog .booking-field label {
+  display: block; min-width: 0; color: var(--ink); font-size: .95rem; font-weight: 620; line-height: 1.4;
+}
+#savings-call-dialog .booking-optional { display: inline; color: var(--muted); font-size: .87rem; font-weight: 450; }
+#savings-call-dialog .booking-field-hint {
+  display: block; margin-top: .2rem; color: var(--muted); font-size: .875rem; font-weight: 450; line-height: 1.4;
+}
+#savings-call-dialog #booking-intake-help { margin: 0; }
+#savings-call-dialog .booking-field :is(input,textarea) {
+  display: block; box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; margin: .35rem 0 0;
+  padding: .58rem .7rem; border: 1px solid color-mix(in srgb,var(--ink) 48%,var(--surface)); border-radius: .45rem;
+  background: var(--surface); color: var(--ink); font-family: inherit; font-size: 1rem; font-weight: 450; line-height: 1.45;
+}
+#savings-call-dialog .booking-field textarea { min-height: 5.15rem; resize: vertical; }
+#savings-call-dialog .booking-field :is(input,textarea)::placeholder { color: var(--muted); opacity: 1; }
+#savings-call-dialog .booking-field :is(input,textarea):focus-visible { border-color: var(--accent); outline: 2px solid var(--control-focus,var(--accent)); outline-offset: 2px; }
+#savings-call-dialog .booking-intake-actions {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .45rem .8rem;
+  padding-top: .85rem; border-top: 1px solid var(--line);
+}
+#savings-call-dialog :is(#booking-intake-back,#booking-intake-submit,#booking-details-next) {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45em; min-height: 44px; max-width: 100%;
+  padding: .55rem 1rem; border: 1px solid var(--edge); border-radius: .6rem; font-family: inherit; font-size: .95rem;
+  font-weight: 620; line-height: 1.35; text-align: center; white-space: normal; cursor: pointer;
+}
+#savings-call-dialog #booking-intake-back { background: var(--surface); color: var(--ink); box-shadow: none; }
+#savings-call-dialog :is(#booking-intake-submit,#booking-details-next) { border-color: var(--action); background: var(--action); color: var(--action-text); }
+#savings-call-dialog :is(#booking-intake-submit,#booking-details-next):disabled {
+  border-color: var(--line); background: var(--booking-closed-bg); color: var(--muted); box-shadow: none; cursor: default;
+}
+#savings-call-dialog #booking-intake-status { margin: 0; color: var(--ink); font-size: .94rem; line-height: 1.45; overflow-wrap: anywhere; }
+#savings-call-dialog #booking-intake-status:not(:empty) { padding-inline-start: .65rem; border-inline-start: 2px solid var(--accent); }
+#savings-call-dialog #booking-intake-status:empty { margin-block-start: -1rem; }
+#savings-call-dialog #savings-call-estimate { margin-top: 1rem; }
+#savings-call-dialog #savings-call-summary { margin: .45rem 0 .7rem; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.5; }
+#savings-call-dialog > .text-link {
+  display: inline-flex; align-items: center; min-height: 44px; margin-top: .4rem; padding: .4rem 0;
+  border: 0; background: transparent; color: var(--ink); box-shadow: none;
+  font-family: inherit; font-size: .93rem; font-weight: 600; text-decoration: underline; text-underline-offset: .22em; cursor: pointer;
+}
+#savings-call-dialog :is(button,a):focus-visible { outline: 3px solid var(--control-focus,var(--accent)); outline-offset: 2px; }
+@media (hover: hover) {
+  #savings-call-dialog :is(.booking-week-arrow:not(:disabled),.booking-day[aria-pressed=false],a.booking-slot):hover {
+    border-color: var(--booking-open-edge); background: var(--booking-open-bg);
+  }
+  #savings-call-dialog #booking-intake-back:hover { border-color: var(--booking-open-edge); background: var(--booking-open-bg); }
+  #savings-call-dialog :is(#booking-intake-submit,#booking-details-next):not(:disabled):hover { box-shadow: inset 0 0 0 1px currentColor; }
+}
+@media (max-width: 32rem) {
+  #savings-call-dialog .booking-slots { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  #savings-call-dialog .booking-times-heading { align-items: start; flex-direction: column; }
+  #savings-call-dialog .booking-days { gap: .2rem; }
+  #savings-call-dialog .booking-contact-fields { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 22rem) {
+  #savings-call-dialog { --booking-gutter: .8rem; width: calc(100% - 1rem); }
+  #savings-call-dialog .booking-week-nav { gap: .2rem; }
+  #savings-call-dialog .booking-day > :first-child { font-size: .72rem; }
+  #savings-call-dialog #booking-intake { gap: .8rem; }
+  #savings-call-dialog #booking-intake-status:empty { margin-block-start: -.8rem; }
+  #savings-call-dialog .booking-intake-actions { display: grid; grid-template-columns: minmax(0,.93fr) minmax(0,1.07fr); align-items: stretch; gap: .35rem; }
+  #savings-call-dialog .booking-intake-actions :is(#booking-intake-back,#booking-intake-submit) { width: 100%; min-width: 0; padding-inline: .35rem; }
+  #savings-call-dialog #booking-intake-back > [aria-hidden=true] { display: none; }
+}
+@container booking (max-width: 16rem) {
+  #savings-call-dialog .booking-days { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  #savings-call-dialog .booking-slots { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #savings-call-dialog .booking-intake-actions { grid-template-columns: minmax(0,1fr); }
+}
+@media (forced-colors: active) {
+  #savings-call-dialog .booking-day[aria-pressed=true] { outline: 2px solid Highlight; outline-offset: -3px; }
+  #savings-call-dialog .booking-slot:disabled { color: GrayText; }
+}
 .hero .hero-imprint {
   display: inline-block;
   flex: 0 0 1.55rem;

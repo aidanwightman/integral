@@ -1,12 +1,7 @@
-/* Original product illustration. Synthetic sample states, not live business activity. */
+/* Connected CRM examples beneath the savings walkthrough. */
 (()=>{
- const hero=document.querySelector('.hero'),old=hero?.querySelector('.hero-aside');
- if(!hero||!old||hero.querySelector('.ps-hero'))return;
- const visual=document.createElement('figure');visual.className='ps-hero';visual.setAttribute('aria-labelledby','ps-title');
- visual.innerHTML=`<div class="ps-window-bar"><span class="ps-window-mark" aria-hidden="true">i.</span><strong>Customer activity</strong><span class="ps-sample">Illustrative sample</span></div><div class="ps-workspace"><div class="ps-contact"><span class="ps-avatar" aria-hidden="true">SC</span><div><span class="ps-overline">Customer record / AC-104</span><h2 id="ps-title">Sam Carter</h2><p>Alder & Co · Operations director</p></div><span class="ps-record-state">One connected record</span></div><div class="ps-path" aria-label="Illustrated customer journey"><span><i aria-hidden="true">01</i>Person</span><span><i aria-hidden="true">02</i>Call</span><span class="ps-path-active"><i aria-hidden="true">03</i>Follow-up</span><span><i aria-hidden="true">04</i>Order</span><span><i aria-hidden="true">05</i>Delivery</span></div><div class="ps-example-grid"><article class="ps-call"><span class="ps-overline">Conversation logged</span><h3>Call summary</h3><p>Interested in a product walkthrough.</p><div class="ps-evidence"><span>Outcome</span><strong>Positive</strong></div><div class="ps-evidence"><span>Contact email</span><strong>Available</strong></div><span class="ps-stamp">Example trigger</span></article><article class="ps-followup"><div class="ps-rule-heading"><span aria-hidden="true">↗</span><span class="ps-overline">Follow-up</span></div><h3>Follow-up prepared.</h3><p>A positive outcome and a recorded email can start the agreed workflow.</p><div class="ps-message"><span>To Sam Carter</span><strong>Product walkthrough</strong><p>Thanks for your time. Here’s the walkthrough we discussed.</p></div><span class="ps-wait">Missing an email? Keep the action waiting.</span></article></div><div class="ps-role-bar" role="group" aria-label="Preview a role’s perspective"><button type="button" data-ps-role="sales" aria-pressed="true">Sales</button><button type="button" data-ps-role="finance" aria-pressed="false">Finance</button><button type="button" data-ps-role="operations" aria-pressed="false">Operations</button><button type="button" data-ps-role="people" aria-pressed="false">People</button></div><div class="ps-role-detail" aria-live="polite"><span class="ps-role-icon" aria-hidden="true">↗</span><div><strong data-ps-title>Sales activity</strong><p data-ps-detail>Outcome, owner and follow-up stay beside the customer record.</p></div></div></div><figcaption><span>Sample interface · no message is sent</span><a href="#demo">Try the working demo <span aria-hidden="true">↗</span></a></figcaption>`;
- hero.insertBefore(visual,old);hero.classList.add('ps-has-story');old.hidden=true;
- const roles={sales:['Sales activity','Outcome, owner and follow-up stay beside the customer record.'],finance:['Payments & invoices','An order, its invoice and its receipt remain distinct, linked records.'],operations:['Delivery commitments','The owner, dependencies and acceptance criteria travel with the handoff.'],people:['Leave & capacity','Leave, cover and available hours inform who can take the next piece of work.']};
- visual.querySelectorAll('[data-ps-role]').forEach(button=>button.addEventListener('click',()=>{visual.querySelectorAll('[data-ps-role]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));const [title,detail]=roles[button.dataset.psRole];visual.dataset.pendingTitle=title;visual.dataset.pendingDetail=detail;}));
+ const demo=document.querySelector('#demo');
+ if(!demo)return;
  const section=document.createElement('section');section.className='ps-explainer wrap';section.setAttribute('aria-labelledby','ps-explainer-title');
  section.innerHTML=`
    <header class="ps-explainer-intro">
@@ -30,19 +25,55 @@
      </ol>
      <figcaption class="ps-model-footer">
        <p class="ps-explainer-note">An illustrative connection model. Your records, rules and integrations are mapped with your team.</p>
-       <a class="text-link" href="#walkthrough">Find your walkthrough <span aria-hidden="true">→</span></a>
+       <a class="text-link" href="#crm-guides">Choose a CRM guide <span aria-hidden="true">→</span></a>
      </figcaption>
    </figure>`;
- section.querySelectorAll('[data-stage-view]').forEach(link=>{
-   const {stageRole:role,stageView:view}=link.dataset;
-   window.addEventListener('data-saver-design-change',()=>{
+ function connectWorkspaceLink(link,role,view){
+   function updateWorkspaceLink(){
      link.href=DEMO_URL+'#studio/agency/'+role+'/'+selectedLook()+'/'+view;
-   });
+   }
+   updateWorkspaceLink();
+   window.addEventListener('data-saver-design-change',updateWorkspaceLink);
    link.addEventListener('click',event=>{
      if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
      event.preventDefault();
      openWorkspace(role,'agency',view,link);
    });
+ }
+ section.querySelectorAll('[data-stage-view]').forEach(link=>{
+   connectWorkspaceLink(link,link.dataset.stageRole,link.dataset.stageView);
  });
- const demo=document.querySelector('#demo');if(demo)demo.before(section);else hero.after(section);
+ demo.after(section);
+ connectWorkspaceLink(document.getElementById('crm-open-workspace'),'sales','salesdesk');
+
+ const previews=document.getElementById('crm-previews');
+ const toggle=document.getElementById('crm-preview-toggle');
+ const label=toggle.querySelector('span');
+ function showPreviews(show,animate=false){
+   previews.toggleAttribute('data-animate',animate);
+   previews.hidden=!show;
+   previews.inert=!show;
+   toggle.setAttribute('aria-expanded',String(show));
+   label.textContent=show?'Hide role previews':'Show role previews';
+ }
+ toggle.hidden=false;
+ toggle.addEventListener('click',()=>showPreviews(previews.hidden,true));
+
+ // Open a bookmarked preview before the browser positions its anchor.
+ function previewTarget(hash){
+   const target=document.getElementById(hash.slice(1));
+   return target && previews.contains(target)?target:null;
+ }
+ function restorePreviewAnchor(){
+   const target=previewTarget(location.hash);
+   if(!target || !previews.hidden)return;
+   showPreviews(true);
+   target.scrollIntoView({block:'start'});
+ }
+ document.addEventListener('click',event=>{
+   const link=event.target.closest?.('a[href^="#"]');
+   if(link && !event.defaultPrevented && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey && previewTarget(link.hash))showPreviews(true);
+ });
+ window.addEventListener('hashchange',restorePreviewAnchor);
+ restorePreviewAnchor();
 })();

@@ -88,3 +88,19 @@ for(const look of ['atlas','ledger']){
  vm.runInContext('closeRecord()',context);
 }
 console.log('PASS: Atlas/Ledger attached record collection, reassignment and close preserve functioning business actions without opening a modal.');
+
+vm.runInContext("Object.assign(state,{industry:'agency',role:'finance',look:'editorial',view:'forecast'})",context);
+const accountRows=vm.runInContext('concentration()',context).match(/<button\b[^>]*>[\s\S]*?<\/button>/g);
+assert.equal(accountRows.length,5);
+for(const row of accountRows){
+ const id=row.match(/data-id="([^"]+)"/)[1];
+ const name=vm.runInContext('D().accounts.find(account=>account.id==='+JSON.stringify(id)+').name',context);
+ assert.ok(row.includes('data-do="record"') && row.includes(name));
+ assert.match(row,/class="overview-row-value"/);
+}
+vm.runInContext("Object.assign(state,{role:'leadership',look:'bento',view:'overview'})",context);
+const priorities=vm.runInContext('insights()',context);
+assert.match(priorities,/data-view="timeline" data-role="operations"/);
+assert.ok(priorities.includes('Review the delivery handoffs'));
+assert.doesNotMatch(priorities,/>Explore\s*</);
+console.log('PASS: dashboard rows retain the five account drilldowns and the labelled cross-role action.');

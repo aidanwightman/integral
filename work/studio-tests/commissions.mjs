@@ -10,14 +10,15 @@ rejectsUnchanged('commission-approve','CM-102');rejectsUnchanged('commission-app
 const cash=d.openingCashPence;assert.match(commissionAction(d,'commission-approve','CM-101'),/No payment/);assert.equal(d.openingCashPence,cash);assert.equal(d.commissions.deals[0].approvedPence,111400);assert.equal(d.commissions.history.length,1);rejectsUnchanged('commission-approve','CM-101');
 const valid={package:'growth',team:'direct',gross:'12000',discount:'10',cash:'10800',refund:'0'};
 for(const [key,bad] of [['gross','-1'],['gross','10000001'],['gross','1.001'],['gross','Infinity'],['gross',''],['gross',true],['gross',null],['gross',[]],['discount','101'],['discount','-0.01'],['cash','10800.01'],['refund','10800.01'],['package','missing'],['team','missing']])rejectsUnchanged('commission-save','CM-101',{...valid,[key]:bad});
-commissionAction(d,'commission-save','CM-101',valid);assert.equal(d.commissions.deals[0].approved,false);assert.equal(d.commissions.deals[0].approvedPence,undefined);
-commissionAction(d,'commission-approve','CM-101');commissionAction(d,'commission-plan','growth',{rate:'8',bonus:'250',threshold:'10000'});assert.equal(d.commissions.revision,2);assert(d.commissions.deals.every(x=>!x.approved&&x.approvedRevision===undefined));
+commissionAction(d,'commission-save','CM-101',valid);assert.equal(d.commissions.deals[0].approved,true);assert.equal(d.commissions.history.length,1);
+commissionAction(d,'commission-plan','growth',{rate:'8',bonus:'250',threshold:'10000'});assert.equal(d.commissions.revision,1);assert.equal(d.commissions.deals[0].approved,true);
+commissionAction(d,'commission-plan','growth',{rate:'8',bonus:'250',threshold:'10001'});assert.equal(d.commissions.revision,2);assert(d.commissions.deals.every(x=>!x.approved&&x.approvedRevision===undefined));
 commissionAction(d,'commission-approve','CM-101');commissionAction(d,'commission-team','direct',{maxDiscount:'15',repShare:'33.33'});assert.equal(d.commissions.revision,3);assert.equal(d.commissions.deals[0].approved,false);assert.equal(calc('CM-101').rep+calc('CM-101').partner,calc('CM-101').total);
 rejectsUnchanged('commission-plan','growth',{rate:10,bonus:'0.001',threshold:0});rejectsUnchanged('commission-team','direct',{maxDiscount:15,repShare:100.01});
 commissionAction(d,'commission-save','CM-101',{...valid,refund:'1000'});assert.equal(calc('CM-101').retained,980000);assert.equal(calc('CM-101').bonus,0);assert.equal(calc('CM-101').base,78400);assert.match(calc('CM-101').holds.join(),/Refund/);rejectsUnchanged('commission-approve','CM-101');
 commissionAction(d,'commission-save','CM-101',{...valid,gross:'0',discount:'100',cash:'0'});assert.equal(calc('CM-101').eligible,false);
 commissionAction(d,'commission-save','CM-101',{...valid,gross:'10000000',discount:'0',cash:'10000000'});assert.equal(calc('CM-101').net,1000000000);assert(Number.isSafeInteger(calc('CM-101').total));
-commissionAction(d,'commission-approve','CM-101');commissionAction(d,'commission-reopen','CM-101');assert.equal(d.commissions.deals[0].approvedPence,undefined);assert(d.commissions.history.every(x=>Number.isInteger(x.revision)&&!Number.isNaN(Date.parse(x.at))));
+commissionAction(d,'commission-approve','CM-101');rejectsUnchanged('commission-reopen','CM-101',{});commissionAction(d,'commission-reopen','CM-101',{note:'New remittance evidence received'});assert.equal(d.commissions.deals[0].approvedPence,undefined);assert(d.commissions.history.every(x=>Number.isInteger(x.revision)&&!Number.isNaN(Date.parse(x.at))));
 const fresh={accounts:[]};assert.throws(()=>commissionAction(fresh,'unknown','bad'));assert.deepEqual(fresh,{accounts:[]});
 for(const i of INDUSTRIES){const x=dataset(i.id);const html=commissionView(x,{commissionEdit:'CM-101'});assert(html.includes('Commissions'));assert(html.includes('approval never sends a payment'));assert(!/NaN|undefined/.test(html));assert(html.includes('data-commission-field="gross"'));}
 const x=make();ensureCommissions(x).deals[0].account='<img src=x onerror=alert(1)>';assert(!commissionView(x,{}).includes('<img'));
@@ -66,3 +67,37 @@ opportunity.owner='New owner';assert.equal(getLine(),undefined);
 assert.equal(opportunity.valuePence,originalAmount);
 opportunity.probability=1;assert.ok(!openCommissionForecast(pipelineData).rows.some(line=>line.opportunity===opportunity));
 console.log('PASS pipeline forecast follows deal owner, close month, probability and assigned package; assignment never changes deal value.');
+
+const traceData=make(), manual=ensureCommissions(traceData).deals[0];
+const html=()=>commissionView(traceData,{role:'finance'});
+assert.match(html(),/No source deal or order linked/);
+const same=traceData.opportunities.find(o=>o.accountId===manual.accountId);
+const other=traceData.opportunities.find(o=>o.accountId!==manual.accountId);
+const source={opportunity:same.id,reference:'Contract appendix 17 <signed>',expected:'1-0'};
+for(const [input,role] of [[{...source,opportunity:other.id},'finance'],[{...source,reference:''},'finance'],[source,'saleslead']]){
+ const prior=JSON.stringify(traceData);
+ assert.throws(()=>commissionAction(traceData,'commission-source',manual.id,input,role));
+ assert.equal(JSON.stringify(traceData),prior);
+}
+const initialGross=manual.grossPence;
+commissionAction(traceData,'commission-source',manual.id,source);
+const verified=JSON.stringify(traceData);
+assert.throws(()=>commissionAction(traceData,'commission-source',manual.id,source),/changed/);
+commissionAction(traceData,'commission-source',manual.id,{...source,expected:'1-1'});
+assert.equal(JSON.stringify(traceData),verified);
+assert.equal(traceData.commissions.deals[0].grossPence,initialGross);
+assert.equal(traceData.commissions.deals[0].source.valuePence,same.valuePence);
+same.valuePence+=500;
+traceData.invoices.push({id:'invoice-for-commission-test',number:'INV-CM-TEST',orderId:same.id,accountId:manual.accountId});
+assert.match(html(),/INV-CM-TEST/);
+assert.match(html(),/Contract appendix 17 &lt;signed&gt;/);
+assert.doesNotMatch(html(),/17 <signed>/);
+assert.doesNotMatch(commissionView(traceData,{role:'sales'}),/data-do="commission-source"/);
+commissionAction(traceData,'commission-approve',manual.id,{expected:'1-1'});
+assert.throws(()=>commissionAction(traceData,'commission-reopen',manual.id,{expected:'1-1',note:'Earlier state'}),/changed/);
+commissionAction(traceData,'commission-reopen',manual.id,{expected:'1-2',note:'Reconcile amended contract'});
+assert.match(html(),/Reconcile amended contract/);
+assert.equal(traceData.commissions.history[0].status,'Ready for approval');
+assert.equal(traceData.commissions.history[1].status,'Approved for payroll review');
+assert.equal(traceData.commissions.history[2].lineId,manual.id);
+console.log('PASS source verification, source-value snapshot, line decisions, role checks, stale views and idempotent saves.');

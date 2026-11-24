@@ -5,24 +5,30 @@ import {approveCollectionBill,recordCollectionAction,collectionOpenAmount} from 
 import {pipelineRecordForm,dealOwnerForm} from './pipeline-record.js';
 import {saveInvitationDetails} from './pipeline-invitations.js';
 import {recordDependency,dependencyPanel} from './operational-exceptions.js';
-import {financeExceptionsView,submitFinanceException,financeExceptionRecordPanel} from './finance-exceptions-view.js';
+import {financeExceptionsView,submitFinanceException,showFinanceExceptionError,financeExceptionRecordPanel} from './finance-exceptions-view.js';
+import {reconciliationReport} from './reconciliation-report.js';
+import {restoreReceivableCase,persistReceivableCase} from './receivable-session.js';
 import {installNorthstarPreview} from './northstar-preview.js';
 import {workspaceAlerts,workspaceAlertTracker,workspaceAlertBell,workspaceAlertView,workspaceAlertNotice} from './workspace-alerts.js';
 import {approvalView,approvalAction,approvalSubmit,approvalRecordPanel,updateDiscountPreview} from './approval-views.js';
 import {quoteHandoffAction} from './quote-handoff.js';
 import {contactWorkspace, crmInteraction} from './contact-workspace.js';
+import {contactChecksExample} from './contact-examples.js';
+import {emailCanBeUsed} from './email-address.js';
 import {openContactEmailLookup, closeContactEmailLookup, updateContactEmailField} from './email-lookup.js';
 import {commissionView} from './commissions-views.js';
 import {commissionAction,ensureCommissions} from './commissions-model.js';
-import {OUTCOME_SCENARIOS,outcomeAction,resetOutcome} from './outcomes-model.js';
+import {OUTCOME_SCENARIOS,outcomeAction,resetOutcome,followupRecord,recordFollowupReceipt,scheduleFollowupCall,logFollowupCall} from './outcomes-model.js';
 import {outcomeView} from './outcomes-views.js';
+import {restoreFollowupCase,persistFollowupCase} from './followup-session.js';
+import {restoreContactMethods,persistContactMethods} from './contact-method-session.js';
 import {atlasLedgerShell} from './atlas-ledger-identity.js';
 import {editorialSignalShell} from './editorial-signal-identity.js';
 import {glassIdentityShell,installGlassIdentity,setGlassPreferences} from './glass-identity.js';
 import {bentoShell,bentoOverview} from './bento-identity.js';
 import {depthAction,depthFields} from './depth-model.js';
 import {depthExamples} from './depth-examples.js';
-import {salesWorkbenchAction,processCallJobs,logCompletedCall,addCallNote} from './calling.js';
+import {salesWorkbenchAction,processCallJobs,logCompletedCall,addCallNote,scheduleSalesCall} from './calling.js';
 import {CALL_TITLES} from './calling-views.js';
 import {roleView,ROLE_TITLES} from './role-views.js';
 import {editLeaveDates,decideLeave,simulateAutomation,availability} from './role-model.js';
@@ -34,9 +40,9 @@ Object.assign(ROLE_TITLES,CALL_TITLES);
 const root=document.querySelector('#studio-root');
 const modal=document.querySelector('#studio-dialog');
 if((location.search||'').includes('embed=site'))root.classList.add('site-embed');
-const stores=new Map(INDUSTRIES.map(i=>[i.id,dataset(i.id)]));
-const state={leaveEdit:null,commissionEdit:null,outcomeCase:null,outcomeFeedback:'',reviewWeek:'2026-11-16',reviewTeam:'All',reviewSource:'All',reviewSegment:'All',companyTeam:'All',inspectPerson:null,automationId:null,industry:'agency',role:'finance',look:'glass',view:'forecast',gallery:true,preset:0,query:'',account:null,delay:0,costChange:0,pipeline:false,forecastCalculationOpen:true,graphSelected:null};
-const viewLabels={financeexceptions:'Transaction exceptions',alerts:'Alerts',approvals:'Approvals',contacts:'Contacts & email',commissions:'Commissions',outcomes:'Workflow demos',workbench:'Task workbench',workflows:'Workflow catalogue',salesdesk:'Sales desk',dialer:'Dialer & calls',callrules:'After-call workflow',outbox:'Follow-up history',pipelinehealth:'Pipeline health',leave:'Time off & coverage',lifecycle:'Employee changes',automations:'Automations',performance:'Team performance',company:'Company overview',control:'Delivery control',collections:'Collections & bills',overview:'Overview',board:'Pipeline',forecast:'Cash forecast',timeline:'Delivery timeline',capacity:'Team capacity',graph:'Relationships',records:'Records'};
+const stores=new Map(INDUSTRIES.map(i=>[i.id,restoreReceivableCase(restoreFollowupCase(restoreContactMethods(dataset(i.id))))]));
+const state={reconciliationLedger:'statement',outcomeFeedbackAction:'',leaveEdit:null,commissionEdit:null,outcomeCase:null,outcomeFeedback:'',reviewWeek:'2026-11-16',reviewTeam:'All',reviewSource:'All',reviewSegment:'All',companyTeam:'All',inspectPerson:null,automationId:null,industry:'agency',role:'finance',look:'glass',view:'forecast',gallery:true,preset:0,query:'',account:null,delay:0,costChange:0,pipeline:false,forecastCalculationOpen:true,graphSelected:null};
+const viewLabels={reconciliation:'Reconciliation report',financeexceptions:'Transaction exceptions',alerts:'Alerts',approvals:'Approvals',contacts:'Contacts & email',commissions:'Commissions',outcomes:'Workflow demos',workbench:'Task workbench',workflows:'Workflow catalogue',salesdesk:'Sales desk',dialer:'Dialer & calls',callrules:'After-call workflow',outbox:'Follow-up history',pipelinehealth:'Pipeline health',leave:'Time off & coverage',lifecycle:'Employee changes',automations:'Automations',performance:'Team performance',company:'Company overview',control:'Delivery control',collections:'Collections & bills',overview:'Overview',board:'Pipeline',forecast:'Cash forecast',timeline:'Delivery timeline',capacity:'Team capacity',graph:'Relationships',records:'Records'};
 const roleTitles={saleslead:'Sales performance',sales:'Sales overview',finance:'Cash forecast',operations:'Operations overview',people:'Team capacity',leadership:'Company overview'};
 let lastTrigger=null,lastRecordTrigger=null;
 const D=()=>stores.get(state.industry);
@@ -114,17 +120,44 @@ function statGrid(){const d=D(),m=metrics(d);let list=[];
 }
 function panel(title,subtitle,body,extra='',className=''){return `<section class="panel ${className}"><div class="panel-head"><div><h2>${title}</h2>${subtitle?`<p>${subtitle}</p>`:''}</div>${extra}</div><div class="panel-body">${body}</div></section>`;}
 function historicalChart(){const h=D().history;return lineChart([{name:'Cash received',values:h.map(x=>x.receiptsPence),color:'var(--accent)'},{name:'Cash costs',values:h.map(x=>x.costsPence),color:'var(--muted)',dashed:true}],{labels:h.map(x=>x.month),title:'Illustrative historical cash received and costs, June to November 2026'});}
-function concentration(){const rows=D().accounts.map(a=>({...a,total:sum(D().invoices.filter(i=>i.accountId===a.id),balance)})).sort((a,b)=>b.total-a.total).slice(0,5);const max=Math.max(...rows.map(a=>a.total),1);return rows.map(a=>`<div class="bar-row"><span class="bar-label">${link(a,a.name)}</span><div class="bar-track"><span style="width:${a.total/max*100}%"></span></div><strong>${compact(a.total)}</strong></div>`).join('');}
+const overviewArrow = '<span class="overview-row-arrow" aria-hidden="true">›</span>';
+function overviewLabel(title,note) {
+  return '<span class="overview-row-copy"><strong>'+e(title)+'</strong>'+(note?'<span>'+e(note)+'</span>':'')+'</span>';
+}
+function concentration(){
+  const rows=D().accounts.map(account=>({...account,total:sum(D().invoices.filter(invoice=>invoice.accountId===account.id),balance)})).sort((a,b)=>b.total-a.total).slice(0,5);
+  const max=Math.max(1,...rows.map(account=>account.total));
+  return rows.map(account=>{
+    const bar='<span class="bar-track" aria-hidden="true"><span style="width:'+(account.total/max*100)+'%"></span></span>';
+    const contents=overviewLabel(account.name)+bar+'<span class="overview-row-value">'+compact(account.total)+'</span>'+overviewArrow;
+    return b('record',contents,'overview-row overview-account','data-id="'+e(account.id)+'"');
+  }).join('');
+}
 function pipelineBars(){const rows=D().config.stages.map(stage=>({stage,value:sum(D().opportunities.filter(d=>d.stage===stage),'valuePence')}));const max=Math.max(...rows.map(s=>s.value),1);return rows.map((s,i)=>`<div class="bar-row"><span>${e(s.stage)}</span><div class="bar-track"><span style="width:${s.value/max*100}%;opacity:${1-i*.15}"></span></div><strong>${compact(s.value)}</strong></div>`).join('');}
-function insights(){const d=D(),m=metrics(d);const high=d.team.filter(t=>t.allocated>t.capacity);const entries=state.role==='finance'?[['Review overdue invoices',`${compact(m.overdue)} remains outstanding on invoices marked overdue.`,'records'],['Test a slower collection cycle','Compare the baseline with a one-month delay before making a planning decision.','forecast'],['Account balances','Trace a balance to its account without losing the financial view.','graph']]:(state.role==='sales'||state.role==='saleslead')?[['Late-stage opportunities',`${d.opportunities.filter(o=>o.probability===.7).length} opportunities are at the final open stage.`,'board'],['Bookings are not cash','The weighted pipeline is a scenario using explicit stage probabilities.','overview'],['Account relationships','Explore opportunities and their owners around one account.','graph']]:state.role==='people'?[['Review the overloaded people',`${high.length} team members exceed the 40-hour capacity assumption.`,'capacity'],['Inspect the work behind the hours','Reassign a work item and see both people’s allocation update.','timeline'],['Work assignments','See the account and owner linked to each commitment.','graph']]:[['Review the delivery handoffs',`${d.work.filter(w=>w.issue&&w.status!=='Complete').length} open work items have a dependency flag.`,'timeline'],['Watch customer concentration','Outstanding balances are unevenly distributed across the accounts.','graph'],['Review records','Switch function to see what the same business means to a different team.','records']];return entries.map(([title,text,view],i)=>`<div class="insight"><strong><span class="num">0${i+1}</span>${e(title)}</strong><p>${e(text)}</p>${view===state.view?'':b('view',(R().views.includes(view)?'Explore ':'Open operations view ')+glyph('arrow'),'text-button',`data-view="${view}" ${R().views.includes(view)?'':'data-role="operations"'}`)}</div>`).join('');}
+function insights(){const d=D(),m=metrics(d);const high=d.team.filter(t=>t.allocated>t.capacity);const entries=state.role==='finance'?[['Review overdue invoices',`${compact(m.overdue)} remains outstanding on invoices marked overdue.`,'records'],['Test a slower collection cycle','Compare the baseline with a one-month delay before making a planning decision.','forecast'],['Account balances','Trace a balance to its account without losing the financial view.','graph']]:(state.role==='sales'||state.role==='saleslead')?[['Late-stage opportunities',`${d.opportunities.filter(o=>o.probability===.7).length} opportunities are at the final open stage.`,'board'],['Bookings are not cash','The weighted pipeline is a scenario using explicit stage probabilities.','overview'],['Account relationships','Explore opportunities and their owners around one account.','graph']]:state.role==='people'?[['Review the overloaded people',`${high.length} team members exceed the 40-hour capacity assumption.`,'capacity'],['Inspect the work behind the hours','Reassign a work item and see both people’s allocation update.','timeline'],['Work assignments','See the account and owner linked to each commitment.','graph']]:[['Review the delivery handoffs',`${d.work.filter(w=>w.issue&&w.status!=='Complete').length} open work items have a dependency flag.`,'timeline'],['Watch customer concentration','Outstanding balances are unevenly distributed across the accounts.','graph'],['Review records','Switch function to see what the same business means to a different team.','records']];
+  return entries.map(([title,text,view])=>{
+    const local=R().views.includes(view);
+    const copy=overviewLabel(title,text)+(local?'':'<span class="overview-row-role">Operations</span>');
+    if(view===state.view)return '<div class="overview-row">'+copy+'</div>';
+    return b('view',copy+overviewArrow,'overview-row','data-view="'+e(view)+'"'+(local?'':' data-role="operations"'));
+  }).join('');
+}
 function overviewView(){
   if(state.role==='people')return statGrid()+capacityView(false);
   const chart=(state.role==='sales'||state.role==='saleslead')?panel('A pipeline with context','Total contract value by stage',pipelineBars(),b('view','Open pipeline '+glyph('arrow'),'text-button tiny','data-view="board"')):panel('The last six months','Illustrative cash activity · June–November 2026',historicalChart());
   if(state.look==='bento')return bentoOverview({statGrid:statGrid(),chart,agenda:insights(),details:panel(state.role==='operations'?'Work to watch':(state.role==='sales'||state.role==='saleslead')?'Next conversations':'Receivables by account','Connected to the same business records',state.role==='operations'?compactWork():(state.role==='sales'||state.role==='saleslead')?compactDeals():concentration()),e,role:R()});
   return statGrid()+`<div class="two-col"><div class="stack">${chart}${panel(state.role==='operations'?'Work to watch':(state.role==='sales'||state.role==='saleslead')?'Next conversations':'Receivables by account',state.role==='operations'?'Open items with a dependency':(state.role==='sales'||state.role==='saleslead')?'Highest-value open opportunities':'Outstanding invoice balances · highest five accounts',state.role==='operations'?compactWork():(state.role==='sales'||state.role==='saleslead')?compactDeals():concentration())}</div>${panel('On the agenda','A role-specific reading of the sample data',insights())}</div>`;
 }
-function compactWork(){return D().work.filter(w=>w.issue&&w.status!=='Complete').map(w=>`<div class="insight">${link(w)}<p>${e(accountName(w.accountId))} · ${e(w.issue)}</p></div>`).join('');}
-function compactDeals(){return D().opportunities.filter(o=>o.probability<1).sort((a,b)=>b.valuePence-a.valuePence).slice(0,4).map(o=>`<div class="insight row between"><div>${link(o)}<p>${e(o.next)}</p></div><strong>${compact(o.valuePence)}</strong></div>`).join('');}
+function compactWork(){
+  return D().work.filter(work=>work.issue&&work.status!=='Complete').map(work=>
+    b('record',overviewLabel(work.title || work.name,accountName(work.accountId)+' · '+work.issue)+overviewArrow,'overview-row','data-id="'+e(work.id)+'"')
+  ).join('');
+}
+function compactDeals(){
+  return D().opportunities.filter(deal=>deal.probability<1).sort((a,b)=>b.valuePence-a.valuePence).slice(0,4).map(deal=>
+    b('record',overviewLabel(deal.name,deal.next)+'<span class="overview-row-value">'+compact(deal.valuePence)+'</span>'+overviewArrow,'overview-row','data-id="'+e(deal.id)+'"')
+  ).join('');
+}
 function boardView(){const d=D();return statGrid()+`<div class="board">${d.config.stages.map(stage=>{const rows=d.opportunities.filter(o=>o.stage===stage);return `<section class="board-column"><div class="column-title">${e(stage)}<span>${rows.length} · ${compact(sum(rows,'valuePence'))}</span></div>${rows.map(o=>`<article class="deal-card"><span class="eyebrow">${e(accountName(o.accountId))}</span><h3>${e(o.name.split(' · ')[1])}</h3><p>Expected close · ${MONTHS[o.closeMonth-1]}</p><div class="deal-value">${compact(o.valuePence)}</div><p>${e(o.next)}</p><footer><span class="row tiny">${personAvatar(o.owner)}${e(o.owner.split(' ')[0])}</span>${b('record','Open '+glyph('arrow'),'text-button tiny',`data-id="${o.id}"`)}</footer></article>`).join('')}</section>`;}).join('')}</div><p class="footnote">Stage probabilities are illustrative: 20%, 45%, 70%, 100%. Moving a record updates bookings metrics; it does not create a payment or recognise revenue.</p>`;}
 const forecastRanges = [
   {id:'collection-delay',control:'delay',label:'Collection delay',min:0,max:3,step:1,
@@ -183,9 +216,13 @@ function graphView(){const d=D(),g=relationships(d,state.account,state.role);sta
 function columnsForRole(){switch(state.role){case'finance':return ['Invoice','Account','Total','Outstanding','Due','Status'];case'saleslead':case'sales':return ['Opportunity','Owner','Contract value','Stage','Probability','Expected close'];case'operations':return ['Work item','Account','Owner','Status','Hours','Dependency'];case'people':return ['Person','Role','Contracted hours','Allocated','Unallocated after leave'];default:return [D().config.singular,'Account','Status',...D().config.schema.map(s=>s[0])];}}
 function schemaValue(key,value){const type=D().config.schema.find(s=>s[0]===key)?.[1];return type==='money'?gbp(value):type==='percent'?value+'%':e(value);}
 function recordCells(r){switch(state.role){case'finance':return [link(r,r.number),e(accountName(r.accountId)),gbp(r.totalPence),gbp(balance(r)),MONTHS[r.dueMonth-1],tag(r.status,r.status==='Overdue'?'warn':r.status==='Paid'?'good':'')];case'saleslead':case'sales':return [link(r),e(r.owner),gbp(r.valuePence),tag(r.stage),Math.round(r.probability*100)+'%',MONTHS[r.closeMonth-1]];case'operations':return [link(r),e(accountName(r.accountId)),e(r.owner),tag(r.status),r.hours+'h',e(r.issue||'—')];case'people':return [link(r),e(r.title),r.capacity+'h',r.allocated+'h',availability(D(),r.id,'2026-11-16').remaining+'h'];default:return [link(r),e(accountName(r.accountId)),tag(r.status),...Object.entries(r.fields).map(([k,v])=>schemaValue(k,v))];}}
-function recordsView(){const list=recordsFor(D(),state.role).filter(r=>e(JSON.stringify(r)+' '+accountName(r.accountId)).toLowerCase().includes(state.query.toLowerCase()));return `<div class="toolbar"><input id="record-search" aria-label="Search current records" placeholder="Search these records…" value="${e(state.query)}"><div class="row"><span class="tiny muted">${list.length} records</span>${b('export',glyph('download')+' Export dataset','small')}</div></div><section class="panel"><div class="table-scroll"><table><thead><tr>${columnsForRole().map(c=>`<th>${e(c)}</th>`).join('')}</tr></thead><tbody>${list.map(r=>`<tr>${recordCells(r).map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>${!list.length?'<div class="empty">No records match this search.</div>':''}</div></section><p class="footnote">These are ${e(R().name.toLowerCase())} records for ${e(D().config.brand)}. ${state.role==='leadership'?'The fields change with the business model.':'Switch function to change the underlying record type, not just the column labels.'}</p>`;}
+function recordsView(){const list=recordsFor(D(),state.role).filter(r=>e(JSON.stringify(r)+' '+accountName(r.accountId)).toLowerCase().includes(state.query.toLowerCase()));return `<div class="toolbar"><input id="record-search" aria-label="Search current records" placeholder="Search these records…" value="${e(state.query)}"><div class="row"><span class="tiny muted">${list.length} records</span>${b('export',glyph('download')+' Export dataset','small')}</div></div><section class="panel"><div class="table-scroll"><table class="workspace-records"><thead><tr>${columnsForRole().map(c=>`<th>${e(c)}</th>`).join('')}</tr></thead><tbody>${list.map(r=>`<tr>${recordCells(r).map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>${!list.length?'<div class="empty">No records match this search.</div>':''}</div></section><p class="footnote">These are ${e(R().name.toLowerCase())} records for ${e(D().config.brand)}. ${state.role==='leadership'?'The fields change with the business model.':'Switch function to change the underlying record type, not just the column labels.'}</p>`;}
 function gallery(){return `<main class="gallery" id="studio-main"><div class="gallery-intro"><div><p class="eyebrow">WORKSPACE GALLERY</p><h1>Choose a workspace</h1><p>Choose a business, role and design.</p></div><div class="gallery-count"><div><strong>08</strong> business datasets</div><div><strong>06</strong> roles</div><div><strong>${String(appearanceChoices.length).padStart(2,'0')}</strong> designs</div></div></div><div class="gallery-section-title"><span>Workspace designs</span><span class="launch-status">Interactive concepts · synthetic data</span></div><section class="appearance-gallery" aria-label="Choose a workspace appearance"><div class="gallery-section-title"><strong>Choose a design</strong></div><div class="appearance-grid">${appearanceChoices.map(l=>`<article class="appearance-card">${miniPreview(l.id)}<div><h2>${e(l.name)}</h2><p>${e(l.caption)}</p>${b('appearance',(l===NORTHSTAR_APPEARANCE?'Open ':'Use ')+e(l.name)+' '+glyph('arrow'),'',`data-look="${l.id}"`)}</div></article>`).join('')}</div></section><div class="gallery-section-title"><strong>Workflow demos</strong><span>Choose a task</span></div><div class="gallery-grid">${PRESETS.map((p,i)=>`<article class="preset-card">${miniPreview(p.look)}<div class="preset-info"><p class="eyebrow">${e(INDUSTRIES.find(x=>x.id===p.industry).name)} / ${e(ROLES.find(x=>x.id===p.role).name)}</p><h2>${e(p.name)}</h2><p>${e(p.note)}</p>${b('preset','Open workspace '+glyph('arrow'),'',`data-index="${i}"`)}</div></article>`).join('')}</div><div class="gallery-axis"><div><strong>01 / The business</strong><p>Real differences in the model: properties and leases, vacancies and placements, assets and service work.</p></div><div><strong>02 / The responsibility</strong><p>A finance user sees collections and cash assumptions. A delivery lead sees work and capacity.</p></div><div><strong>03 / The experience</strong><p>Change the shell, navigation, typography, hierarchy and density. Keep the connected data underneath.</p></div></div></main>`;}
 function render(){
+  if(!isFollowupRoute())Object.assign(state,{followupRecord:false,followupEditor:null});
+  persistFollowupCase(D());
+  persistContactMethods(D());
+  persistReceivableCase(D());
   closeContactEmailLookup();
   const alerts = state.gallery || !R().views.includes('alerts') ? [] : workspaceAlerts(D(), state.role);
   const tracker = alertTrackers.get(state.industry + '/' + state.role);
@@ -193,6 +230,7 @@ function render(){
   const content = state.gallery ? gallery() : shell(
     state.view === 'alerts' ? workspaceAlertView(alerts,state.alertKind) :
     state.view === 'financeexceptions' ? financeExceptionsView(D(),state) :
+    state.view === 'reconciliation' ? reconciliationReport(D(),state) :
     state.view === 'approvals' ? approvalView(D(),state) :
     state.view==='contacts'?contactWorkspace(D(),state):state.view==='commissions'?commissionView(D(),state):state.view==='outcomes'?outcomeView(D(),state):heading()+(ROLE_TITLES[state.view]?roleView(D(),state):({overview:overviewView,board:boardView,forecast:forecastView,timeline:timelineView,capacity:capacityView,graph:graphView,records:recordsView}[state.view]||overviewView)()), alerts);
   root.innerHTML = demoBar() + content + workspaceAlertNotice(notices);
@@ -225,9 +263,45 @@ function changeWorkspaceLook(look) {
   }
   if (active?.isConnected && active !== document.body) active.focus({preventScroll:true});
 }
-function studioHash(){return state.gallery?'#gallery':`#studio/${state.industry}/${state.role}/${state.look}/${state.view}${state.view==='outcomes'&&state.outcomeCase?'/'+state.outcomeCase:''}`;}
-function syncURL(){if((location.search||'').includes('embed=site')&&window.parent!==window)window.parent.postMessage({type:'data-saver-studio-state',industry:state.industry,role:state.role,look:state.look,view:state.view,outcomeCase:state.outcomeCase},'*');const hash=studioHash();if(location.hash!==hash){try{history.replaceState(null,'',hash);}catch{ /* Embedded srcdoc has no independent share URL. */ }}}
-function readURL(){const parts=location.hash.slice(1).split('/');if(parts[0]!=='studio')return;if(INDUSTRIES.some(i=>i.id===parts[1])&&ROLES.some(r=>r.id===parts[2])&&LOOKS.some(l=>l.id===parts[3])){state.industry=parts[1];state.role=parts[2];state.look=parts[3];state.view=R().views.includes(parts[4])?parts[4]:R().defaultView;state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===parts[5])?parts[5]:null;state.outcomeFeedback='';state.gallery=false;}}
+function isFollowupRoute(){
+  return !state.gallery && state.view==='outcomes' && state.outcomeCase==='followup' && ['sales','saleslead','leadership'].includes(state.role);
+}
+function studioHash(){
+  if(state.gallery)return '#gallery';
+  const workflow=state.view==='outcomes' && state.outcomeCase?'/'+state.outcomeCase:'';
+  const ledger=state.view==='reconciliation' && state.reconciliationLedger==='practice'?'/practice':'';
+  return '#studio/'+state.industry+'/'+state.role+'/'+state.look+'/'+state.view+workflow+ledger+(isFollowupRoute()&&state.followupRecord?'/record':'');
+}
+function navigateFollowupRecord(open){
+  const previous=studioHash();
+  Object.assign(state,{gallery:false,view:'outcomes',outcomeCase:'followup',followupRecord:open});
+  if(!open)state.followupEditor=null;
+  const hash=studioHash();
+  if(open && hash!==previous){
+    try{history.pushState({followupFrom:previous},'',hash);}catch{}
+  }else if(!open && history.state?.followupFrom===hash && location.hash===hash+'/record'){
+    history.back();
+    return;
+  }
+  render();
+}
+function syncURL(){
+  if((location.search||'').includes('embed=site')&&window.parent!==window)window.parent.postMessage({
+    type:'data-saver-studio-state',industry:state.industry,role:state.role,look:state.look,view:state.view,
+    outcomeCase:state.view==='outcomes'?state.outcomeCase:null,reconciliationLedger:state.reconciliationLedger,followupRecord:isFollowupRoute()&&Boolean(state.followupRecord)
+  },'*');
+  const hash=studioHash();
+  if(location.hash!==hash){try{history.replaceState(null,'',hash);}catch{ /* Embedded srcdoc has no independent share URL. */ }}
+}
+function readURL(){
+  const parts=location.hash.slice(1).split('/');
+  if(parts[0]!=='studio'||!INDUSTRIES.some(i=>i.id===parts[1])||!ROLES.some(r=>r.id===parts[2])||!LOOKS.some(l=>l.id===parts[3]))return;
+  Object.assign(state,{industry:parts[1],role:parts[2],look:parts[3],gallery:false,followupEditor:null,outcomeFeedback:'',outcomeFeedbackAction:''});
+  state.view=R().views.includes(parts[4])?parts[4]:R().defaultView;
+  state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===parts[5])?parts[5]:null;
+  state.reconciliationLedger=state.view==='reconciliation' && parts[5]==='practice'?'practice':'statement';
+  state.followupRecord=isFollowupRoute() && parts[6]==='record' && parts.length===7;
+}
 function openPreset(index){document.querySelector('#studio-toast').classList.remove('on');const p=PRESETS[(index+PRESETS.length)%PRESETS.length];Object.assign(state,p,{preset:(index+PRESETS.length)%PRESETS.length,gallery:false,query:'',account:null,delay:0,costChange:0,pipeline:false});render();window.scrollTo(0,0);}
 function flash(message){const el=document.querySelector('#studio-toast');el.textContent=message;el.classList.add('on');clearTimeout(flash.timer);flash.timer=setTimeout(()=>el.classList.remove('on'),4000);}
 function findRecord(id){for(const type of ['accounts','opportunities','invoices','bills','work','team','domain']){const record=D()[type].find(r=>r.id===id);if(record)return {type,record};}return null;}
@@ -279,6 +353,65 @@ function openFinanceCase(id){
 function roleAction(action,el){
  try {
   const d=D(),id=el.dataset.id;
+  if(action==='reconciliation-open' || action==='reconciliation-workflow'){
+    if(!R().views.includes('reconciliation'))return true;
+    if(action==='reconciliation-workflow'){
+      Object.assign(state,{view:'outcomes',outcomeCase:'receivable',outcomeFeedback:'',outcomeFeedbackAction:''});
+    }else{
+      Object.assign(state,{view:'reconciliation',reconciliationLedger:el.dataset.ledger==='practice'?'practice':'statement'});
+    }
+    render();
+    const focus=action==='reconciliation-workflow'?'#outcome-title':el.hasAttribute('aria-pressed')?'[data-ledger][aria-pressed="true"]':'#reconciliation-title';
+    root.querySelector(focus)?.focus();
+    return true;
+  }
+  if(action==='followup-reset-request'||action==='followup-reset-cancel'){
+    state.confirmFollowupReset=action==='followup-reset-request';render();
+    root.querySelector(state.confirmFollowupReset?'[data-do="followup-reset-cancel"]':'[data-do="followup-reset-request"]')?.focus();
+    return true;
+  }
+  if(action==='open-sam-followup'||action==='followup-edit'){
+    if(!R().views.includes('outcomes'))return true;
+    const kind=el.dataset.kind;
+    state.followupEditor=action==='followup-edit'&&['receipt','schedule','log'].includes(kind)?{kind,bookingId:el.dataset.booking||''}:null;
+    state.outcomeFeedback='';
+    navigateFollowupRecord(true);
+    root.querySelector(state.followupEditor?'#followup-editor-title':'#followup-record-title')?.focus();
+    return true;
+  }
+  if(action==='followup-back'){
+    state.outcomeFeedback='';navigateFollowupRecord(false);
+    root.querySelector('#outcome-task-title')?.focus();return true;
+  }
+  if(action==='followup-cancel'){
+    const kind=state.followupEditor?.kind,booking=state.followupEditor?.bookingId;
+    state.followupEditor=null;state.outcomeFeedback='';render();
+    const control=[...root.querySelectorAll('[data-do="followup-edit"]')].find(el=>el.dataset.kind===kind&&(el.dataset.booking||'')===(booking||''));
+    control?.focus();return true;
+  }
+  if(action==='followup-contact'||action==='contact-source-email'){
+    if(action==='followup-contact'){
+      const {contactId}=followupRecord(d);
+      if(!contactId)return true;
+      crmInteraction(d,state,'select',{value:contactId});
+      if(!R().views.includes('contacts'))state.role='sales';
+      state.view='contacts';state.followupRecord=false;state.followupEditor=null;state.outcomeFeedback='';render();
+    }
+    if(el.dataset.message){
+      const item=[...root.querySelectorAll('[data-email-record]')].find(message=>message.dataset.emailRecord===el.dataset.message);
+      if(item){item.open=true;const heading=item.querySelector('summary');heading.focus({preventScroll:true});heading.scrollIntoView({block:'center'});}
+      return true;
+    }
+    if(['email','phone'].includes(el.dataset.method)){
+      const panel=root.querySelector('[data-method-panel="'+el.dataset.method+'"]');
+      const editor=panel?.querySelector('.crm-check-editor');
+      if(editor){editor.open=true;editor.querySelector('select')?.focus();}
+      else if(el.dataset.method==='phone'&&panel){crmInteraction(d,state,'edit',el);render();root.querySelector('[data-crm-form="save"] [name="phone"]')?.focus();}
+      else panel?.querySelector('input:not([type="hidden"]),button')?.focus();
+      return true;
+    }
+    root.querySelector('#studio-main')?.focus();return true;
+  }
   if(action==='open-commission-line'){
     if(!R().views.includes('commissions'))return true;
     if(modal.open)modal.close();
@@ -357,21 +490,42 @@ function roleAction(action,el){
   if(action.startsWith('outcome-')){
     const spec=OUTCOME_SCENARIOS.find(x=>x.id===id);
     if(!spec)return true;
-    state.outcomeCase=id;state.outcomeFeedback='';
+    state.outcomeCase=id;state.outcomeFeedback='';state.outcomeFeedbackAction=action==='outcome-run'?el.dataset.action:'';
     let outcomeInput={},outcomeFailed=false;
     try{
-      if(action==='outcome-reset'){resetOutcome(d,id);state.outcomeFeedback='This practice case has been reset. Other work is unchanged.';}
+      if(action==='outcome-reset'){resetOutcome(d,id);state.followupEditor=null;state.confirmFollowupReset=false;state.outcomeFeedback='Demo reset.';}
       else if(action==='outcome-run'){
         const form=el.closest('[data-outcome-form]');
         const input=Object.fromEntries([...(form?.querySelectorAll('[data-outcome-field]')||[])].map(f=>[f.dataset.outcomeField,f.type==='checkbox'?f.checked:f.value]));
         outcomeInput=input;state.outcomeFeedback=outcomeAction(d,id,el.dataset.action,input);
+        if(id==='followup')state.outcomeFeedback=state.followupRecord?'Sam’s mail server accepted the original email.':'';
       }
     }catch(error){state.outcomeFeedback=error.message;outcomeFailed=true;}
+    if(state.outcomeFeedbackAction==='repeat-import'){
+      // Checking a bank reference must preserve any draft invoice choice or dispute note.
+      const result=root.querySelector('[data-duplicate-feedback]');
+      if(result){
+        result.textContent=state.outcomeFeedback;
+        result.focus({preventScroll:true});
+        result.scrollIntoView({block:'nearest',inline:'nearest'});
+        return true;
+      }
+    }
     render();
+    let focusTarget;
     if(outcomeFailed){
-      for(const field of root.querySelectorAll('[data-outcome-field]'))if(Object.hasOwn(outcomeInput,field.dataset.outcomeField))field.value=outcomeInput[field.dataset.outcomeField];
-      root.querySelector('[data-outcome-field]')?.focus({preventScroll:true});
-    }else document.querySelector(action==='outcome-select'?'#outcome-title':'#outcome-task-title')?.focus({preventScroll:true});
+      for(const field of root.querySelectorAll('[data-outcome-field]')){
+        if(!Object.hasOwn(outcomeInput,field.dataset.outcomeField))continue;
+        if(field.type==='checkbox')field.checked=outcomeInput[field.dataset.outcomeField];
+        else field.value=outcomeInput[field.dataset.outcomeField];
+      }
+      focusTarget=root.querySelector('.outcome-feedback');
+    }else{
+      const heading=state.followupRecord?'#followup-record-title':action==='outcome-select'?'#outcome-title':'#outcome-task-title';
+      focusTarget=root.querySelector(heading);
+    }
+    focusTarget?.focus({preventScroll:true});
+    focusTarget?.scrollIntoView?.({block:'nearest',inline:'nearest'});
     return true;
   }
   if(action.startsWith('depth-')){
@@ -382,10 +536,30 @@ function roleAction(action,el){
     try{const result=depthAction(d,state,action,{id,values,note});render();flash(result);const heading=document.querySelector('.depth-layout .stack > .panel:nth-child(2) h2');heading?.focus({preventScroll:true});heading?.scrollIntoView({block:'nearest'});}catch(error){render();flash(error.message);}
     return true;
   }
-  if(action==='call-view'){if(R().views.includes(el.dataset.view)){state.view=el.dataset.view;render();window.scrollTo(0,0);}return true;}
+  if(action==='call-view'){
+    if(R().views.includes(el.dataset.view)){
+      const keyboardTab=Boolean(el.closest('.workbench-tabs') && el.matches(':focus-visible'));
+      state.view=el.dataset.view;render();
+      if(keyboardTab)root.querySelector('.workbench-tabs [aria-current="page"]')?.focus();
+      else window.scrollTo(0,0);
+    }
+    return true;
+  }
   const value=id=>document.querySelector('#'+id)?.value||'';
   let input={id};
-  if(action==='dial-log')input={outcome:value('call-outcome'),notes:value('call-notes'),nextStep:value('call-next'),callbackDate:value('call-date'),opportunityId:value('call-opportunity')};
+  if(action==='dial-log'){
+    const fields=root.querySelector('.call-wrap [data-next-call]');
+    input={purpose:value('call-purpose'),outcome:value('call-outcome'),notes:value('call-notes'),nextStep:value('call-next'),callbackDate:value('call-date'),opportunityId:value('call-opportunity')};
+    if(input.purpose==='Pitch call'){
+      const pitch=root.querySelector('.call-wrap [data-pitch-fields]');
+      input.pitchResult=pitch.querySelector('[name="pitchResult"]').value;
+      input.buyerFeedback=pitch.querySelector('[name="buyerFeedback"]').value;
+    }
+    if(fields.open){
+      for(const field of fields.querySelectorAll('[name]')) input[field.name]=field.value;
+      if(!input.scheduledAt){flash('Choose a date and time for the next call.');return true;}
+    }
+  }
   if(action==='contact-email')input={email:value('contact-email')};
   if(action==='call-rule-save')input={trigger:value('rule-trigger'),missingEmail:value('rule-missing'),template:value('rule-subject'),body:value('rule-body'),createTask:document.querySelector('#rule-task').checked,advanceQueue:document.querySelector('#rule-advance').checked};
   if(action==='sales-meeting')input={title:value('meeting-title'),date:value('meeting-date')};
@@ -441,7 +615,16 @@ function onAction(event){
   case'preset':openPreset(Number(el.dataset.index));break;
   case'previous':openPreset(state.preset-1);break;
   case'next':openPreset(state.preset+1);break;
-  case'view':if(el.dataset.workflow)state.depthCase=D().depth.cases.find(c=>c.workflow===el.dataset.workflow)?.id;if(el.dataset.role)state.role=el.dataset.role;if(R().views.includes(el.dataset.view)){state.view=el.dataset.view;state.gallery=false;state.query='';render();}break;
+  case'view':
+    if(el.dataset.workflow)state.depthCase=D().depth.cases.find(c=>c.workflow===el.dataset.workflow)?.id;
+    if(el.dataset.role)state.role=el.dataset.role;
+    if(R().views.includes(el.dataset.view)){
+      const fromNav=Boolean(el.closest('nav'));
+      if(el.dataset.view==='reconciliation')state.reconciliationLedger='statement';
+      state.view=el.dataset.view;state.gallery=false;state.query='';render();
+      if(fromNav && event.detail===0)root.querySelector('#studio-main')?.focus();
+    }
+    break;
   case'domain':state.role='leadership';state.view='records';state.gallery=false;state.query='';render();break;
   case'record':showRecord(el.dataset.id);break;
   case'close':closeRecord();break;
@@ -520,13 +703,31 @@ root.addEventListener('input',event=>{
   if(form?.matches('[data-approval-form="request"][data-kind="discount"]'))updateDiscountPreview(D(),form);
 });
 root.addEventListener('submit',event=>{
+  if(event.target.matches('[data-followup-form]')){
+    event.preventDefault();
+    const form=event.target,kind=form.dataset.followupForm,values=Object.fromEntries(new FormData(form));
+    if(!state.followupRecord||state.followupEditor?.kind!==kind)return;
+    try{
+      if(kind==='receipt'){
+        recordFollowupReceipt(D(),values);state.outcomeFeedback='Sam’s confirmation is saved with the email.';
+      }else if(kind==='schedule'){
+        scheduleFollowupCall(D(),values);state.outcomeFeedback='Call booked. You can find it under Upcoming calls and in the sales dialer.';
+      }else if(kind==='log'){
+        logFollowupCall(D(),{...values,bookingId:form.dataset.booking||values.bookingId||''});state.outcomeFeedback='Call saved to Sam’s activity history.';
+      }else return;
+      state.followupEditor=null;render();root.querySelector('#followup-record-title')?.focus();
+    }catch(error){
+      form.querySelector('[role="alert"]').textContent=error.message;
+    }
+    return;
+  }
   if(event.target.matches('[data-finance-exception]')){
     event.preventDefault();
     try{
-      const message=submitFinanceException(D(),state.role,event.target,event.submitter);
-      if(event.target.dataset.financeException==='new')state.financeException=D().financeExceptions[0].id;
-      render();root.querySelector('[data-finance-focus]')?.focus();flash(message);
-    }catch(error){flash(error.message);}
+      const result=submitFinanceException(D(),state.role,event.target,event.submitter);
+      state.financeException=result.id;
+      render();root.querySelector('[data-finance-focus]')?.focus();flash(result.message);
+    }catch(error){showFinanceExceptionError(event.target,error);}
     return;
   }
   if(event.target.matches('[data-approval-form]')){
@@ -549,10 +750,21 @@ root.addEventListener('submit',event=>{
     } catch(error){flash(error.message);}
     return;
   }
+  if(event.target.matches('[data-schedule-call]')){
+    event.preventDefault();
+    const form=event.target,values=Object.fromEntries(new FormData(form));
+    try {
+      scheduleSalesCall(D(),form.dataset.scheduleCall,{...values,purpose:values.scheduledPurpose,ownerId:values.scheduledOwnerId});
+      render();flash('Scheduled call saved.');
+    } catch(error){flash(error.message);}
+    return;
+  }
   if(event.target.matches('[data-manual-call]')){
     event.preventDefault();
     const form=event.target;
     const values=Object.fromEntries(new FormData(form));
+    if(!form.querySelector('[data-next-call]').open) delete values.scheduledAt;
+    else if(!values.scheduledAt){flash('Choose a date and time for the next call.');return;}
     values.runFollowUp=form.elements.runFollowUp.checked;
     try {
       const {call,duplicate}=logCompletedCall(D(),values);
@@ -568,19 +780,41 @@ root.addEventListener('submit',event=>{
     try {
       const message=crmInteraction(D(),state,action,event.target);render();
       if(action==='address-entry')root.querySelector('[data-saved-email], [data-email-entry]')?.focus();
+      if(action==='method-check')root.querySelector('[data-method-panel="'+event.target.dataset.method+'"] summary')?.focus();
       if(message)flash(message);
-    } catch(error){flash(error.message);}
+    } catch(error){
+      const errorNote=event.target.querySelector('.crm-check-error');
+      if(errorNote)errorNote.textContent=error.message;
+      else flash(error.message);
+    }
     return;
   }
   if(event.target.matches('[data-leave-edit]')){event.preventDefault();event.target.querySelector('[data-do="leave-save"]')?.click();}if(event.target.matches('[data-outcome-form]')){event.preventDefault();event.target.querySelector('[data-do="outcome-run"]')?.click();}});
 root.addEventListener('click',onAction);modal.addEventListener('click',onAction);
 root.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('.graph-node')){event.preventDefault();showRecord(event.target.dataset.id);}});
 root.addEventListener('change',event=>{const el=event.target;
+  if(el.name==='bookingId'&&el.form?.matches('[data-followup-form="log"]')){
+    const record=followupRecord(D());
+    el.form.elements.ownerId.value=record.bookings.find(row=>row.id===el.value)?.ownerId||record.ownerId;
+  }
+  if(el.name==='outcome'&&el.form?.matches('[data-followup-form="log"]')){
+    const needsNext=['Positive conversation','Meeting requested','Callback requested'].includes(el.value);
+    const next=el.form.querySelector('[data-agreed-step]');
+    next.hidden=!needsNext;el.form.elements.nextStep.required=needsNext;el.form.elements.nextStep.disabled=!needsNext;
+    const duration=el.form.elements.durationSeconds;
+    if(el.value==='No answer'){duration.value='0';duration.readOnly=true;}
+    else if(duration.readOnly){duration.value='';duration.readOnly=false;}
+  }
+  if(el.id==='call-purpose' || (el.name==='purpose' && el.form?.matches('[data-manual-call]'))){
+    const pitch=(el.form || el.closest('.call-wrap')).querySelector('[data-pitch-fields]');
+    pitch.hidden=pitch.disabled=el.value!=='Pitch call';
+  }
   if(el.form?.matches('[data-manual-call]')){
     const fields=el.form.elements;
     if(el.name==='contactId'){
       const contact=D().contacts.find(c=>c.id===el.value);
       fields.ownerId.value=contact.ownerId;
+      fields.scheduledOwnerId.value=contact.ownerId;
       fields.opportunityId.replaceChildren(new Option('Company and contact only',''),
         ...D().opportunities.filter(o=>o.accountId===contact.accountId).map(o=>new Option(o.name,o.id)));
     }
@@ -665,11 +899,16 @@ window.addEventListener('message',event=>{
   if(!role||!INDUSTRIES.some(i=>i.id===payload.industry))return;
   const changedContext=state.role!==payload.role||state.industry!==payload.industry;
   if(changedContext)Object.assign(state,{query:'',account:null,graphSelected:null,inspectPerson:null,automationId:null,companyTeam:'All',callContact:null,activeCall:null});
-  state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===payload.outcomeCase)?payload.outcomeCase:null;state.outcomeFeedback='';
+  state.outcomeCase=OUTCOME_SCENARIOS.some(x=>x.id===payload.outcomeCase)?payload.outcomeCase:null;state.outcomeFeedback='';state.outcomeFeedbackAction='';
+  state.reconciliationLedger=payload.view==='reconciliation' && payload.reconciliationLedger==='practice'?'practice':'statement';
   Object.assign(state,{industry:payload.industry,role:payload.role,view:role.views.includes(payload.view)?payload.view:role.defaultView,gallery:false});
+  state.followupRecord=isFollowupRoute() && payload.followupRecord===true;
+  state.followupEditor=null;
  }
  if(payload.type==='data-saver-navigate'){
-  state.look=payload.look;render();
+  state.look=payload.look;
+  if(payload.example)openStudioContactExample(payload.example);
+  render();
  }else if(state.look!==payload.look){
   changeWorkspaceLook(payload.look);
  }
@@ -677,7 +916,28 @@ window.addEventListener('message',event=>{
 });
 if(new URLSearchParams(location.search).get('identity')==='glass'){document.documentElement.dataset.edition='glass';state.gallery=false;}
 const directNorthstar=location.hash==='#northstar-events';
-readURL();render();installGlassIdentity(root,clarity=>{
+readURL();
+function openStudioContactExample(example){
+ if(state.gallery||state.industry!=='agency'||state.role!=='sales'||state.view!=='contacts')return;
+ const d=D();
+ if(example==='contact-checks')crmInteraction(d,state,'select',{value:contactChecksExample(d).id});
+ if(example==='incoming-signature'){
+  const sender=d.contacts.find(person=>emailCanBeUsed(person));
+  if(sender)crmInteraction(d,state,'select',{value:sender.id});
+  crmInteraction(d,state,'inbox');
+  if(sender)crmInteraction(d,state,'sample-signature');
+ }
+}
+const contactEntryExample=new URLSearchParams(location.search).get('example');
+if(contactEntryExample){
+ openStudioContactExample(contactEntryExample);
+ if(contactEntryExample==='incoming-signature' && state.view==='contacts'){
+  const entryURL=new URL(location.href);
+  entryURL.searchParams.delete('example');
+  try{history.replaceState(history.state,'',entryURL.href);}catch{} // Local-file previews can restrict URL updates.
+ }
+}
+render();installGlassIdentity(root,clarity=>{
  if(window.parent!==window&&new URLSearchParams(location.search).get('embed')==='site'){
   window.parent.postMessage({type:'data-saver-glass-clarity',clarity},location.protocol==='file:'?'*':location.origin);
  }

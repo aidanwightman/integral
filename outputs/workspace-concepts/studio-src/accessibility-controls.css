@@ -95,7 +95,7 @@ body { font-size: 1rem; }
 }
 #studio-root:has(.glass-identity[data-glass-mode=dark]) .demo-bar :is(label,small){color:#becadd}
 #studio-root:has(.glass-identity[data-glass-mode=dark]) .demo-bar button{color:#e9eef8;background:#27354a;border-color:#536581}
-#studio-root .demo-bar .selector option { background-color: Canvas; color: CanvasText; }
+:where(#studio-root .demo-bar .selector) option { background-color: Canvas; color: CanvasText; }
 
 /* Keep the lettering centered in the fixed-size brand tiles at every reading size. */
 #studio-root :is(.brand-logo,.workspace-mark) { --workspace-text-scale: 1; }

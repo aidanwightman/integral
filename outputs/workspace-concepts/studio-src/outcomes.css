@@ -125,6 +125,57 @@
 .scene .outcome-action.outcome-secondary { background: var(--op-surface); border: 1px solid var(--op-line); color: var(--op-ink); box-shadow: none; }
 .scene .outcome-danger { border-style: dashed; }
 .outcome-feedback { overflow-wrap: anywhere; font-size: .9375rem; font-weight: 650; line-height: 1.55; }
+.outcome-email { margin-top: 16px; padding: 12px 14px; border: 1px solid var(--op-line); border-radius: 8px; background: var(--op-soft); }
+.outcome-email p { margin: 0; line-height: 1.5; font-size: .9375rem; }
+.outcome-email p:first-child { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 3px 14px; }
+.outcome-email p:first-child span { color: var(--op-muted); font-size: .8125rem; }
+.outcome-email .outcome-email-body { margin-top: 10px; }
+.followup-continue { border-top: 1px solid var(--op-line); margin-top: 18px; padding-top: 12px; }
+.followup-shortcuts { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.followup-shortcuts { margin-top: 10px; }
+.followup-continue .followup-shortcuts { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,12.5em),1fr)); margin: 0; }
+.scene .followup-continue .followup-shortcuts button { justify-content: start; padding: 8px 14px; text-align: start; }
+.followup-record > button:first-child { margin-bottom: 12px; }
+.followup-record h2 { margin: 0 0 8px; font-size: 1.2rem; }
+.followup-record blockquote { border-left: 3px solid var(--op-accent); margin: 10px 0; padding: 3px 12px; }
+.followup-facts { display: grid; gap: 4px; margin: 0; }
+.followup-facts > div { display: grid; grid-template-columns: minmax(8em,.8fr) minmax(0,1.6fr); gap: 8px; border-top: 1px solid var(--op-line); padding-block: 6px; }
+.followup-facts dt,.followup-booking p { color: var(--op-muted); }
+.followup-facts dd { margin: 0; }
+.followup-body { margin-block: 7px; }
+.followup-body summary { display: list-item; width: fit-content; padding: 6px 0; cursor: pointer; text-decoration: underline; }
+.followup-record .outcome-action-form { margin-top: 12px; }
+.followup-form-fields { display: grid; gap: 10px; }
+.followup-form-fields textarea { box-sizing: border-box; width: 100%; min-height: 5em; padding: 8px; border: 1px solid var(--op-muted); border-radius: 6px; background: var(--op-surface); color: var(--op-ink); resize: vertical; font: inherit; }
+.followup-booking { padding-block: 8px; border-top: 1px solid var(--op-line); }
+.followup-booking p { margin: 3px 0; }
+.followup-record .outcome-task p,.followup-booking p { line-height: 1.5; }
+.followup-record .outcome-feedback:not(:empty) { margin-bottom: 12px; }
+.followup-record :is(#followup-editor-title,#followup-record-title):focus { outline: none; }
+.followup-record .outcome-case-heading { margin-bottom: 16px; }
+.followup-record .outcome-task { border-block-start-width: 1px; }
+.followup-record .followup-message { border-block-start-width: 3px; }
+.followup-record .followup-facts { gap: 0; margin-top: 10px; }
+.followup-record .followup-facts > div { grid-template-columns: minmax(7em,.8fr) minmax(0,1.25fr); padding-block: 8px; }
+.followup-record .followup-facts dt { font-size: .875rem; line-height: 1.5; }
+.followup-record .followup-facts dd { font-size: .9375rem; line-height: 1.45; font-weight: 550; }
+.followup-record .followup-body { margin: 6px 0 0; }
+.followup-body summary { min-height: 44px; box-sizing: border-box; padding-block: 11px; font-size: .9375rem; font-weight: 600; line-height: 1.45; }
+.scene .followup-record .followup-body .followup-message-body { margin: 12px 0 0; white-space: pre-line; max-width: 60ch; font-size: 1rem; font-weight: 400; line-height: 1.55; color: var(--op-ink); }
+.followup-record .followup-contact-methods { background: var(--op-surface); }
+.followup-contact-methods > .crm-method { padding-block: 13px; border-top: 1px solid var(--op-line); }
+.followup-contact-methods > .crm-method:last-child { padding-bottom: 0; }
+.followup-record .outcome-task > p:last-child { margin-bottom: 0; }
+.followup-record .outcome-audit { padding: 2px 4px; }
+.followup-record .followup-form-fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap: 12px 16px; margin-top: 12px; }
+.followup-form-fields > :is(label:has(textarea),[data-agreed-step]) { grid-column: 1 / -1; }
+.followup-record .followup-form-fields textarea { font-size: 1rem; line-height: 1.45; }
+@container practice (max-width: 34em) {
+  .followup-record .followup-facts > div { grid-template-columns: minmax(min(38%,8.5em),.74fr) minmax(0,1.26fr); gap: 8px; }
+}
+@container practice (max-width: 18rem) {
+  .followup-record .followup-facts > div { grid-template-columns: minmax(0,1fr); gap: 2px; }
+}
 .outcome-feedback:not(:empty) { margin-top: 12px; border-left: 3px solid var(--op-accent); padding: 8px 12px; background: var(--op-soft); }
 .outcome-notice {
   display: flex; align-items: start; gap: 8px;
@@ -140,6 +191,18 @@
 .outcome-evidence dl > div:last-child { padding-bottom: 0; }
 .outcome-evidence dt { font-size: .875rem; color: var(--op-muted); }
 .outcome-evidence dd { margin: 0; font-size: .9375rem; line-height: 1.45; font-weight: 650; overflow-wrap: anywhere; }
+.outcome-receipt-source + .outcome-receipt-source { margin-top: 18px; }
+.outcome-receipt-source h3, .outcome-allocation h3 { margin: 0 0 4px; font-size: 1rem; }
+.outcome-receipt-import { padding-top: 8px; }
+.outcome-receipt-import p, .outcome-allocation p { margin: 4px 0 8px; }
+.outcome-receipt-import [data-duplicate-feedback]:empty { display: none; }
+.outcome-receipt-import [data-duplicate-feedback]:not(:empty) { margin-top: 8px; }
+.outcome-receipt-source + button { margin-top: 14px; }
+.outcome-allocation { margin-top: 14px; padding: 14px; background: var(--op-soft); border: 1px solid var(--op-line); border-radius: 8px; }
+.outcome-allocation dl { display: grid; gap: 5px; margin: 10px 0 0; }
+.outcome-allocation dl > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; }
+.outcome-allocation dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.outcome-allocation dl > div:last-child { padding-top: 6px; border-top: 1px solid var(--op-line); }
 .outcome-metrics { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,10em),1fr)); gap: 14px; }
 .outcome-metrics > div { display: grid; align-content: start; gap: 3px; min-width: 0; border-top: 1px solid var(--op-line); padding-block-start: 10px; }
 .outcome-metrics span { font-size: .875rem; color: var(--op-muted); }

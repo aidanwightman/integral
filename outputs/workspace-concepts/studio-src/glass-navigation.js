@@ -3,7 +3,7 @@ const glassNavEscape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;
 const GLASS_NAV_SECTIONS=[
  {id:'work',label:'Workspace',short:'Work',icon:'layers',description:'Your daily work',views:['outcomes','salesdesk','approvals','alerts','financeexceptions','dialer','workbench','leave','lifecycle','collections','commissions','control','timeline','capacity','board']},
  {id:'flows',label:'Automations & flows',short:'Flows',icon:'automations',description:'Triggers, journeys and handoffs',views:['automations','callrules','outbox','workflows']},
- {id:'insights',label:'Insights',short:'Insights',icon:'forecast',description:'Performance and forward view',views:['performance','pipelinehealth','forecast','company','overview']},
+ {id:'insights',label:'Insights',short:'Insights',icon:'forecast',description:'Performance and forward view',views:['reconciliation','performance','pipelinehealth','forecast','company','overview']},
  {id:'data',label:'Connected records',short:'Data',icon:'records',description:'People, accounts and relationships',views:['contacts','records','graph']}
 ];
 export function glassNavigationGroups(views){
@@ -27,6 +27,15 @@ const glassNavigationRoots=new WeakSet();
 export function installGlassNavigation(root){
  if(glassNavigationRoots.has(root))return;
  glassNavigationRoots.add(root);
- root.addEventListener('keydown',event=>{if(event.key!=='Escape')return;const menu=event.target?.closest?.('.glass-nav-mobile')?.querySelector('details[open]');if(!menu)return;menu.open=false;menu.querySelector('summary')?.focus();event.preventDefault();});
+ root.addEventListener('keydown',event=>{
+  if(event.key!=='Escape' || event.defaultPrevented || event.target.closest('select, dialog[open], [popover]'))return;
+  const menu=event.target.closest('details[open]:is(.glass-nav-section,.workspace-navigation,.bento-launcher,.es-program-group,.outcome-picker)') ||
+    event.target.closest('.glass-nav-mobile')?.querySelector('details[open]');
+  if(!menu)return;
+  menu.open=false;
+  menu.querySelector(':scope > summary')?.focus({preventScroll:true});
+  event.preventDefault();
+  event.stopPropagation();
+ });
  root.addEventListener('click',event=>{if(event.target?.closest?.('.glass-nav-mobile'))return;root.querySelectorAll('.glass-nav-mobile details[open]').forEach(menu=>{menu.open=false;});});
 }

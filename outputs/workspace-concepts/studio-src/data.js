@@ -20,7 +20,7 @@ export const ROLES = [
   {id:'leadership',name:'Company leadership',title:'Business overview',focus:'Performance, concentration and the decisions ahead',defaultView:'company',views:['company','workbench','overview','forecast','board','graph','records','workflows'],metric:'Business outlook'},
   {id:'saleslead',name:'Sales leadership',title:'Commercial leadership',focus:'Team outcomes, pipeline health, automation and coaching evidence',defaultView:'performance',views:['performance','workbench','dialer','callrules','outbox','salesdesk','contacts','pipelinehealth','board','automations','overview','graph','records','workflows'],metric:'Commercial outcomes'}
 ];
-for(const role of ROLES){role.views.unshift('outcomes');role.views.push('alerts');if(Object.hasOwn(APPROVAL_ROLES,role.id))role.views.push('approvals');if(['finance','leadership'].includes(role.id))role.views.push('financeexceptions');if(['finance','sales','saleslead','leadership'].includes(role.id))role.views.splice(2,0,'commissions');}
+for(const role of ROLES){role.views.unshift('outcomes');role.views.push('alerts');if(Object.hasOwn(APPROVAL_ROLES,role.id))role.views.push('approvals');if(['finance','leadership'].includes(role.id))role.views.push('financeexceptions','reconciliation');if(['finance','sales','saleslead','leadership'].includes(role.id))role.views.splice(2,0,'commissions');}
 export const LOOKS = [
   {id:'forest',name:'Forest',caption:'A fern-green navigation rail and warm linen work surfaces for calm, focused work.',shell:'Fern navigation + linen workplane',color:'#315a43'},
   {id:'glass',name:'Liquid Glass',caption:'Floating material controls, grouped navigation and a clear work surface.',shell:'Floating controls + clear work plane',color:'#94b9a7'},

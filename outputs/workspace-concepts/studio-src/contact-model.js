@@ -1,5 +1,7 @@
 import {salesEvent,processCallJobs} from './calling.js';
 import {contactHasAddress, emailCanBeUsed, matchesAddressSuggestion, setContactAddress, validContactAddress} from './email-address.js';
+import {contactMethodChanged, normalizedContactMethod, readContactMethodEvidence, writeContactMethodCheck} from './contact-evidence.js';
+import {parseWorkspaceDateTime} from './workspace-date.js';
 
 const crmText = value => String(value ?? '').trim();
 const crmFold = value => crmText(value).toLowerCase().replace(/\s+/g, ' ');
@@ -41,7 +43,7 @@ export function crmReviewContact(d, fields, editingId = null) {
   const suggestedEmail = !savedUnchanged && matchesAddressSuggestion(existing, address, marker) ? address : '';
   if (suggestedEmail && emailCanBeUsed(existing)) throw new Error('This contact already has a saved address. Review it before saving a suggestion.');
   const email = suggestedEmail ? '' : address;
-  const phone = crmText(fields.phone);
+  const phone = crmText(fields.phone ?? existing?.phone);
   if (phone && (crmPhone(phone).length < 7 || crmPhone(phone).length > 16)) throw new Error('Enter a complete phone number or leave it blank.');
   if (fields.callAllowed && !phone) throw new Error('Add a phone number before enabling calls.');
   const company = crmCompany(d, fields);
@@ -64,6 +66,8 @@ export function crmSaveContact(d, fields, {reviewed = false, editingId = null} =
   if (editingId && !existing) throw new Error('This contact is no longer available.');
   if (existing && Object.hasOwn(fields, 'originalEmail') && crmEmail(fields.originalEmail) !== crmEmail(existing.email))
     throw new Error('The saved address changed since you opened this contact. Reopen it to review the current address.');
+  if (existing && Object.hasOwn(fields, 'originalPhone') && normalizedContactMethod('phone',fields.originalPhone) !== normalizedContactMethod('phone',existing.phone))
+    throw new Error('The phone number changed since you opened this contact. Reopen it to review the current number.');
   const check = crmReviewContact(d, fields, editingId);
   if (check.matches.some(m => m.exact) || (check.matches.length && !reviewed)) throw new Error('Review the matching records before creating a contact.');
   const owner = d.team.find(t => t.id === fields.ownerId);
@@ -81,6 +85,7 @@ export function crmSaveContact(d, fields, {reviewed = false, editingId = null} =
     if (existing.callAllowed === contact.callAllowed) contact.queueStatus=existing.queueStatus;
     const preferencesChanged = existing.emailAllowed !== contact.emailAllowed;
     const addressChanged = existing.email !== contact.email;
+    contactMethodChanged(existing,'phone',contact.phone);
     setContactAddress(existing,contact.email);
     if (!check.suggestedEmail && Object.hasOwn(fields,'suggestedEmail')) delete existing.suggestedEmail;
     Object.assign(existing, contact);
@@ -91,6 +96,38 @@ export function crmSaveContact(d, fields, {reviewed = false, editingId = null} =
   d.contacts.push(contact);
   crmLog(d, contact, 'Contact created', contact.source + ' · ' + account.name, new Date().toISOString());
   return contact;
+}
+
+export function crmContactMethod(contact, method) {
+  return readContactMethodEvidence(contact, method);
+}
+
+export function crmRecordMethodCheck(d, contactId, {method,value,result,source,evidence,checkedAt,sourceMessageId} = {}) {
+  const contact = d.contacts.find(person=>person.id===contactId);
+  if (!contact) throw new Error('Open the contact before recording a check.');
+  const current = normalizedContactMethod(method, contact[method]);
+  if (!current || current !== normalizedContactMethod(method,value)) throw new Error('The saved contact detail changed. Reopen the contact and check its current value.');
+  if (!['verified','unconfirmed'].includes(result)) throw new Error('Choose the result of the check.');
+  source = crmText(source); evidence = crmText(evidence);
+  if (!source || !evidence) throw new Error('Choose a source and describe what you checked.');
+  if (result === 'verified') {
+    if (method === 'email' && !emailCanBeUsed(contact)) throw new Error('Review or correct the saved address before verifying it.');
+    if (method === 'phone' && !/^\+?\d{7,16}(?:x\d+)?$/.test(current)) throw new Error('Save a complete phone number before verifying it.');
+  }
+  const recordedAt = new Date().toISOString();
+  const at = checkedAt ? parseWorkspaceDateTime(checkedAt).toISOString() : recordedAt;
+  if (at>recordedAt) throw new Error('The check must have taken place in the past.');
+  const message = sourceMessageId && d.crmEmails?.find(m=>m.id===sourceMessageId && m.direction==='Incoming' && m.contactId===contactId);
+  if (sourceMessageId && !message) throw new Error('Choose an incoming email logged for this contact.');
+  if (message && Date.parse(at)<Date.parse(message.at)) throw new Error('The check must be on or after the source email was received.');
+  const check={at,recordedAt,result,source,evidence,...(message?{sourceMessageId:message.id}:{})};
+  writeContactMethodCheck(contact,method,check,message?.at || at);
+  const action = (method === 'email' ? 'Email' : 'Phone') + (result === 'verified' ? ' verified' : ' checked — unconfirmed');
+  crmLog(d,contact,action,contact[method]+' · '+source+' · '+evidence,recordedAt);
+  const audit={contactMethod:method,methodValue:current,checkedAt:at,result,...(message?{sourceMessageId:message.id}:{})};
+  Object.assign(d.salesActivity[0],audit);
+  Object.assign(d.activity[0],audit,{id:d.salesActivity[0].id});
+  return crmContactMethod(contact,method);
 }
 
 export function crmReadInbound(d, fields) {

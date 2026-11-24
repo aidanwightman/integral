@@ -1,9 +1,10 @@
 import {saveContactAddressEntry} from './address-confirmation.js';
 import {escapeHTML, studioButton} from './visuals.js';
-import {crmReviewContact, crmSaveContact, crmReadInbound, crmLogInbound, crmBeginDraft, crmSaveDraft, crmSendDraft} from './contact-model.js';
-import {callHistory} from './calling-views.js';
+import {crmReviewContact, crmSaveContact, crmReadInbound, crmLogInbound, crmBeginDraft, crmSaveDraft, crmSendDraft, crmContactMethod, crmRecordMethodCheck} from './contact-model.js';
+import {callHistory,scheduledCallPanel,samProductOverview} from './calling-views.js';
 import {emailCanBeUsed} from './email-address.js';
 import {contactEmailField} from './email-lookup.js';
+import {signaturePhoneCandidate} from './email-signature.js';
 
 const contactSessions = new WeakMap();
 function crmScreen(d) {
@@ -21,13 +22,66 @@ const crmFormActions = label => `<div class="crm-actions">${crmSubmit(label)}${c
 const crmCurrent = (d,s) => d.contacts.find(c=>c.id===s.callContact) || d.contacts[0];
 const crmMeta = (label, value) => `<div><dt>${label}</dt><dd>${crmEsc(value || '—')}</dd></div>`;
 
+const crmUtc = new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23',timeZone:'UTC'});
+export function crmRecordTime(value, empty='No date recorded') {
+  const time = new Date(value);
+  return value && Number.isFinite(time.getTime())
+    ? `<time datetime="${crmEsc(time.toISOString())}">${crmEsc(crmUtc.format(time))} UTC</time>`
+    : crmEsc(empty);
+}
+function crmCheckForm(contact, method, value) {
+  const label=method==='email'?'email address':'phone number';
+  return `<details class="crm-check-editor"><summary>Record ${method} check</summary>
+    <form data-crm-form="method-check" data-contact="${crmEsc(contact.id)}" data-method="${method}">
+      <input type="hidden" name="method" value="${method}"><input type="hidden" name="value" value="${crmEsc(value)}">
+      <div class="crm-fields">
+        <label>Check result<select name="result" required><option value="">Choose a result</option><option value="verified">Verified this ${label}</option><option value="unconfirmed">Could not confirm</option></select></label>
+        <label>Source<select name="source" required><option value="">Choose a source</option><option>Contact confirmation</option><option>Company directory</option><option>Colleague confirmation</option><option>Other documented source</option></select></label>
+        <label class="crm-wide">When checked (${crmEsc(Intl.DateTimeFormat().resolvedOptions().timeZone)})<input type="datetime-local" name="checkedAt"><span class="crm-check-hint">Leave blank if you checked just now.</span></label>
+        <label class="crm-wide">Evidence<textarea name="evidence" rows="2" maxlength="500" placeholder="What did you check, and what did you learn?" required></textarea></label>
+      </div><button type="submit" class="small primary">Save ${method} check</button>
+      <p class="crm-check-error" role="alert"></p>
+    </form></details>`;
+}
+export function crmMethodPanel(d,contact,method,native=false) {
+  const info=crmContactMethod(contact,method);
+  const label=method==='email'?'Email':'Phone';
+  const additionalVerification=info.lastVerifiedAt && (info.source!==info.verificationSource || info.evidence!==info.verificationEvidence || info.sourceMessageId!==info.verificationMessageId);
+  const showEvidence=(source,evidence,messageId)=>{
+    const sourceEmail=messageId && d.crmEmails?.find(message=>message.id===messageId && message.contactId===contact.id);
+    const link=sourceEmail?`<button type="button" class="crm-source-email" data-do="${native?'contact-source-email':'followup-contact'}" data-message="${crmEsc(sourceEmail.id)}">View source email</button>`:'';
+    return [source,evidence].filter(Boolean).map(crmEsc).join(' · ')+link;
+  };
+  const savedEmail=native && method==='email' && emailCanBeUsed(contact);
+  let interaction='';
+  if(native){
+    if(method==='email'&&!savedEmail)interaction=`<dl class="crm-method-entry">${contactEmailField(d,contact)}</dl>`;
+    else if(method==='phone'&&!info.value)interaction=crmBtn('edit','Add phone number');
+    if(info.value)interaction+=crmCheckForm(contact,method,info.value);
+  }else{
+    const title=info.value?'Record '+method+' check':'Add '+(method==='email'?'email address':'phone number');
+    interaction=`<button type="button" class="outcome-source" data-do="followup-contact" data-method="${method}">${title}</button>`;
+  }
+  return `<section class="crm-method" data-method-panel="${method}" aria-labelledby="crm-${method}-title">
+    <div class="crm-method-heading"><h3 id="crm-${method}-title">${label}</h3><span class="crm-method-status" data-status="${crmEsc(info.status)}">${crmEsc(info.status)}</span></div>
+    <p class="crm-method-value" ${savedEmail?'data-saved-email tabindex="-1"':''}>${crmEsc(info.value || (method==='email'?'No saved email address':'No saved phone number'))}</p>
+    <dl class="crm-method-dates"><div><dt>Last checked</dt><dd>${crmRecordTime(info.lastCheckedAt,'No check recorded')}</dd></div>
+    <div><dt>Last verified</dt><dd>${crmRecordTime(info.lastVerifiedAt,'No verification recorded')}</dd></div>
+    ${info.changedAt?'<div><dt>Value changed</dt><dd>'+crmRecordTime(info.changedAt)+'</dd></div>':''}
+    ${info.lastCheckedAt?'<div class="crm-method-evidence"><dt>Check evidence</dt><dd>'+showEvidence(info.source,info.evidence,info.sourceMessageId)+'</dd></div>':''}
+    ${info.recordedAt && info.recordedAt!==info.lastCheckedAt?'<div><dt>Check entered</dt><dd>'+crmRecordTime(info.recordedAt)+'</dd></div>':''}
+    ${additionalVerification?'<div class="crm-method-evidence"><dt>Verification evidence</dt><dd>'+showEvidence(info.verificationSource,info.verificationEvidence,info.verificationMessageId)+'</dd></div>':''}</dl>
+    ${interaction}</section>`;
+}
+
 function crmEntry(d, screen) {
   const v = screen.draft || {};
   const incoming = screen.incoming;
   const selected = v.accountId || '';
   const hasExact = screen.matches?.some(m=>m.exact);
   const matchList = screen.matches?.length ? `<section class="crm-match" aria-label="Duplicate review"><h3>Review matching contacts</h3>${screen.matches.map(m=>`<div class="crm-match-row"><span><strong>${crmEsc(m.name)}</strong> · ${crmEsc(m.reasons.join(', '))}</span>${!incoming || m.savedEmailMatch ? crmBtn('use-match', 'Use existing contact', `data-id="${crmEsc(m.id)}"`) : ''}</div>`).join('')}${hasExact?'': '<label class="crm-check"><input name="override" type="checkbox">I checked the matches. This is a different person.</label>'}</section>` : '';
-  return `<section class="panel crm-card"><h2>${incoming?'Create contact for incoming email':screen.editingId?'Edit contact':'Add a contact'}</h2>${incoming?`<p>From ${crmEsc(incoming.sender)} · ${crmEsc(incoming.subject)}</p>`:''}<form data-crm-form="save" data-contact="${crmEsc(screen.editingId || '')}">${screen.editingId ? `<input type="hidden" name="originalEmail" value="${crmEsc(v.originalEmail ?? '')}">` : ''}<div class="crm-fields">
+  return `<section class="panel crm-card"><h2>${incoming?'Create contact for incoming email':screen.editingId?'Edit contact':'Add a contact'}</h2>${incoming?`<p>From ${crmEsc(incoming.sender)} · ${crmEsc(incoming.subject)}</p>`:''}<form data-crm-form="save" data-contact="${crmEsc(screen.editingId || '')}">${screen.editingId ? `<input type="hidden" name="originalEmail" value="${crmEsc(v.originalEmail ?? '')}"><input type="hidden" name="originalPhone" value="${crmEsc(v.originalPhone ?? '')}">` : ''}<div class="crm-fields">
+    ${screen.phoneMessageId?`<p class="crm-wide">The phone field has the number from the email signature. Check it before saving. You can record a verification after speaking with the contact.</p>`:''}
     ${crmField('firstName','First name',v.firstName,'text',true)}${crmField('lastName','Last name',v.lastName,'text',true)}
     <label>Company<select name="accountId" required><option value="">Choose a company</option>${crmOptions(d.accounts,selected)}<option value="new" ${selected==='new'?'selected':''}>Add a new company…</option></select></label>
     ${crmField('title','Job title',v.title)}
@@ -47,7 +101,7 @@ function crmEmailForm(d, c, screen) {
     ${crmField('sender','Sender email', v.sender, 'email', true)}${crmField('received','Received at (local time)', v.received, 'datetime-local', true)}${crmField('messageId','Message-ID (optional)',v.messageId)}
     <label class="crm-wide">Subject<input name="subject" value="${crmEsc(v.subject || '')}" required></label>
     <label class="crm-wide">Message<textarea name="body" rows="5" required>${crmEsc(v.body || '')}</textarea></label>
-    </div>${crmBtn('sample-message','Fill with sample email')}${crmFormActions('Match sender and log email')}</form></section>`;
+    </div><div class="crm-actions">${emailCanBeUsed(c)?crmBtn('sample-signature','Example from '+crmEsc(c.name.split(' ')[0])):''}${crmBtn('sample-message','Example from a new contact')}</div>${crmFormActions('Match sender and log email')}</form></section>`;
   const original = v.replyToId && d.crmEmails?.find(m=>m.id===v.replyToId);
   const call = v.callId && d.calls.find(item=>item.id===v.callId);
   const current = emailCanBeUsed(c) ? c.email : '';
@@ -69,24 +123,80 @@ function crmEmailForm(d, c, screen) {
       <label class="crm-wide">Message<textarea name="body" rows="6" required>${crmEsc(v.body)}</textarea></label>
     </div><div class="crm-actions"><button type="submit" name="action" value="save-draft" formnovalidate>Save draft</button><button type="submit" name="action" value="send-draft" class="primary" ${sendable?'':'disabled'}>Send in demo</button>${crmBtn('close','Cancel')}</div></form></section>`;
 }
+function crmContactMail(d,c) {
+  return [...(d.crmEmails || []), ...d.emailOutbox].filter(m => m.contactId === c.id);
+}
+
+function crmLastInteraction(d,c) {
+  let latest;
+  function consider(at, label) {
+    const time = Date.parse(at);
+    if (Number.isFinite(time) && (!latest || time > latest.time)) latest = {at, time, label};
+  }
+  const mail=crmContactMail(d,c);
+  for (const m of mail) {
+    consider(m.at,(m.direction==='Incoming'?'Email received':'Email sent')+' · '+m.subject);
+  }
+  for (const call of d.calls) {
+    if (call.contactId===c.id && call.status==='Logged') consider(call.endedAt,call.source+' call · '+call.outcome);
+  }
+  for (const event of d.salesActivity) {
+    if (event.type!=='Reply received (demo)') continue;
+    const original=mail.find(m=>m.id===event.recordId);
+    if (original) consider(event.at,'Reply received · '+original.subject);
+  }
+  const overview=d.outcomePractice?.cases?.followup;
+  if (c.id===d.id+'-contact0' && overview?.attempts===1) {
+    consider(overview.history.find(event=>event.action==='send')?.at,'Practice email sent · '+(overview.sentMessage?.subject || 'Product overview'));
+    const receipt=overview.followupRecordData?.receipt;
+    if (receipt?.contactId===c.id) consider(receipt.at,'Customer confirmation recorded · '+receipt.channel);
+  }
+  return latest;
+}
+
+function crmProfileActivity(d,c) {
+  const last=crmLastInteraction(d,c);
+  const open=d.salesTasks.filter(task=>task.contactId===c.id && task.status==='Open');
+  const calls=open.filter(task=>task.kind==='Scheduled call' && Number.isFinite(Date.parse(task.scheduledAt)))
+    .sort((a,b)=>Date.parse(a.scheduledAt)-Date.parse(b.scheduledAt));
+  const now=Date.now(), upcoming=calls.find(task=>Date.parse(task.scheduledAt)>=now);
+  const call=upcoming || calls[0];
+  const owner=call && d.team.find(person=>person.id===call.ownerId);
+  const tasks=open.filter(task=>task.kind!=='Scheduled call')
+    .sort((a,b)=>(a.due || '9999').localeCompare(b.due || '9999'));
+  const task=tasks[0];
+  const previousNote=!last && c.lastTouch && c.lastTouch!=='No recent conversation';
+  const previous=last ? crmEsc(last.label)+'<br>'+crmRecordTime(last.at)
+    : previousNote ? crmEsc(c.lastTouch)+'<br>No date recorded' : 'No dated interaction recorded';
+  const booking=call ? crmEsc([call.purpose || call.title,owner?.name].filter(Boolean).join(' · '))+'<br>'+(upcoming?'':'Overdue · ')+crmRecordTime(call.scheduledAt)
+    : 'No call scheduled';
+  const due=task?.due ? 'Due <time datetime="'+crmEsc(task.due)+'">'+crmEsc(task.due)+'</time>' : 'No due date recorded';
+  return `<dl class="crm-details crm-profile-facts" aria-label="Contact activity summary">
+    <div><dt>${previousNote?'Previous contact note':'Last interaction'}</dt><dd>${previous}</dd></div>
+    <div><dt>Next scheduled call</dt><dd>${booking}</dd></div>
+    <div><dt>Next open task${tasks.length>1?' ('+tasks.length+' open)':''}</dt><dd>${task?crmEsc(task.title)+'<br>'+due:'No open tasks'}</dd></div></dl>`;
+}
+
 function crmTimeline(d,c) {
-  const mail = [...(d.crmEmails || []), ...d.emailOutbox]
-    .filter(m => m.contactId === c.id)
-    .sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+  const mail = crmContactMail(d,c).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
   const calls = d.calls.filter(x=>x.contactId===c.id);
   const relatedIds = new Set([c.id,...calls.map(x=>x.id),...mail.map(x=>x.id),...d.callJobs.filter(x=>x.contactId===c.id).map(x=>x.id)]);
   const history = d.salesActivity.filter(x=>relatedIds.has(x.recordId));
   const drafts = (d.crmDrafts || []).filter(row=>row.contactId===c.id).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));
   const item = m => {
     const original = m.replyToId && mail.find(other=>other.id===m.replyToId);
-    return `<details class="crm-message"><summary><strong>${crmEsc(m.subject)}</strong><span>${crmEsc(m.direction==='Incoming'?'Received':m.status || 'Sent (demo)')}</span></summary><p>${crmEsc(m.direction==='Incoming'?'From':'To')} ${crmEsc(m.address || m.to)}${m.at?' · '+crmEsc(new Date(m.at).toLocaleString('en-GB')):''}</p>
+    const candidate=signaturePhoneCandidate(m,c);
+    return `<details class="crm-message" data-email-record="${crmEsc(m.id)}"><summary><strong>${crmEsc(m.subject)}</strong><span>${crmEsc(m.direction==='Incoming'?'Received':m.status || 'Sent (demo)')}${m.at?' · '+crmRecordTime(m.at):''}</span></summary><p>${crmEsc(m.direction==='Incoming'?'From':'To')} ${crmEsc(m.address || m.to)}</p>
       ${original ? `<details><summary>In reply to ${crmEsc(original.subject)}</summary><pre>${crmEsc(original.body)}</pre></details>` : ''}
       ${m.callId ? `<p class="tiny muted">Linked call ${crmEsc(m.callId)}</p>` : ''}
-      <pre>${crmEsc(m.body)}</pre>${m.direction==='Incoming'?crmBtn('reply','Reply',`data-id="${crmEsc(m.id)}"`):''}</details>`;
+      <pre>${crmEsc(m.body)}</pre>
+      ${candidate?`<div class="crm-signature-review"><strong>Phone in signature</strong><p>${crmEsc(candidate.value)} · ${candidate.matchesSaved?'Matches the saved number':c.phone?'Saved number: '+crmEsc(c.phone):'No number on file'}</p>${candidate.matchesSaved?'':crmBtn('review-signature','Review phone change',`data-id="${crmEsc(m.id)}"`)}</div>`:''}
+      ${m.direction==='Incoming'?crmBtn('reply','Reply',`data-id="${crmEsc(m.id)}"`):''}</details>`;
   };
   return `${drafts.length ? `<section class="panel crm-card"><h2>Email drafts</h2>${drafts.map(row=>`<div class="crm-match-row"><span><strong>${crmEsc(row.subject || 'Untitled email')}</strong> · Saved ${crmEsc(new Date(row.updatedAt).toLocaleString('en-GB'))}</span>${crmBtn('resume-draft','Edit draft',`data-id="${crmEsc(row.id)}"`)}</div>`).join('')}</section>` : ''}
     <section class="panel crm-card"><h2>Email history</h2>${mail.map(item).join('') || '<p>No emails logged for this contact.</p>'}</section>
     ${calls.length ? `<section class="panel crm-card"><h2>Calls &amp; notes</h2>${callHistory(d,c)}</section>` : ''}
+    ${scheduledCallPanel(d,c)}
     <section class="panel crm-card"><h2>Contact activity</h2>${history.length?`<ul class="crm-history">${history.map(a=>`<li><strong>${crmEsc(a.type)}</strong> ${crmEsc(a.detail)}${a.at ? ` <time class="tiny muted" datetime="${crmEsc(a.at)}">${crmEsc(new Date(a.at).toLocaleString('en-GB'))}</time>` : ''}</li>`).join('')}</ul>`:'<p>No activity recorded this session.</p>'}</section>`;
 }
 
@@ -94,15 +204,17 @@ export function contactWorkspace(d,s) {
   const screen=crmScreen(d), c=crmCurrent(d,s);
   if(screen.mode==='compose' && screen.composeId!==c.id)crmResetScreen(screen);
   const company=d.accounts.find(a=>a.id===c.accountId), owner=d.team.find(t=>t.id===c.ownerId);
-  const record=`<section class="panel crm-card"><h2>${crmEsc(c.name)}</h2><p>${crmEsc([c.title,company?.name].filter(Boolean).join(' · '))}</p>
-    <dl class="crm-details">${contactEmailField(d,c)}${crmMeta('Phone',c.phone)}${crmMeta('Owner',owner?.name)}${crmMeta('Time zone',c.timezone)}${crmMeta('Lead source',c.source || 'Sample record')}${crmMeta('Company domain',company?.domain)+crmMeta('Company region',company?.region)}${crmMeta('Contact preferences',[c.callAllowed?'Calls allowed':'Calls off',c.emailAllowed?'Email allowed':'Email off'].join(' · '))}${crmMeta('Business need',c.need)}</dl>
+  const record=`<section class="panel crm-card crm-contact-profile"><h2>${crmEsc(c.name)}</h2><p>${crmEsc([c.title,company?.name,c.exampleRecord==='contact-checks'?'Example record':''].filter(Boolean).join(' · '))}</p>
+    <div class="crm-methods" aria-label="Current contact methods">${crmMethodPanel(d,c,'email',true)}${crmMethodPanel(d,c,'phone',true)}</div>
+    ${crmProfileActivity(d,c)}
+    <dl class="crm-details crm-profile-facts">${crmMeta('Owner',owner?.name)}${crmMeta('Time zone',c.timezone)}${crmMeta('Lead source',c.source || 'Sample record')}${crmMeta('Company domain',company?.domain)+crmMeta('Company region',company?.region)}${crmMeta('Contact preferences',[c.callAllowed?'Calls allowed':'Calls off',c.emailAllowed?'Email allowed':'Email off'].join(' · '))}${crmMeta('Business need',c.need)}</dl>
     <div class="crm-actions">${crmBtn('edit','Edit contact')}${crmBtn('compose','Compose email')}${studioButton('call-view','Open dialer','small','data-view="dialer"')}${company?studioButton('record','Company record','small',`data-id="${crmEsc(company.id)}"`):''}</div></section>`;
-  return `<div class="page-heading"><div><p class="eyebrow">Sales CRM</p><h1>Contacts &amp; email</h1><p>Manage customer records and correspondence in this demo session.</p></div></div>
+  return `<div class="page-heading"><div><p class="eyebrow">Sales CRM</p><h1>Contacts &amp; email</h1></div></div>
     <div class="panel crm-card crm-toolbar"><label>Working contact<select data-crm-select>${crmOptions(d.contacts.map(row=>({id:row.id,name:row.name+' · '+d.accounts.find(a=>a.id===row.accountId)?.name})),c.id)}</select></label><div class="crm-actions">${crmBtn('add','Add contact')}${crmBtn('inbox','Log incoming email')}</div></div>
-    <div class="crm-content">${screen.mode==='entry'?crmEntry(d,screen):screen.mode==='compose'||screen.mode==='inbox'?crmEmailForm(d,c,screen):record+crmTimeline(d,c)}</div>`;
+    <div class="crm-content">${screen.mode==='entry'?crmEntry(d,screen):screen.mode==='compose'||screen.mode==='inbox'?crmEmailForm(d,c,screen):record+samProductOverview(d,c)+crmTimeline(d,c)}</div>`;
 }
 function crmResetScreen(screen,mode='record') {
-  delete screen.editingId; delete screen.matches; delete screen.draft; delete screen.incoming; delete screen.mailDraft; delete screen.composeId; screen.mode=mode;
+  delete screen.editingId; delete screen.matches; delete screen.draft; delete screen.incoming; delete screen.mailDraft; delete screen.composeId; delete screen.phoneMessageId; screen.mode=mode;
 }
 function crmSelect(d,s,id) {
   const active=d.calls.find(c=>['Ringing','Connected','Wrap-up'].includes(c.status));
@@ -119,17 +231,26 @@ function crmValues(form) {
 }
 export function crmInteraction(d,s,action,el) {
   const screen=crmScreen(d);
+  if(action==='method-check'){
+    if(crmCurrent(d,s).id!==el.dataset.contact)throw new Error('Reopen this contact before recording a check.');
+    crmRecordMethodCheck(d,el.dataset.contact,Object.fromEntries(new FormData(el)));
+    return el.dataset.method==='email'?'Email check recorded.':'Phone check recorded.';
+  }
   if(action==='address-entry'){
     if(crmCurrent(d,s).id!==el.dataset.contact) throw new Error('Reopen this contact before recording an address.');
     const result=saveContactAddressEntry(d,el.dataset.contact,Object.fromEntries(new FormData(el)));
     return {entered:'Email saved.',suggested:'Unverified suggestion saved.',confirmed:'Confirmed address and source saved.'}[result];
   }
   if(action==='select'){crmSelect(d,s,el.value);crmResetScreen(screen);return '';}
-  if(action==='edit'){
+  if(action==='edit'||action==='review-signature'){
     crmSelectCheck(d);
     const contact=crmCurrent(d,s), parts=contact.name.split(/\s+/);
+    const message=action==='review-signature'&&(d.crmEmails||[]).find(row=>row.id===el.dataset.id);
+    const candidate=message&&signaturePhoneCandidate(message,contact);
+    if(action==='review-signature'&&(!candidate||candidate.matchesSaved))throw new Error('Reopen the incoming email to check the current number.');
     crmResetScreen(screen,'entry');screen.editingId=contact.id;
-    screen.draft={...contact,originalEmail:contact.email || '',firstName:contact.firstName || parts[0],lastName:contact.lastName || parts.slice(1).join(' '),source:contact.source || 'Manual entry'};
+    screen.draft={...contact,originalEmail:contact.email || '',originalPhone:contact.phone || '',firstName:contact.firstName || parts[0],lastName:contact.lastName || parts.slice(1).join(' '),source:contact.source || 'Manual entry'};
+    if(candidate){screen.phoneMessageId=message.id;screen.draft.phone=candidate.value;}
     return '';
   }
   if(['compose','reply','follow-up','resume-draft'].includes(action)){
@@ -150,6 +271,14 @@ export function crmInteraction(d,s,action,el) {
   }
   if(action==='sample-message'){
     screen.mailDraft={sender:'avery@northline.example',received:'2026-11-18T10:30',messageId:'sample-brief-01@northline.example',subject:'Delivery reporting brief',body:'Could you show our team how reporting moves from sales to delivery?'};
+    return '';
+  }
+  if(action==='sample-signature'){
+    const person=crmCurrent(d,s);
+    if(!emailCanBeUsed(person))throw new Error('Choose a contact with a saved email address.');
+    screen.mailDraft={sender:person.email,received:'2026-11-18T10:30',subject:'Direct number for our next call',
+      messageId:'sample-signature-'+person.id+'@customer.example',
+      body:'Please use my direct line for our next call.\n\nBest,\n'+person.name+'\nDirect: +44 1632 960042'};
     return '';
   }
   if(action==='use-match'){
@@ -196,6 +325,14 @@ export function crmInteraction(d,s,action,el) {
       screen.draft=v;screen.matches=check.matches;return 'Review the matching contact records.';
     }
     const contact=crmSaveContact(d,v,{reviewed,editingId:screen.editingId});
+    if(screen.phoneMessageId){
+      const message=d.crmEmails.find(row=>row.id===screen.phoneMessageId);
+      const candidate=message&&signaturePhoneCandidate(message,contact);
+      if(candidate?.matchesSaved){
+        crmRecordMethodCheck(d,contact.id,{method:'phone',value:contact.phone,result:'unconfirmed',source:'Email signature',
+          sourceMessageId:message.id,evidence:'Listed in “'+message.subject+'” from '+message.address+'.'});
+      }
+    }
     if(screen.incoming)crmLogInbound(d,screen.incoming);
     crmSelect(d,s,contact.id);crmResetScreen(screen);return 'Contact saved.';
   }

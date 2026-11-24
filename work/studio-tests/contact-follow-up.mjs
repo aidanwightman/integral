@@ -1,11 +1,120 @@
 import assert from 'node:assert/strict';
 import {dataset} from '../../outputs/workspace-concepts/studio-src/data.js';
-import {addCallNote, logCompletedCall, saveContactEmail} from '../../outputs/workspace-concepts/studio-src/calling.js';
+import {addCallNote, logCompletedCall, saveContactEmail, scheduleSalesCall} from '../../outputs/workspace-concepts/studio-src/calling.js';
 import {researchContactEmail} from '../../outputs/workspace-concepts/studio-src/email-research.js';
 import {contactAddressEvidence, recordConfirmedAddress} from '../../outputs/workspace-concepts/studio-src/address-confirmation.js';
-import {crmBeginDraft, crmSaveDraft, crmSendDraft, crmLogInbound} from '../../outputs/workspace-concepts/studio-src/contact-model.js';
+import {crmBeginDraft, crmSaveDraft, crmSendDraft, crmLogInbound, crmRecordMethodCheck, crmContactMethod, crmSaveContact} from '../../outputs/workspace-concepts/studio-src/contact-model.js';
+import {contactWorkspace} from '../../outputs/workspace-concepts/studio-src/contact-workspace.js';
+import {callingView} from '../../outputs/workspace-concepts/studio-src/calling-views.js';
+import {ensureOutcomes,outcomeAction,recordFollowupReceipt} from '../../outputs/workspace-concepts/studio-src/outcomes-model.js';
+import {outcomeView} from '../../outputs/workspace-concepts/studio-src/outcomes-views.js';
+import {contactChecksExample} from '../../outputs/workspace-concepts/studio-src/contact-examples.js';
 
 const d = dataset('agency');
+{
+  const sample=dataset('agency'),sam=structuredClone(sample.contacts[0]);
+  const occupied=crmSaveContact(sample,{firstName:'Another',lastName:'Visitor',email:'elena.ward@lindenquay.example',phone:'+44 1632 960105',accountId:sample.accounts[0].id,ownerId:sample.team[0].id});
+  const previous=structuredClone(occupied);
+  const elena=contactChecksExample(sample);
+  assert.notEqual(elena.id,occupied.id);
+  assert.notEqual(elena.email,occupied.email);
+  assert.notEqual(elena.phone,occupied.phone);
+  assert.deepEqual(occupied,previous);
+  assert.deepEqual(sample.contacts[0],sam);
+  const email=crmContactMethod(elena,'email'),phone=crmContactMethod(elena,'phone');
+  assert.equal(email.status,'Verified');
+  assert.ok(email.lastVerifiedAt<email.lastCheckedAt);
+  assert.equal(sample.crmEmails.find(row=>row.id===email.sourceMessageId)?.contactId,elena.id);
+  assert.equal(phone.status,'Needs review');
+  assert.ok(email.lastCheckedAt<phone.lastVerifiedAt && phone.lastVerifiedAt<phone.lastCheckedAt);
+  elena.name='Visitor edited the example';
+  const before=structuredClone(sample);
+  assert.equal(contactChecksExample(sample).name,elena.name);
+  assert.deepEqual(sample,before);
+}
+const contactSummary=(native,id)=>contactWorkspace(native,{view:'contacts',callContact:id}).match(/aria-label="Contact activity summary">([\s\S]*?)<\/dl>/)[1];
+{
+  const native=dataset('agency'), [sam,other]=native.contacts;
+  const baseline=contactSummary(native,sam.id);
+  assert.match(baseline,/Requested a product walkthrough<br>No date recorded/);
+  assert.match(baseline,/Prepare discovery questions/);
+  assert.match(contactSummary(native,other.id),/No dated interaction recorded/);
+  assert.match(contactSummary(native,other.id),/No call scheduled/);
+  assert.match(contactSummary(native,other.id),/No open tasks/);
+  const call=logCompletedCall(native,{contactId:sam.id,ownerId:sam.ownerId,direction:'Inbound',endedAt:'2025-03-04T15:05:06Z',durationSeconds:52,outcome:'Positive conversation',notes:'Discussed onboarding',nextStep:'Send options'}).call;
+  const afterCall=contactSummary(native,sam.id);
+  assert.match(afterCall,/Inbound call · Positive conversation/);
+  assert.ok(afterCall.includes('datetime="'+call.endedAt+'"'));
+  assert.ok(!afterCall.includes(call.loggedAt));
+  crmLogInbound(native,{sender:sam.email,subject:'Delivery brief <updated>',received:'2025-03-05T16:07:08+01:00',body:'Please send the plan.'});
+  const laterEmail=contactSummary(native,sam.id);
+  assert.match(laterEmail,/Email received · Delivery brief &lt;updated&gt;/);
+  assert.match(laterEmail,/datetime="2025-03-05T15:07:08.000Z"/);
+  assert.doesNotMatch(contactSummary(native,other.id),/Delivery brief|Positive conversation|Prepare discovery/);
+  const book=(contact,date,purpose)=>scheduleSalesCall(native,contact.id,{purpose,scheduledAt:date,ownerId:contact.ownerId});
+  book(other,'2098-01-03T10:00','Pitch call');
+  const next=book(sam,'2099-02-01T11:30','Follow-up call');
+  book(sam,'2099-02-03T09:00','Pitch call');
+  const cancelled=book(sam,'2099-01-01T09:00','Pitch call');
+  cancelled.status='Cancelled';
+  const completed=book(sam,'2099-01-02T09:00','Pitch call');
+  completed.status='Complete';
+  native.salesTasks.push({id:'undated-task',contactId:sam.id,title:'Plan handover',kind:'Task',status:'Open'});
+  const booked=contactSummary(native,sam.id);
+  assert.ok(booked.includes('datetime="'+next.scheduledAt+'"'));
+  assert.match(booked,/Follow-up call · /);
+  assert.doesNotMatch(booked,/2098|2099-01-/);
+  assert.match(booked,/Next open task \(2 open\)/);
+  native.salesTasks.find(task=>task.title==='Prepare discovery questions').status='Complete';
+  assert.match(contactSummary(native,sam.id),/Plan handover<br>No due date recorded/);
+}
+{
+  const native = dataset('agency'), sam = native.contacts.find(c=>c.id===native.id+'-contact0');
+  const views = [
+    id=>contactWorkspace(native,{view:'contacts',callContact:id}),
+    id=>callingView(native,{view:'dialer',callContact:id})
+  ];
+  for(const render of views) assert.doesNotMatch(render(sam.id),/data-sam-overview/);
+  ensureOutcomes(native);
+  outcomeAction(native,'followup','validate',{email:'sam.overview@example.com'});
+  for(const render of views) assert.doesNotMatch(render(sam.id),/data-sam-overview/);
+  outcomeAction(native,'followup','send');
+  assert.match(contactSummary(native,sam.id),/Practice email sent · Product overview/);
+  assert.doesNotMatch(contactSummary(native,native.contacts[1].id),/Practice email sent/);
+  for(const render of views){
+    const html=render(sam.id);
+    assert.match(html,/data-sam-overview/);
+    assert.match(html,/sam\.overview@example\.com/);
+    assert.match(html,/Awaiting delivery confirmation/);
+    assert.match(html,/data-do="open-sam-followup"/);
+    assert.match(html,/No confirmation recorded/);
+    assert.doesNotMatch(render(native.contacts[1].id),/data-sam-overview/);
+  }
+  recordFollowupReceipt(native,{channel:'Phone',evidence:'Sam said “I received the overview”.'});
+  for(const render of views){
+    const html=render(sam.id);
+    assert.match(html,/<dt>Confirmed by Sam<\/dt><dd>Phone/);
+    assert.match(html,/Sam said “I received the overview”/);
+    assert.match(html,/Awaiting delivery confirmation/);
+  }
+  outcomeAction(native,'followup','reconcile');
+  for(const render of views) assert.match(render(sam.id),/<dt>Email delivery<\/dt><dd>Delivered<\/dd>/);
+  const state={role:'sales',outcomeCase:'followup',followupRecord:true};
+  saveContactEmail(native,sam.id,'sam.current@example.com');
+  const independent=outcomeView(native,state);
+  assert.match(independent,/<dt>Sent to<\/dt><dd>sam\.overview@example\.com/);
+  assert.match(independent,/<dt>Current contact email<\/dt><dd>sam\.current@example\.com/);
+  for(const label of ['Sent','Delivery checked','Confirmation recorded'])assert.ok(independent.includes('<dt>'+label+'</dt><dd><time datetime="'));
+  assert.match(independent,/DEMO-ACK-104/);
+  const confirmed=crmRecordMethodCheck(native,sam.id,{method:'phone',value:sam.phone,result:'verified',source:'Contact confirmation',evidence:'Sam read it back',checkedAt:'2026-01-04T10:00:00Z'});
+  crmRecordMethodCheck(native,sam.id,{method:'phone',value:sam.phone,result:'unconfirmed',source:'Company directory',evidence:'No number listed'});
+  for(const screen of [views[0](sam.id),outcomeView(native,state)]){
+    assert.ok(screen.includes('<dt>Last verified</dt><dd><time datetime="'+confirmed.lastVerifiedAt+'">'));
+    assert.match(screen,/Sam read it back/);
+    assert.match(screen,/No number listed/);
+    assert.match(screen,/Needs review/);
+  }
+}
 const morgan = d.contacts.find(c => c.name === 'Morgan Quinn');
 const jamie = d.contacts.find(c => c.name === 'Jamie Rivers');
 assert.equal(researchContactEmail(d, morgan).candidate, 'morgan.quinn@juniperworks.example');

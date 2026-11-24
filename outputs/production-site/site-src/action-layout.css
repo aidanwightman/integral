@@ -1,5 +1,5 @@
 /* Keep standalone links and buttons on the same baseline and give the ink a usable target. */
-html[data-design] :is(#expand-demo, #founder-link, .savings-band .light-link, .closing .actions > .text-link, .ps-hero figcaption a) {
+html[data-design] :is(#founder-link, .savings-band .light-link, .closing .actions > .text-link, .ps-hero figcaption a) {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -7,11 +7,6 @@ html[data-design] :is(#expand-demo, #founder-link, .savings-band .light-link, .c
   gap: .55em;
   white-space: normal;
   line-height: 1.35;
-}
-html[data-design] #expand-demo {
-  justify-content: center;
-  padding: .35rem .75rem;
-  text-align: center;
 }
 html[data-design] :is(.savings-band .light-link, #founder-link, .closing .actions > .text-link) {
   padding-block: .35rem;
@@ -79,8 +74,6 @@ html[data-design] .site-footer :is(.footer-link, a:not(.wordmark)) {
 }
 
 @media (max-width: 760px) {
-  html[data-design] #expand-demo { align-self: center; }
-  html:is([data-design=glass],[data-design=forest]) #expand-demo { display: flex; }
   html[data-design] .ps-hero figcaption { padding-block: .4rem; }
 }
 @media (max-width: 430px) {
@@ -101,7 +94,7 @@ html[data-design] .site-footer :is(.footer-link, a:not(.wordmark)) {
   }
 }
 /* Keyboard rings follow the surface under the button, including inverse hero and pricing panels. */
-html:is([data-design=glass],[data-design=forest])[data-mode] main :is(.actions > a,.actions > button,.text-link,#launch-workspace):focus-visible,
+html:is([data-design=glass],[data-design=forest])[data-mode] main :is(.actions > a,.actions > button,.text-link,#expand-demo):focus-visible,
 html[data-design=forest][data-mode] .site-header > :is(a.button,.glass-design-launcher,.glass-mobile-menu):focus-visible {
   outline-color: var(--control-focus);
 }
@@ -146,3 +139,62 @@ html[data-design][data-mode] .ps-hero .ps-role-bar > button {
 }
 html[data-design=glass][data-mode] .ps-hero .ps-data-slice :is(td, .preview-record-link) { font-size: .875rem; }
 html[data-design=glass][data-mode] .ps-hero .ps-data-slice th { font-size: .75rem; }
+
+/* Role pickers and section links retain a visible cue in every colour scheme. */
+@media (hover: hover) {
+  html[data-design][data-mode] :is(.site-header nav a, .glass-mobile-menu, .glass-design-launcher,
+    #demo .role-tabs button, .ps-role-bar button):hover {
+    text-decoration: underline !important;
+    text-underline-offset: .2em;
+  }
+}
+html[data-design][data-mode] :is(.site-header nav a[aria-current="location"],
+  .site-header button[aria-expanded="true"], #demo .role-tabs button[aria-pressed="true"],
+  .ps-role-bar button[aria-pressed="true"]) {
+  box-shadow: inset 0 -3px currentColor !important;
+}
+html[data-design][data-mode] :is(.site-header nav a, .glass-mobile-menu, .glass-design-launcher,
+  #demo .role-tabs button, .ps-role-bar button):focus-visible {
+  outline: 2px solid currentColor !important;
+  outline-offset: -3px !important;
+}
+
+/* Keep the pricing link distinct on both the paper and the dark Bento hero. */
+#main .hero-main .text-link[href="#savings-detail"] {
+  text-decoration: none;
+}
+html:is([data-design=editorial], [data-design=signal], [data-design=bento]) #main .hero-main .text-link[href="#savings-detail"] {
+  padding-inline: .75rem;
+  border-bottom-width: 0;
+}
+html:is([data-design=editorial], [data-design=signal], [data-design=bento]) .hero-main .pricing-label {
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+html[data-design=bento][data-mode=light] #main .hero-main .text-link[href="#savings-detail"] {
+  --pricing-fill: var(--action-text);
+  --pricing-ink: var(--action);
+}
+@media (hover: hover) {
+  #main .hero-main .text-link[href="#savings-detail"]:hover:not(:focus-visible) {
+    background: var(--pricing-fill, var(--action)) !important;
+    color: var(--pricing-ink, var(--action-text)) !important;
+  }
+  #main .hero-main .text-link:hover .pricing-label {
+    text-decoration: underline 2px;
+    text-underline-offset: .2em;
+  }
+}
+#main .hero-main .text-link[href="#savings-detail"]:focus-visible {
+  outline: 3px solid currentColor !important;
+  outline-offset: 3px !important;
+}
+#main .hero-main .text-link:focus-visible .pricing-label {
+  text-decoration: underline 2px;
+  text-underline-offset: .2em;
+}
+@media (prefers-reduced-motion: reduce) {
+  #main .hero-main .text-link[href="#savings-detail"] {
+    transition: none !important;
+  }
+}

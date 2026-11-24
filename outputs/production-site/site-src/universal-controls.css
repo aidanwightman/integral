@@ -76,7 +76,7 @@ html[data-design=glass][data-mode] .site-header .appearance-controls{background:
 /* Top-layer coordinates stay independent of each identity's header geometry. */
 html[data-design][data-mode][data-glass-tools=true] .site-header .appearance-controls {
   inset:calc(var(--studio-top) - var(--studio-origin-y,0px)) auto auto calc(var(--studio-left) - var(--studio-origin-x,0px))!important;
-  width:min(340px,calc(100vw - 16px));
+  width:var(--studio-width);
   max-width:calc(100vw - 16px);
   max-height:calc(100dvh - var(--studio-top) - 8px);
   margin:0;
@@ -84,5 +84,17 @@ html[data-design][data-mode][data-glass-tools=true] .site-header .appearance-con
   animation:none;
 }
 html[data-design][data-mode][data-glass-tools=true] .site-header .appearance-controls[popover] {position:fixed}
+/* A browser without native popovers measures the header as its containing block.
+   Its padding must settle in the same layout pass as the design change. */
+html[data-design][data-glass-tools=true] .site-header {transition-property:opacity,box-shadow}
+/* The selector sits immediately above Randomise design. Keep its row metrics
+   consistent even when the theme supplies a different native select style. */
+#glass-design-controls #site-design {min-height:max(46px,2.875rem)}
 /* Compensate for the heavier top rule on these two surfaces. */
 html:is([data-design=editorial],[data-design=signal])[data-mode] .site-header .appearance-controls {padding-top:14px}
+/* The header controller reverses the same reveal when either trigger is pressed again. */
+@media (max-width:1000px) {
+  html[data-design][data-mode][data-glass-menu=true] .site-header #glass-main-navigation {
+    max-height:var(--header-menu-height,calc(100dvh - 120px)); overscroll-behavior:contain; animation:none;
+  }
+}

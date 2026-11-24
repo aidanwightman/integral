@@ -78,8 +78,22 @@ function reviewCommission(c,deal,action,input,role){
 }
 export function commissionAction(d,action,id,input={},role='finance'){
  const c=ensureCommissions({accounts:d.accounts,commissions:d.commissions?structuredClone(d.commissions):null}),deal=c.deals.find(x=>x.id===id);let message='';
+ const before=deal && commissionCalculation(c,deal);
+ const version=deal?.version||0;
+ if(deal && input.expected!==undefined && input.expected!==c.revision+'-'+version)
+   throw Error('The commission changed. Review the current line before submitting.');
  if(['commission-query','commission-resolve','commission-refund-review'].includes(action)){
   message=reviewCommission(c,deal,action,input,role);clearCommissionApproval(deal);
+ }else if(action==='commission-source'){
+  if(role!=='finance' || !deal)throw Error('Finance must verify the source for this commission line.');
+  const reference=String(input.reference||'').trim();
+  if(!reference)throw Error('Enter the source document or transaction reference.');
+  const source=d.opportunities.find(o=>o.id===input.opportunity && deal.accountId && o.accountId===deal.accountId);
+  if(!source)throw Error('Choose a deal for the same customer as the commission line.');
+  if(deal.source?.opportunityId===source.id && deal.source.reference===reference)return 'This source is already recorded.';
+  deal.source={opportunityId:source.id,reference,valuePence:source.valuePence};
+  clearCommissionApproval(deal);
+  message=`Source verified against ${source.name} (${source.id}) · ${reference}`;
  }else if(!['finance','saleslead','leadership'].includes(role)){
   throw Error('Open a commission inquiry for Finance to review.');
  }else if(action==='commission-new-package'){
@@ -107,22 +121,39 @@ export function commissionAction(d,action,id,input={},role='finance'){
   const grossPence=cmMoney(input.gross,'List price'),discount=cmNumber(input.discount,'Discount',0,100),cashPence=cmMoney(input.cash,'Cash received'),refundPence=cmMoney(input.refund,'Refund');
   const net=grossPence-Math.round(grossPence*discount/100);
   if(cashPence>net)throw Error('Cash received cannot exceed the discounted price.');if(refundPence>cashPence)throw Error('Refund cannot exceed cash received.');
+  if(deal.package===input.package && deal.team===input.team && deal.grossPence===grossPence && deal.discount===discount && deal.cashPence===cashPence && deal.refundPence===refundPence)return 'The commission inputs are unchanged.';
   if(refundPence!==deal.refundPence || grossPence!==deal.grossPence || cashPence!==deal.cashPence || discount!==deal.discount)delete deal.reviewedRefundPence;
   if(input.team!==deal.team)delete deal.repShareOverride;
   Object.assign(deal,{package:input.package,team:input.team,grossPence,discount,cashPence,refundPence,approved:false});clearCommissionApproval(deal);message=`${id} updated. Previous approval cleared; calculation refreshed.`;
  }else if(action==='commission-approve'){
   if(!deal)throw Error('Select a deal.');const result=commissionCalculation(c,deal);if(!result.eligible)throw Error(result.holds.join('. ')+'.');if(deal.approved)throw Error('Already approved.');deal.approved=true;deal.approvedRevision=c.revision;deal.approvedPence=result.total;message=`${id} approved for payroll review. No payment made.`;
  }else if(action==='commission-reopen'){
-  if(!deal||!deal.approved)throw Error('Select an approved deal.');clearCommissionApproval(deal);message=`${id} returned to review.`;
+  if(!deal||!deal.approved)throw Error('Select an approved deal.');
+  if(!String(input.note||'').trim())throw Error('Give a reason for reopening this approval.');
+  clearCommissionApproval(deal);message=`${id} returned to review.`;
  }else if(action==='commission-plan'||action==='commission-team'){
   if(action==='commission-plan'){
    const plan=c.plans.find(p=>p.id===id);if(!plan)throw Error('Choose a valid package.');
-   plan.rate=cmNumber(input.rate,'Commission rate',0,100);plan.bonusPence=cmMoney(input.bonus,'Deal bonus');plan.thresholdPence=cmMoney(input.threshold,'Bonus threshold');
+   const rate=cmNumber(input.rate,'Commission rate',0,100),bonusPence=cmMoney(input.bonus,'Deal bonus'),thresholdPence=cmMoney(input.threshold,'Bonus threshold');
+   if(plan.rate===rate && plan.bonusPence===bonusPence && plan.thresholdPence===thresholdPence)return 'The package rule is unchanged.';
+   Object.assign(plan,{rate,bonusPence,thresholdPence});
   }else{
    const team=c.teams.find(t=>t.id===id);if(!team)throw Error('Choose a valid team.');
-   team.maxDiscount=cmNumber(input.maxDiscount,'Discount limit',0,100);team.repShare=cmNumber(input.repShare,'Rep share',0,100);
+   const maxDiscount=cmNumber(input.maxDiscount,'Discount limit',0,100),repShare=cmNumber(input.repShare,'Rep share',0,100);
+   if(team.maxDiscount===maxDiscount && team.repShare===repShare)return 'The team rule is unchanged.';
+   Object.assign(team,{maxDiscount,repShare});
   }
   c.revision++;for(const row of c.deals)clearCommissionApproval(row);message=`Plan revision ${c.revision} saved. All approvals cleared for recalculation.`;
  }else throw Error('Unknown commission action.');
- c.history.unshift({action:message,revision:c.revision,at:new Date().toISOString()});d.commissions=c;return message;
+ const entry={action:message,kind:action,actor:role,revision:c.revision,at:new Date().toISOString()};
+ if(deal){
+  const after=commissionCalculation(c,deal);
+  deal.version=version+1;
+  Object.assign(entry,{lineId:deal.id,repBefore:before.rep,repAfter:after.rep,totalPence:after.total,
+    status:deal.approved?'Approved for payroll review':after.eligible?'Ready for approval':'On hold',
+    reason:after.holds.join(' · '),reference:String(input.reference||'').trim(),note:String(input.note||'').trim()});
+ }else if(action==='commission-plan'||action==='commission-team'){
+  entry.clearedLines=(d.commissions?.deals||[]).filter(row=>row.approved).map(row=>row.id);
+ }
+ c.history.unshift(entry);d.commissions=c;return message;
 }

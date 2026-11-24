@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {dataset,INDUSTRIES} from '../../outputs/workspace-concepts/studio-src/data.js';
 import {financeExceptionAction,financeExceptionAlerts,financeMatchOptions,addFinanceLine} from '../../outputs/workspace-concepts/studio-src/finance-exceptions-model.js';
 import {financeExceptionRecordPanel,financeExceptionsView} from '../../outputs/workspace-concepts/studio-src/finance-exceptions-view.js';
+import {statementReconciliation,reconciliationReport} from '../../outputs/workspace-concepts/studio-src/reconciliation-report.js';
+import {outcomeAction} from '../../outputs/workspace-concepts/studio-src/outcomes-model.js';
 import {decideApproval} from '../../outputs/workspace-concepts/studio-src/approval-model.js';
 const evidence='Remittance verified against the original statement and customer confirmation.';
 for(const {id} of INDUSTRIES){
@@ -65,15 +67,28 @@ for(const {id} of INDUSTRIES){
  const input={origin:'Bank statement',date:'2026-11-20',payer:'Payer <script>',amountPence:1001,reference:'SRC-22',memo:'Evidence'};
  assert.throws(()=>addFinanceLine(d,'finance',{...input,date:'2026-02-30'}),/valid statement/);
  const c=addFinanceLine(d,'finance',input);
- assert.throws(()=>addFinanceLine(d,'finance',{...input,reference:' src-22 '}),/already/);
+ const lineCount=d.financeExceptions.length,initialCash=d.openingCashPence;
+ assert.throws(()=>addFinanceLine(d,'finance',{...input,reference:' src-22 ',amountPence:2000}),
+   error=>error.financeExceptionId===c.id && /already recorded/.test(error.message));
+ assert.equal(d.financeExceptions.length,lineCount);
+ assert.equal(c.source.amountPence,1001);
+ assert.equal(d.openingCashPence,initialCash);
  const before=d.openingCashPence, paid=i.paidPence;
  d.depth.receipts.push({reference:'SRC-22',amountPence:1001,invoiceId:i.id,status:'Allocated',id:'existing-receipt'});
  const values={accountId:i.accountId,invoiceId:i.id,evidence:'Already in receipt register.'};
  financeExceptionAction(d,'finance',c.id,1,'match',values);
  assert.equal(d.openingCashPence,before);assert.equal(i.paidPence,paid);assert.equal(d.depth.receipts.length,1);
  assert.equal(c.receiptId,'existing-receipt');
+ const reconciled=statementReconciliation(d);
+ assert.equal(reconciled.totals.allocated,1001);
+ assert.equal(reconciled.totals.unposted+reconciled.totals.allocated,reconciled.totals.statement);
+ assert.equal(reconciled.otherReceipts.length,0);
+ assert.equal(reconciled.rows.find(r=>r.line.id===c.id).invoice.id,i.id);
  const html=financeExceptionsView(d,{role:'finance',financeException:c.id});
  assert.match(html,/Payer &lt;script&gt;/);assert.match(html,/£10.01/);
+ assert.match(html,/Latest decision/);assert.match(html,/£10.01 allocated to/);
+ assert.match(html,/The invoice balance is now £/);
+ assert.match(html,/data-do="reconciliation-open"[^>]*data-ledger="statement"/);
 }
 console.log('PASS: held and unmatched receipts, verified allocation, independent risk decisions, suspense follow-up, missing order invoices, duplicate and pre-posted receipts, exact cash across eight industries.');
 
@@ -81,6 +96,7 @@ console.log('PASS: held and unmatched receipts, verified allocation, independent
  const d=dataset('agency'),invoice=d.invoices.find(i=>i.totalPence>i.paidPence), cash=d.openingCashPence;
  const posted={id:'manual-receipt',reference:'REMIT-ABC',invoiceId:invoice.id,amountPence:2871,status:'Allocated'};
  invoice.paidPence+=posted.amountPence;d.depth.receipts.push(posted);
+ assert.deepEqual(statementReconciliation(d).otherReceipts,[posted]);
  const row=addFinanceLine(d,'finance',{origin:'Bank statement',date:'2026-11-18',reference:'BANK-DIFFERENT-ID',payer:'Treasury office',amountPence:2871});
  const values={evidence:'Matched remittance and bank receipt number.',accountId:invoice.accountId,invoiceId:invoice.id};
  assert.throws(()=>financeExceptionAction(d,'finance',row.id,1,'match',values),/same amount/);
@@ -89,6 +105,30 @@ console.log('PASS: held and unmatched receipts, verified allocation, independent
  financeExceptionAction(d,'finance',row.id,1,'link-receipt',{...values,receiptId:posted.id});
  assert.equal(invoice.paidPence,paid);assert.equal(d.openingCashPence,cash);
  assert.equal(posted.sourceLineId,row.id);assert.equal(row.receiptId,posted.id);
+ const matched=statementReconciliation(d);
+ assert.equal(matched.otherReceipts.length,0);
+ assert.equal(matched.totals.allocated,posted.amountPence);
+}
+{
+ const d=dataset('agency'), totals={...statementReconciliation(d).totals};
+ const unknown=d.financeExceptions.find(c=>c.source.reference==='BANK-6422');
+ financeExceptionAction(d,'finance',unknown.id,unknown.history.length,'unapplied',{evidence,accountId:d.accounts[0].id,followUp:'2026-11-24'});
+ const credit=statementReconciliation(d).totals;
+ assert.equal(credit.unapplied,unknown.source.amountPence);
+ assert.equal(credit.unposted,totals.unposted-unknown.source.amountPence);
+ assert.equal(credit.allocated,0);
+ const practice=()=>reconciliationReport(d,{reconciliationLedger:'practice'});
+ assert.match(practice(),/Receipts recorded<\/dt><dd>0/);
+ outcomeAction(d,'receivable','import');
+ assert.match(practice(),/Available to allocate<\/dt><dd>£10,000.00/);
+ outcomeAction(d,'receivable','allocate',{invoice:'INV-104'});
+ const applied=practice();
+ assert.match(applied,/Allocated to invoice<\/dt><dd>£10,000.00/);
+ assert.match(applied,/Invoice outstanding<\/dt><dd>£2,000.00/);
+ assert.match(applied,/Receipt number<\/dt><dd>RCPT-104/);
+ outcomeAction(d,'receivable','repeat-import');
+ assert.equal(practice(),applied);
+ assert.deepEqual(statementReconciliation(d).totals,credit);
 }
 {
  const d=dataset('events'),order=d.approvalRequests.find(r=>r.type==='order');

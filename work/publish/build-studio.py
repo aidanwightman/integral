@@ -18,6 +18,10 @@ assert '</script' not in script.lower()
 stylesheets = ['styles.css', 'hierarchy.css', 'compact.css', 'bento-identity.css', 'glass-navigation.css', 'glass-identity.css', 'editorial-signal-identity.css', 'atlas-ledger-identity.css', 'hierarchy-editorial-signal.css', 'hierarchy-atlas-ledger-bento.css', 'forest-identity.css', 'compact-workspace.css', 'outcomes.css', 'commissions.css', 'contacts.css', 'accessibility-controls.css', 'workspace-text-size.css', 'approval-ui.css', 'finance-exceptions.css', 'workspace-alerts.css', 'northstar-preview.css']
 css = '\n'.join((source / name).read_text() for name in stylesheets)
 css += '\n' + Path(__file__).with_name('control-motion.css').read_text()
+navigation_css = Path(__file__).with_name('workspace-navigation.css').read_text()
+css += '\n' + navigation_css
+select_css = Path(__file__).with_name('select-controls.css').read_text()
+css += '\n' + select_css
 type_size = r'(?:clamp\([^()]+\)|(?:\d*\.)?\d+(?:px|rem))'
 def scale_type_sizes(text):
     return re.sub(
@@ -94,7 +98,7 @@ existing = index.read_text()
 existing = re.sub(r'\n?<!-- INDUSTRY_STUDIO_BEGIN -->[\s\S]*?<!-- INDUSTRY_STUDIO_END -->\n?', '\n', existing)
 # The classic prototype is also its own source. Strip previously generated copies
 # before refreshing its shared control. Already scaled type starts with calc().
-for marker in ['SHARED_TEXT_SIZE_JS', 'SHARED_TEXT_SIZE_CSS']:
+for marker in ['SHARED_TEXT_SIZE_JS', 'SHARED_TEXT_SIZE_CSS','SHARED_NAVIGATION_CSS','SHARED_SELECT_CSS']:
     existing = re.sub(r'/\* '+marker+r'_BEGIN \*/[\s\S]*?/\* '+marker+r'_END \*/\n?', '', existing)
 existing = scale_type_sizes(existing)
 size_js = '\n'.join((source / name).read_text() for name in ['glass-preferences.js', 'workspace-text-preference.js', 'workspace-text-size.js'])
@@ -102,6 +106,8 @@ size_js = re.sub(r'^import[^\n]+\n', '', size_js, flags=re.M).replace('export ',
 size_css = (source / 'workspace-text-size.css').read_text()
 existing = existing.replace("'use strict';\n", "'use strict';\n/* SHARED_TEXT_SIZE_JS_BEGIN */\n" + size_js + "/* SHARED_TEXT_SIZE_JS_END */\n", 1)
 existing = existing.replace('</style>', '/* SHARED_TEXT_SIZE_CSS_BEGIN */\n' + size_css + '/* SHARED_TEXT_SIZE_CSS_END */\n</style>', 1)
+existing = existing.replace('</style>', '/* SHARED_NAVIGATION_CSS_BEGIN */\n' + navigation_css + '/* SHARED_NAVIGATION_CSS_END */\n</style>', 1)
+existing = existing.replace('</style>', '/* SHARED_SELECT_CSS_BEGIN */\n' + select_css + '/* SHARED_SELECT_CSS_END */\n</style>', 1)
 if 'industryStudio:' not in existing:
     existing = existing.replace('const ACT={', 'const ACT={\n  industryStudio:()=>window.DataSaverStudio?.open(),', 1)
 if 'data-act="industryStudio"' not in existing:

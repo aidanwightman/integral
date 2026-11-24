@@ -172,6 +172,22 @@ CREATE TABLE sales_contact (
  PRIMARY KEY(workspace_id,id), FOREIGN KEY(workspace_id,account_id) REFERENCES account(workspace_id,id),
  FOREIGN KEY(workspace_id,owner_id) REFERENCES team_member(workspace_id,id)
 );
+CREATE TABLE contact_email_message (
+ workspace_id TEXT NOT NULL, contact_id TEXT NOT NULL, id TEXT NOT NULL, direction TEXT NOT NULL CHECK(direction IN ('Incoming','Outgoing')),
+ account_id TEXT NOT NULL, address TEXT NOT NULL, subject TEXT NOT NULL, body TEXT NOT NULL, occurred_at TEXT NOT NULL,
+ status TEXT, original_message_id TEXT, reply_to_id TEXT, FOREIGN KEY(workspace_id,account_id) REFERENCES account(workspace_id,id),
+ PRIMARY KEY(workspace_id,contact_id,id), FOREIGN KEY(workspace_id,contact_id) REFERENCES sales_contact(workspace_id,id),
+ FOREIGN KEY(workspace_id,contact_id,reply_to_id) REFERENCES contact_email_message(workspace_id,contact_id,id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE contact_method_evidence (
+ workspace_id TEXT NOT NULL, contact_id TEXT NOT NULL, method TEXT NOT NULL CHECK(method IN ('email','phone')),
+ value TEXT NOT NULL, changed_at TEXT, last_checked_at TEXT, check_result TEXT CHECK(check_result IN ('verified','unconfirmed')),
+ check_source TEXT, check_note TEXT, checked_recorded_at TEXT, check_message_id TEXT,
+ last_verified_at TEXT, verification_source TEXT, verification_note TEXT, verified_recorded_at TEXT, verification_message_id TEXT,
+ PRIMARY KEY(workspace_id,contact_id,method), FOREIGN KEY(workspace_id,contact_id) REFERENCES sales_contact(workspace_id,id),
+ FOREIGN KEY(workspace_id,contact_id,check_message_id) REFERENCES contact_email_message(workspace_id,contact_id,id),
+ FOREIGN KEY(workspace_id,contact_id,verification_message_id) REFERENCES contact_email_message(workspace_id,contact_id,id)
+);
 CREATE TABLE after_call_rule (
  workspace_id TEXT NOT NULL, automation_id TEXT NOT NULL, outcome_trigger TEXT NOT NULL,
  missing_email_action TEXT NOT NULL CHECK(missing_email_action IN ('wait','task')),
@@ -183,6 +199,10 @@ CREATE TABLE call_session (
  workspace_id TEXT NOT NULL, id TEXT NOT NULL, contact_id TEXT NOT NULL, owner_id TEXT NOT NULL,
  technical_state TEXT NOT NULL CHECK(technical_state IN ('Ringing','Connected','Wrap-up','Logged')),
  connected INTEGER NOT NULL CHECK(connected IN (0,1)), business_outcome TEXT, notes TEXT NOT NULL, next_step TEXT NOT NULL,
+ purpose TEXT, opportunity_id TEXT, started_at TEXT, ended_at TEXT, logged_at TEXT,
+ duration_seconds INTEGER CHECK(duration_seconds>=0), scheduled_task_id TEXT, pitch_result TEXT, buyer_feedback TEXT,
+ FOREIGN KEY(workspace_id,scheduled_task_id) REFERENCES sales_task(workspace_id,id),
+ FOREIGN KEY(workspace_id,opportunity_id) REFERENCES opportunity(workspace_id,id),
  PRIMARY KEY(workspace_id,id), FOREIGN KEY(workspace_id,contact_id) REFERENCES sales_contact(workspace_id,id),
  FOREIGN KEY(workspace_id,owner_id) REFERENCES team_member(workspace_id,id)
 );
@@ -201,8 +221,25 @@ CREATE TABLE call_email_outbox (
 );
 CREATE TABLE sales_task (
  workspace_id TEXT NOT NULL, id TEXT NOT NULL, contact_id TEXT NOT NULL, title TEXT NOT NULL,
- due_date TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('Open','Complete','Stopped on reply')), source TEXT NOT NULL,
+ due_date TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('Open','Complete','Stopped on reply','Cancelled')), source TEXT NOT NULL,
  PRIMARY KEY(workspace_id,id), FOREIGN KEY(workspace_id,contact_id) REFERENCES sales_contact(workspace_id,id)
+);
+CREATE TABLE scheduled_call (
+ workspace_id TEXT NOT NULL, task_id TEXT NOT NULL, purpose TEXT NOT NULL, scheduled_at TEXT NOT NULL,
+ owner_id TEXT NOT NULL, opportunity_id TEXT, source_call_id TEXT, completed_call_id TEXT, agenda TEXT NOT NULL,
+ PRIMARY KEY(workspace_id,task_id),
+ UNIQUE(workspace_id,completed_call_id),
+ FOREIGN KEY(workspace_id,task_id) REFERENCES sales_task(workspace_id,id),
+ FOREIGN KEY(workspace_id,owner_id) REFERENCES team_member(workspace_id,id),
+ FOREIGN KEY(workspace_id,opportunity_id) REFERENCES opportunity(workspace_id,id),
+ FOREIGN KEY(workspace_id,source_call_id) REFERENCES call_session(workspace_id,id),
+ FOREIGN KEY(workspace_id,completed_call_id) REFERENCES call_session(workspace_id,id)
+);
+CREATE TABLE call_note (
+ workspace_id TEXT NOT NULL, id TEXT NOT NULL, call_id TEXT NOT NULL, author_id TEXT NOT NULL,
+ kind TEXT NOT NULL, body TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY(workspace_id,id),
+ FOREIGN KEY(workspace_id,call_id) REFERENCES call_session(workspace_id,id),
+ FOREIGN KEY(workspace_id,author_id) REFERENCES team_member(workspace_id,id)
 );
 CREATE TABLE sales_meeting (
  workspace_id TEXT NOT NULL, id TEXT NOT NULL, contact_id TEXT NOT NULL, title TEXT NOT NULL, starts_at TEXT NOT NULL, status TEXT NOT NULL,

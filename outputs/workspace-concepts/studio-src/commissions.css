@@ -5,3 +5,11 @@
 .commission-inquiry li p{margin:3px 0}.commission-evidence{max-width:38rem;display:grid;gap:6px;margin:12px 0}.commission-evidence button{justify-self:start}
 .commission-field textarea{width:100%;resize:vertical;color:var(--ink);background:var(--surface,var(--panel));border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit}
 .commission-forecast{padding:20px}.commission-forecast summary{font-size:16px;color:var(--ink)}.commission-forecast table{min-width:660px}.commission-forecast td small{display:block;color:var(--muted);margin-top:4px}.commission-forecast td{vertical-align:top}.commission-forecast table label{font-size:12px}.commission-forecast table form{display:flex;gap:6px;align-items:end;flex-wrap:wrap}.commission-forecast table .commission-field{margin:0}.commission-forecast-filters{display:flex;gap:14px;flex-wrap:wrap}.commission-forecast-filters label{display:grid;gap:4px}
+.commission-trace{border-top:1px solid var(--border);margin-top:16px;padding-top:10px;overflow-wrap:anywhere}
+.commission-trace summary{cursor:pointer;font-weight:650;padding-block:6px}
+.commission-trace dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:12px}
+.commission-trace dt,.commission-trace li small{color:var(--muted)}
+.commission-trace dd{margin:3px 0 0;font-weight:600}
+.commission-trace li{margin-block:12px}
+.commission-trace li small{display:block}
+.commission-trace li p{margin:4px 0}
